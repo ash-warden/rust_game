@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 use macroquad::prelude::{load_texture, Texture2D};
 use serde::{Deserialize, Serialize};
 
@@ -59,33 +60,47 @@ struct TiledTileSet {
 }
 
 //game level
-pub(crate) struct Level {
-    pub(crate) tile_image: Texture2D,
-    pub(crate) tile_values: Vec<i32>,
+pub struct Level {
+    pub tile_image: Texture2D,
+    pub tile_values: Vec<i32>,
+    pub map_dimensions: (f32, f32),
+    pub tile_size: f32,
+    pub tileset_columns: i32,
 }
 
 impl Level {
-    pub(crate) async fn build(map_name: &str) -> Result<Level, &'static str > {
+    pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error> > {
+        let dir = "assets/maps/";
         //load tiles
-        let tile_map_file = fs::read_to_string(map_name).unwrap();
-        let tile_map: TiledMap = serde_json::from_str(&tile_map_file).unwrap();
+        let tile_map_file = fs::read_to_string(map_name)?;
+        let tile_map: TiledMap = serde_json::from_str(&tile_map_file)?;
 
-        let tileset_file_name: Vec<&str> = tile_map
+        let dimensions = (tile_map.width as f32, tile_map.height as f32);
+        let tile_size = tile_map.tilewidth as f32;
+
+        let tileset_file_name = dir.to_string() + &tile_map
             .tilesets
             .first()
-            .unwrap()
+            .ok_or("No tileset")?
             .source
-            .split('.')
-            .collect();
-        let tileset_file = fs::read_to_string(format!("{}.json", tileset_file_name.first().unwrap()));
-        let tileset: TiledTileSet = serde_json::from_str(&tileset_file.unwrap()).unwrap();
+            .clone();
 
-        let values = tile_map.layers.first().unwrap().data.clone();
+        let tileset_path = Path::new(&tileset_file_name);
+        let tileset_file = fs::read_to_string(tileset_path)?;
+        let tileset: TiledTileSet = serde_json::from_str(&tileset_file)?;
 
-        let tile_image = load_texture(&tileset.image).await.unwrap();
+        let values = tile_map.layers.first().ok_or("No layer")?.data.clone();
+        let image_name = format!("{}{}", dir, tileset.image);
+        println!("{}", image_name);
+        let tile_image = load_texture(&image_name).await?;
+        let tileset_columns = tileset.columns;
+
         Ok(Level {
             tile_image,
             tile_values: values,
+            map_dimensions: dimensions,
+            tile_size,
+            tileset_columns,
         })
     }
 }

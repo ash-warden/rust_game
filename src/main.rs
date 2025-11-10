@@ -27,8 +27,11 @@ fn window_conf() -> Conf {
 async fn main() {
     //screen scale
     let mut scale = 1.;
-
-    let level = level::Level::build("test_map1.json").await.unwrap();
+    let level = level::Level::build("assets/maps/test_map1.json").await
+        .unwrap_or_else(|err| {
+            eprintln!("Failed to load level: {err}");
+            std::process::exit(1);
+        });
 
     //supposed to improve performance?
     build_textures_atlas();
@@ -39,41 +42,57 @@ async fn main() {
         let mut i = 0; //tile number
         let mut x = 0.; //x coord
         let mut y = 0.; //y coord
-        while y < 15. {
-            while x < 20. {
+
+        let map_width = level.map_dimensions.0;
+        let map_height = level.map_dimensions.1;
+
+        while y < map_height {
+            //column
+            while x < map_width {
+                //row
                 draw_texture_ex(
                     &level.tile_image,
-                    x * 32. * scale,
-                    y * 32. * scale,
+                    x * level.tile_size * scale,
+                    y * level.tile_size * scale,
                     WHITE,
                     DrawTextureParams {
-                        dest_size: Some(vec2(32. * scale, 32. * scale)),
+                        dest_size: Some(vec2(level.tile_size * scale, level.tile_size * scale)),
                         source: Some(Rect::new(
-                            index_to_coords(level.tile_values[i], 2).0*32.,
-                            index_to_coords(level.tile_values[i], 2).1*32.,
-                            32.,
-                            32.,
+                            index_to_coords(level.tile_values[i], level.tileset_columns).0
+                                * level.tile_size,
+                            index_to_coords(level.tile_values[i], level.tileset_columns).1
+                                * level.tile_size,
+                            level.tile_size,
+                            level.tile_size,
                         )),
                         ..Default::default()
                     },
                 );
                 x += 1.;
                 i += 1;
+                if i > level.tile_values.len() {
+                    println!("too many tiles to draw!");
+                    break;
+                }
             }
-            x = 0.;
+            x = 0.; // go back to beginning of row
             y += 1.;
         }
         //update screen size
         let w = screen_width();
         let h = screen_height();
-        if w != 640. || h != 480. {
-            if w < 960. {
-                set_window_size(640, 480);
+        if w != level.map_dimensions.0 * level.tile_size
+            || h != level.map_dimensions.1 * level.tile_size
+        {
+            if w < level.map_dimensions.0 * level.tile_size * 2. {
                 scale = 1.;
             } else {
-                set_window_size(1280, 960);
                 scale = 2.;
             }
+            set_window_size(
+                (level.map_dimensions.0 * level.tile_size * scale) as u32,
+                (level.map_dimensions.1 * level.tile_size * scale) as u32,
+            );
         }
 
         next_frame().await
