@@ -43,6 +43,12 @@ struct TiledMap {
 }
 
 #[derive(Serialize, Deserialize)]
+struct TiledSetTiles {
+    id: i32,
+    r#type: String,
+}
+
+#[derive(Serialize, Deserialize)]
 struct TiledTileSet {
     columns: i32,
     image: String,
@@ -54,6 +60,7 @@ struct TiledTileSet {
     tilecount: i32,
     tiledversion: String,
     tileheight: i32,
+    tiles: Vec<TiledSetTiles>,
     tilewidth: i32,
     r#type: String,
     version: String,
@@ -90,9 +97,10 @@ impl Level {
         let tileset: TiledTileSet = serde_json::from_str(&tileset_file)?;
 
         let values = tile_map.layers.first().ok_or("No layer")?.data.clone();
+
         let image_name = format!("{}{}", dir, tileset.image);
-        println!("{}", image_name);
         let tile_image = load_texture(&image_name).await?;
+
         let tileset_columns = tileset.columns;
 
         Ok(Level {

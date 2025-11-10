@@ -23,25 +23,35 @@ fn window_conf() -> Conf {
     }
 }
 
-#[macroquad::main(window_conf)]
-async fn main() {
-    //screen scale
-    let mut scale = 1.;
-    let level = level::Level::build("assets/maps/test_map1.json").await
-        .unwrap_or_else(|err| {
-            eprintln!("Failed to load level: {err}");
-            std::process::exit(1);
-        });
+pub trait GameState {
+    fn update(&self);
+    fn draw(&self, scale: f32);
+}
 
-    //supposed to improve performance?
-    build_textures_atlas();
+pub struct LevelState {
+    pub level: level::Level,
+}
 
-    loop {
+impl LevelState {
+    pub async fn build() -> Result<LevelState, Box<dyn std::error::Error>> {
+        let level = level::Level::build("assets/maps/test_map1.json")
+            .await
+            .unwrap_or_else(|err| {
+                eprintln!("Failed to load level: {err}");
+                std::process::exit(1);
+            });
+        Ok(LevelState { level })
+    }
+}
+impl GameState for LevelState {
+    fn update(&self) {}
+    fn draw(&self, scale: f32) {
         //draw tiles
-        clear_background(BLACK);
         let mut i = 0; //tile number
         let mut x = 0.; //x coord
         let mut y = 0.; //y coord
+
+        let level = &self.level;
 
         let map_width = level.map_dimensions.0;
         let map_height = level.map_dimensions.1;
@@ -78,20 +88,39 @@ async fn main() {
             x = 0.; // go back to beginning of row
             y += 1.;
         }
+    }
+}
+
+#[macroquad::main(window_conf)]
+async fn main() {
+    //screen scale
+    let mut scale = 1.;
+    let level_state = LevelState::build().await.unwrap_or_else(|err| {
+        eprintln!("Failed to load level state: {err}");
+        std::process::exit(1);
+    });
+
+    //supposed to improve performance?
+    build_textures_atlas();
+
+    loop {
+        clear_background(BLACK);
+
+        level_state.draw(scale);
+
         //update screen size
         let w = screen_width();
         let h = screen_height();
-        if w != level.map_dimensions.0 * level.tile_size
-            || h != level.map_dimensions.1 * level.tile_size
-        {
-            if w < level.map_dimensions.0 * level.tile_size * 2. {
+
+        if w != 640. || h != 480. {
+            if w < 960. {
                 scale = 1.;
             } else {
                 scale = 2.;
             }
             set_window_size(
-                (level.map_dimensions.0 * level.tile_size * scale) as u32,
-                (level.map_dimensions.1 * level.tile_size * scale) as u32,
+                (640. * scale) as u32,
+                (480. * scale) as u32,
             );
         }
 
