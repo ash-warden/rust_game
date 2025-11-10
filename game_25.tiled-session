@@ -1,0 +1,45 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "test_map1.json": {
+            "scale": 1.007890625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 319.97519572126197,
+                "y": 221.75025191845592
+            }
+        },
+        "test_map1.tmx": {
+            "scale": 0.8817187499999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 316.9945064681907,
+                "y": 261.42122984228246
+            }
+        },
+        "test_tiles.tsx": {
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/mnt/ext4-files/rust_projects/game_25",
+    "last.imagePath": "/mnt/ext4-files/rust_projects/game_25",
+    "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
+    "map.height": 15,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 20,
+    "openFiles": [
+    ],
+    "project": "game_25.tiled-project",
+    "recentFiles": [
+        "test_tiles.tsx",
+        "test_map1.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
