@@ -1,14 +1,15 @@
 use crate::level;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
-use macroquad::math::{vec2, IVec2, Vec2};
+use macroquad::math::{IVec2, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
 
 pub struct Player {
     pub position: Vec2,
     pub velocity: Vec2,
-    pub size: IVec2,
+    pub actual_size: IVec2,
+    pub full_size: i32,
     pub on_ground: bool,
     level: Arc<level::Level>,
     state: PlayerState,
@@ -31,10 +32,11 @@ impl Player {
             position: Vec2::new(start_pos.0 as f32, start_pos.1 as f32),
             velocity: Vec2::new(0.0, 0.0),
             on_ground: false,
-            size: IVec2::new(32, 64),
+            actual_size: IVec2::new(32, 64),
             level: level.clone(),
             state: PlayerState::Standing,
             facing_right: true,
+            full_size: 64,
         }
     }
 
@@ -48,7 +50,7 @@ impl Player {
             WHITE,
             DrawTextureParams {
                 flip_x: !self.facing_right,
-                dest_size: Some(vec2(self.size.x as f32, self.size.y as f32)),
+                dest_size: Some(vec2(self.actual_size.x as f32, self.actual_size.y as f32)),
                 ..Default::default()
             },
         );
@@ -102,7 +104,6 @@ impl Player {
         if is_key_pressed(KeyCode::Up) {
             self.uncrouch();
         }
-
     }
 
     pub fn update(&mut self, delta_time: f32) {
@@ -126,7 +127,7 @@ impl Player {
         }
 
         println!("{:?}", self.state);
-        let tile_size = 32.0;
+        let tile_size = self.level.tile_size;
         let gravity = 1800.0;
         let max_fall_speed = 1200.0;
         let epsilon = 0.001;
@@ -189,15 +190,38 @@ impl Player {
     }
 
     pub fn crouch(&mut self) {
-        self.size.y = 32;
-        self.state = PlayerState::Crouching;
-        self.position.y += 32.;
+        if self.state != PlayerState::Crouching {
+            self.actual_size.y = self.full_size  / 2;
+            self.state = PlayerState::Crouching;
+            self.position.y += self.full_size as f32 / 2.;
+        }
+    }
+
+    fn can_uncrouch(&self, tile_size: f32, epsilon: f32) -> bool {
+        let head_clearance = self.full_size as f32 / 2.;
+        let check_top = self.position.y - head_clearance;
+        let left = self.position.x;
+        let right = self.position.x + self.actual_size.x as f32;
+
+        let tile_left = (left / tile_size).floor() as i32;
+        let tile_right = ((right - epsilon) / tile_size).floor() as i32;
+        let tile_check_y = (check_top / tile_size).floor() as i32;
+
+        for tx in tile_left..=tile_right {
+            if self.is_tile_solid(tx, tile_check_y) {
+                return false; // blocked by tile above
+            }
+        }
+
+        true // space is clear to uncrouch
     }
 
     pub fn uncrouch(&mut self) {
-        self.size.y = 64;
-        self.state = PlayerState::Jumping;
-        self.position.y -= 32.;
+        if self.can_uncrouch(self.level.tile_size, 0.001) && self.state == PlayerState::Crouching {
+            self.actual_size.y = self.full_size;
+            self.state = PlayerState::Jumping;
+            self.position.y -= (self.full_size / 2) as f32;
+        }
     }
 
     fn resolve_axis_collisions(
@@ -210,8 +234,8 @@ impl Player {
     ) {
         let left = self.position.x;
         let top = self.position.y;
-        let right = self.position.x + self.size.x as f32;
-        let bottom = self.position.y + self.size.y as f32;
+        let right = self.position.x + self.actual_size.x as f32;
+        let bottom = self.position.y + self.actual_size.y as f32;
 
         let tile_left = (left / tile_size).floor() as i32;
         let tile_right = ((right - epsilon) / tile_size).floor() as i32;
@@ -237,7 +261,7 @@ impl Player {
                         if overlap_left < overlap_right {
                             // overlap from left side
                             if overlap_left <= snap_threshold {
-                                self.position.x = tile_px_left - self.size.x as f32;
+                                self.position.x = tile_px_left - self.actual_size.x as f32;
                             } else {
                                 self.position.x -= overlap_left;
                             }
@@ -254,7 +278,7 @@ impl Player {
                     }
                 } else {
                     // vertical resolution improved: use prev_pos to detect genuine landings / head-hits
-                    let prev_bottom = prev_pos.y + self.size.y as f32;
+                    let prev_bottom = prev_pos.y + self.actual_size.y as f32;
                     let prev_top = prev_pos.y;
 
                     let overlap_top = bottom - tile_px_top; // positive if overlapping from above
@@ -269,7 +293,7 @@ impl Player {
                         if came_from_above {
                             // landing on tile
                             if overlap_top <= snap_threshold {
-                                self.position.y = tile_px_top - self.size.y as f32;
+                                self.position.y = tile_px_top - self.actual_size.y as f32;
                             } else {
                                 self.position.y -= overlap_top;
                             }
@@ -287,7 +311,7 @@ impl Player {
                             // ambiguous (we were already overlapping or a large tunnelling move); pick smallest
                             if overlap_top < overlap_bottom {
                                 if overlap_top <= snap_threshold {
-                                    self.position.y = tile_px_top - self.size.y as f32;
+                                    self.position.y = tile_px_top - self.actual_size.y as f32;
                                 } else {
                                     self.position.y -= overlap_top;
                                 }
