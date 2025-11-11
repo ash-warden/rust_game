@@ -1,10 +1,12 @@
+use crate::game_state::{GameStateStack, LevelState};
+use crate::resources::load_all_assets;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
-use crate::game_state::{GameState, GameStateStack, LevelState};
 
 //module for loading the level from the map
 mod level;
 mod game_state;
+mod resources;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -27,6 +29,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    load_all_assets().await;
     //screen scale
     let mut scale = 1.;
     let level_state = LevelState::build().await.unwrap_or_else(|err| {

@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::Path;
-use macroquad::prelude::{load_texture, Texture2D};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -68,7 +67,7 @@ struct TiledTileSet {
 
 //game level
 pub struct Level {
-    pub tile_image: Texture2D,
+    pub tile_image_name: String,
     pub tile_values: Vec<i32>,
     pub map_dimensions: (f32, f32),
     pub tile_size: f32,
@@ -98,13 +97,12 @@ impl Level {
 
         let values = tile_map.layers.first().ok_or("No layer")?.data.clone();
 
-        let image_name = format!("{}{}", dir, tileset.image);
-        let tile_image = load_texture(&image_name).await?;
+        let tile_image_name = tileset.image;
 
         let tileset_columns = tileset.columns;
 
         Ok(Level {
-            tile_image,
+            tile_image_name,
             tile_values: values,
             map_dimensions: dimensions,
             tile_size,
