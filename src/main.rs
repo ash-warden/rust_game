@@ -7,12 +7,19 @@ use macroquad::prelude::*;
 mod level;
 mod game_state;
 mod resources;
+mod player;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
     let x = (n - 1) % width;
     let y = (n - 1) / width;
     (x as f32, y as f32)
+}
+
+fn coords_to_index(x: i32, y: i32, width: i32) -> i32 {
+    let xi = x;
+    let yi = y;
+    yi * width + xi + 1
 }
 
 fn window_conf() -> Conf {

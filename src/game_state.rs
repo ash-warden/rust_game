@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use macroquad::color::WHITE;
-use macroquad::math::{vec2, Rect};
-use macroquad::prelude::{draw_texture_ex, DrawTextureParams};
-use crate::{index_to_coords, level};
 use crate::resources::RESOURCE_MANAGER;
+use crate::{index_to_coords, level};
+use macroquad::color::WHITE;
+use macroquad::math::{Rect, vec2};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
+use std::sync::Arc;
 
 pub trait GameState {
     fn update(&mut self);
@@ -25,7 +25,10 @@ impl LevelState {
     }
 }
 impl GameState for LevelState {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        /*let info = self.level.get_tile_info((1, 1)).solid;
+        println!("Tile is solid: {}", info);*/
+    }
     fn draw(&self, scale: f32) {
         //draw tiles
         let mut i = 0; //tile number
@@ -42,26 +45,25 @@ impl GameState for LevelState {
             while x < map_width {
                 //row
                 let res = RESOURCE_MANAGER.lock().unwrap();
-                if let Some(tex) = res.get_texture(&level.tile_image_name) {
-                    draw_texture_ex(
-                        tex,
-                        x * level.tile_size * scale,
-                        y * level.tile_size * scale,
-                        WHITE,
-                        DrawTextureParams {
-                            dest_size: Some(vec2(level.tile_size * scale, level.tile_size * scale)),
-                            source: Some(Rect::new(
-                                index_to_coords(level.tile_values[i], level.tileset_columns).0
-                                    * level.tile_size,
-                                index_to_coords(level.tile_values[i], level.tileset_columns).1
-                                    * level.tile_size,
-                                level.tile_size,
-                                level.tile_size,
-                            )),
-                            ..Default::default()
-                        },
-                    );
-                }
+                let tex = res.get_texture(&level.tile_image_name);
+                draw_texture_ex(
+                    tex,
+                    x * level.tile_size * scale,
+                    y * level.tile_size * scale,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(vec2(level.tile_size * scale, level.tile_size * scale)),
+                        source: Some(Rect::new(
+                            index_to_coords(level.tile_values[i], level.tileset_columns).0
+                                * level.tile_size,
+                            index_to_coords(level.tile_values[i], level.tileset_columns).1
+                                * level.tile_size,
+                            level.tile_size,
+                            level.tile_size,
+                        )),
+                        ..Default::default()
+                    },
+                );
                 x += 1.;
                 if i >= level.tile_values.len() {
                     println!("too many tiles to draw!");
@@ -81,7 +83,9 @@ pub struct GameStateStack {
 
 impl GameStateStack {
     pub fn new(initial: Box<dyn GameState>) -> Self {
-        Self { states: vec![initial] }
+        Self {
+            states: vec![initial],
+        }
     }
 
     pub fn update(&mut self) {

@@ -1,6 +1,7 @@
+use crate::coords_to_index;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 struct TiledLayer {
@@ -72,6 +73,11 @@ pub struct Level {
     pub map_dimensions: (f32, f32),
     pub tile_size: f32,
     pub tileset_columns: i32,
+    pub tileset: TiledTileSet,
+}
+
+pub struct TileInfo {
+    pub solid: bool,
 }
 
 impl Level {
@@ -97,7 +103,7 @@ impl Level {
 
         let values = tile_map.layers.first().ok_or("No layer")?.data.clone();
 
-        let tile_image_name = tileset.image;
+        let tile_image_name = tileset.image.clone();
 
         let tileset_columns = tileset.columns;
 
@@ -107,6 +113,17 @@ impl Level {
             map_dimensions: dimensions,
             tile_size,
             tileset_columns,
+            tileset,
         })
+    }
+
+    pub fn get_tile_info(&self, tile_coords: (i32, i32)) -> TileInfo {
+        let index = coords_to_index(tile_coords.0, tile_coords.1, self.map_dimensions.0 as i32);
+        let tile = self.tile_values[index as usize];
+        let tileset = &self.tileset;
+        let solid = tileset.tiles[tile as usize - 1].r#type == "solid";
+        TileInfo {
+            solid
+        }
     }
 }

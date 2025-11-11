@@ -1,10 +1,10 @@
 use crate::level;
+use crate::level::Level;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use walkdir::WalkDir;
-use crate::level::Level;
 
 pub struct Resources {
     pub levels: HashMap<String, Arc<level::Level>>,
@@ -19,8 +19,14 @@ impl Resources {
         }
     }
 
-    pub fn get_texture(&self, key: &str) -> Option<&Texture2D> {
-        self.textures.get(key)
+    pub fn get_texture(&self, key: &str) -> &Texture2D {
+        match self.textures.get(key) {
+            Some(tex) => tex,
+            None => {
+                println!("Warning: texture '{}' not found, using fallback", key);
+                self.textures.get("missing").expect("Missing texture not loaded")
+            }
+        }
     }
 
     pub fn get_level(&self, key: &str) -> Option<Arc<Level>> {
@@ -64,4 +70,9 @@ pub async fn load_all_assets() {
             }
         }
     }
+    let missing_texture = macroquad::texture::load_texture("assets/missing.png")
+        .await
+        .unwrap();
+    missing_texture.set_filter(macroquad::texture::FilterMode::Nearest);
+    res.insert_texture("missing".to_string(), missing_texture);
 }
