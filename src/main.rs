@@ -19,7 +19,7 @@ fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
 fn coords_to_index(x: i32, y: i32, width: i32) -> i32 {
     let xi = x;
     let yi = y;
-    yi * width + xi + 1
+    yi * width + xi
 }
 
 fn window_conf() -> Conf {

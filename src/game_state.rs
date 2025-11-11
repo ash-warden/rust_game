@@ -1,8 +1,10 @@
+use crate::player::Player;
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
+use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
 use macroquad::math::{Rect, vec2};
-use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
 
 pub trait GameState {
@@ -12,13 +14,15 @@ pub trait GameState {
 
 pub struct LevelState {
     pub level: Arc<level::Level>,
+    pub player: Player,
 }
 
 impl LevelState {
     pub async fn build() -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
         if let Some(level) = res.get_level("test_1_1") {
-            Ok(LevelState { level })
+            let player = Player::new((50, 50), level.clone());
+            Ok(LevelState { level, player })
         } else {
             Err("Level 'test_1_1' not found in resources".into())
         }
@@ -28,6 +32,8 @@ impl GameState for LevelState {
     fn update(&mut self) {
         /*let info = self.level.get_tile_info((1, 1)).solid;
         println!("Tile is solid: {}", info);*/
+        self.player.handle_input();
+        self.player.update(get_frame_time());
     }
     fn draw(&self, scale: f32) {
         //draw tiles
@@ -74,6 +80,8 @@ impl GameState for LevelState {
             x = 0.; // go back to beginning of row
             y += 1.;
         }
+        //draw player
+        self.player.draw();
     }
 }
 

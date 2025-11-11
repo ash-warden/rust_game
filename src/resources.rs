@@ -46,7 +46,7 @@ pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Re
 
 pub async fn load_all_assets() {
     let mut res = RESOURCE_MANAGER.lock().unwrap();
-    for entry in WalkDir::new("assets/maps") {
+    for entry in WalkDir::new("assets") {
         let entry = entry.unwrap();
         let path = entry.path();
 
@@ -54,6 +54,7 @@ pub async fn load_all_assets() {
             let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
             let key = path.file_stem().unwrap().to_str().unwrap();
             let path_str = path.to_str().unwrap();
+            println!("Loading asset: '{}'", path_str);
 
             match ext {
                 "png" => {
