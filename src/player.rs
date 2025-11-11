@@ -1,8 +1,8 @@
-use crate::resources::RESOURCE_MANAGER;
 use crate::level;
-use macroquad::input::{is_key_down, is_key_pressed, KeyCode};
-use macroquad::math::{IVec2, Vec2};
-use macroquad::prelude::{draw_texture, WHITE};
+use crate::resources::RESOURCE_MANAGER;
+use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
+use macroquad::math::{vec2, IVec2, Vec2};
+use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
 
 pub struct Player {
@@ -11,6 +11,18 @@ pub struct Player {
     pub size: IVec2,
     pub on_ground: bool,
     level: Arc<level::Level>,
+    state: PlayerState,
+    facing_right: bool,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PlayerState {
+    Standing,
+    Walking,
+    Running,
+    Jumping,
+    Falling,
+    Crouching,
 }
 
 impl Player {
@@ -21,13 +33,25 @@ impl Player {
             on_ground: false,
             size: IVec2::new(32, 64),
             level: level.clone(),
+            state: PlayerState::Standing,
+            facing_right: true,
         }
     }
 
     pub fn draw(&self) {
         let res = RESOURCE_MANAGER.lock().unwrap();
         let tex = res.get_texture("player.png");
-        draw_texture(tex, self.position.x, self.position.y, WHITE);
+        draw_texture_ex(
+            tex,
+            self.position.x,
+            self.position.y,
+            WHITE,
+            DrawTextureParams {
+                flip_x: !self.facing_right,
+                dest_size: Some(vec2(self.size.x as f32, self.size.y as f32)),
+                ..Default::default()
+            },
+        );
     }
 
     pub fn handle_input(&mut self, _delta_time: f32) {
@@ -37,32 +61,71 @@ impl Player {
 
         let mut want_dir: f32 = 0.0;
         if is_key_down(KeyCode::Left) {
+            self.facing_right = false;
             want_dir -= 1.0;
         }
         if is_key_down(KeyCode::Right) {
+            self.facing_right = true;
             want_dir += 1.0;
         }
 
         if want_dir.abs() > 0.0 {
             self.velocity.x += want_dir * accel * 1.0 / 60.0;
-            if self.velocity.x > max_speed { self.velocity.x = max_speed; }
-            if self.velocity.x < -max_speed { self.velocity.x = -max_speed; }
+            //limit max speed
+            if self.velocity.x > max_speed {
+                self.velocity.x = max_speed;
+            }
+            if self.velocity.x < -max_speed {
+                self.velocity.x = -max_speed;
+            }
         } else {
+            //friction
             if self.velocity.x > 0.0 {
                 self.velocity.x -= friction * 1.0 / 60.0;
-                if self.velocity.x < 0.0 { self.velocity.x = 0.0; }
+                if self.velocity.x < 0.0 {
+                    self.velocity.x = 0.0;
+                }
             } else if self.velocity.x < 0.0 {
                 self.velocity.x += friction * 1.0 / 60.0;
-                if self.velocity.x > 0.0 { self.velocity.x = 0.0; }
+                if self.velocity.x > 0.0 {
+                    self.velocity.x = 0.0;
+                }
             }
         }
 
         if is_key_pressed(KeyCode::Space) {
             self.jump();
         }
+        if is_key_pressed(KeyCode::Down) {
+            self.crouch();
+        }
+        if is_key_pressed(KeyCode::Up) {
+            self.uncrouch();
+        }
+
     }
 
     pub fn update(&mut self, delta_time: f32) {
+        // setting state for movement
+        if !(self.state == PlayerState::Crouching) {
+            if self.on_ground {
+                if (self.velocity.x.abs()) > 199. {
+                    self.state = PlayerState::Running;
+                } else if self.velocity.x.abs() > 0. {
+                    self.state = PlayerState::Walking;
+                } else {
+                    self.state = PlayerState::Standing;
+                }
+            } else {
+                if self.velocity.y > 0. {
+                    self.state = PlayerState::Falling;
+                } else {
+                    self.state = PlayerState::Jumping;
+                }
+            }
+        }
+
+        println!("{:?}", self.state);
         let tile_size = 32.0;
         let gravity = 1800.0;
         let max_fall_speed = 1200.0;
@@ -91,7 +154,11 @@ impl Player {
         let mut step_prev_pos = self.position;
 
         while remaining.abs() > 0.0 {
-            let step = if remaining.abs() > max_step { max_step * remaining.signum() } else { remaining };
+            let step = if remaining.abs() > max_step {
+                max_step * remaining.signum()
+            } else {
+                remaining
+            };
             self.position.y += step;
             // reset on_ground before resolving this sub-step; it will be set true if this sub-step lands
             self.on_ground = false;
@@ -108,19 +175,39 @@ impl Player {
             step_prev_pos = self.position;
             // safety: break loop if something goes wrong
             // (prevents infinite loop with NaNs)
-            if !remaining.is_finite() { break; }
+            if !remaining.is_finite() {
+                break;
+            }
         }
     }
 
-
     pub fn jump(&mut self) {
         if self.on_ground {
-            self.velocity.y = -600.0;
+            self.velocity.y = -650.0;
             self.on_ground = false;
         }
     }
 
-    fn resolve_axis_collisions(&mut self, axis_x: bool, prev_pos: Vec2, tile_size: f32, epsilon: f32, snap_threshold: f32) {
+    pub fn crouch(&mut self) {
+        self.size.y = 32;
+        self.state = PlayerState::Crouching;
+        self.position.y += 32.;
+    }
+
+    pub fn uncrouch(&mut self) {
+        self.size.y = 64;
+        self.state = PlayerState::Jumping;
+        self.position.y -= 32.;
+    }
+
+    fn resolve_axis_collisions(
+        &mut self,
+        axis_x: bool,
+        prev_pos: Vec2,
+        tile_size: f32,
+        epsilon: f32,
+        snap_threshold: f32,
+    ) {
         let left = self.position.x;
         let top = self.position.y;
         let right = self.position.x + self.size.x as f32;
@@ -133,7 +220,9 @@ impl Player {
 
         for ty in tile_top..=tile_bottom {
             for tx in tile_left..=tile_right {
-                if !self.is_tile_solid(tx, ty) { continue; }
+                if !self.is_tile_solid(tx, ty) {
+                    continue;
+                }
 
                 let tile_px_left = tx as f32 * tile_size;
                 let tile_px_top = ty as f32 * tile_size;
@@ -168,7 +257,7 @@ impl Player {
                     let prev_bottom = prev_pos.y + self.size.y as f32;
                     let prev_top = prev_pos.y;
 
-                    let overlap_top = bottom - tile_px_top;    // positive if overlapping from above
+                    let overlap_top = bottom - tile_px_top; // positive if overlapping from above
                     let overlap_bottom = tile_px_bottom - top; // positive if overlapping from below
 
                     if overlap_top > 0.0 && overlap_bottom > 0.0 {
