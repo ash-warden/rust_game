@@ -1,8 +1,8 @@
 use crate::resources::RESOURCE_MANAGER;
-use crate::{coords_to_index, level};
-use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
+use crate::level;
+use macroquad::input::{is_key_down, is_key_pressed, KeyCode};
 use macroquad::math::{IVec2, Vec2};
-use macroquad::prelude::{WHITE, draw_texture};
+use macroquad::prelude::{draw_texture, WHITE};
 use std::sync::Arc;
 
 pub struct Player {
@@ -67,42 +67,57 @@ impl Player {
         let gravity = 1800.0;
         let max_fall_speed = 1200.0;
         let epsilon = 0.001;
-        let snap_threshold = 3.0; // snap when within 1 pixel
+        let snap_threshold = 3.0; // snap when within this many pixels
 
+        // apply gravity
         self.velocity.y += gravity * delta_time;
         if self.velocity.y > max_fall_speed {
             self.velocity.y = max_fall_speed;
         }
 
-        let prev_pos = self.position;
-
+        // horizontal movement handled once per frame
         let move_x = self.velocity.x * delta_time;
-        let move_y = self.velocity.y * delta_time;
-
         self.position.x += move_x;
-        self.resolve_axis_collisions(true, prev_pos, tile_size, epsilon, snap_threshold);
+        // use prev_pos from before any sub-steps for horizontal resolution (keeps X resolution consistent)
+        let prev_frame_pos = self.position;
+        self.resolve_axis_collisions(true, prev_frame_pos, tile_size, epsilon, snap_threshold);
 
-        self.position.y += move_y;
-        self.on_ground = false;
-        self.resolve_axis_collisions(false, prev_pos, tile_size, epsilon, snap_threshold);
+        // vertical movement: sub-step to avoid tunnelling/bounce
+        let total_move_y = self.velocity.y * delta_time;
+        // maximum pixels per sub-step (tune down if bounce still happens)
+        let max_step = 1.0_f32;
+        let mut remaining = total_move_y;
+        // we will iterate sub-steps; prev_pos should be updated each sub-step for reliable "came_from_above" checks
+        let mut step_prev_pos = self.position;
+
+        while remaining.abs() > 0.0 {
+            let step = if remaining.abs() > max_step { max_step * remaining.signum() } else { remaining };
+            self.position.y += step;
+            // reset on_ground before resolving this sub-step; it will be set true if this sub-step lands
+            self.on_ground = false;
+            self.resolve_axis_collisions(false, step_prev_pos, tile_size, epsilon, snap_threshold);
+
+            // after resolution, if we landed, zero vertical velocity and clear remaining (we shouldn't continue moving down)
+            if self.on_ground && self.velocity.y > 0.0 {
+                self.velocity.y = 0.0;
+                break;
+            }
+
+            // subtract processed step and update prev for next sub-step
+            remaining -= step;
+            step_prev_pos = self.position;
+            // safety: break loop if something goes wrong
+            // (prevents infinite loop with NaNs)
+            if !remaining.is_finite() { break; }
+        }
     }
+
 
     pub fn jump(&mut self) {
         if self.on_ground {
             self.velocity.y = -600.0;
             self.on_ground = false;
         }
-    }
-
-    pub fn set_velocity(&mut self, vx: i32, vy: i32) {
-        self.velocity = Vec2::new(vx as f32, vy as f32);
-    }
-
-    pub fn get_tile_coords(&self, tile_size: (i32, i32)) -> (i32, i32) {
-        (
-            (self.position.x as i32 / tile_size.0),
-            (self.position.y as i32 / tile_size.1),
-        )
     }
 
     fn resolve_axis_collisions(&mut self, axis_x: bool, prev_pos: Vec2, tile_size: f32, epsilon: f32, snap_threshold: f32) {
@@ -115,9 +130,6 @@ impl Player {
         let tile_right = ((right - epsilon) / tile_size).floor() as i32;
         let tile_top = (top / tile_size).floor() as i32;
         let tile_bottom = ((bottom - epsilon) / tile_size).floor() as i32;
-
-        let dir_x = (self.position.x - prev_pos.x).signum();
-        let dir_y = (self.position.y - prev_pos.y).signum();
 
         for ty in tile_top..=tile_bottom {
             for tx in tile_left..=tile_right {
@@ -136,7 +148,6 @@ impl Player {
                         if overlap_left < overlap_right {
                             // overlap from left side
                             if overlap_left <= snap_threshold {
-                                // snap to exact border
                                 self.position.x = tile_px_left - self.size.x as f32;
                             } else {
                                 self.position.x -= overlap_left;
@@ -153,12 +164,21 @@ impl Player {
                         }
                     }
                 } else {
-                    let overlap_top = bottom - tile_px_top;
-                    let overlap_bottom = tile_px_bottom - top;
+                    // vertical resolution improved: use prev_pos to detect genuine landings / head-hits
+                    let prev_bottom = prev_pos.y + self.size.y as f32;
+                    let prev_top = prev_pos.y;
+
+                    let overlap_top = bottom - tile_px_top;    // positive if overlapping from above
+                    let overlap_bottom = tile_px_bottom - top; // positive if overlapping from below
 
                     if overlap_top > 0.0 && overlap_bottom > 0.0 {
-                        if overlap_top < overlap_bottom {
-                            // landed on tile
+                        // Determine whether this collision should be treated as landing or head hit,
+                        // using previous position to see where we came from.
+                        let came_from_above = prev_bottom <= tile_px_top + epsilon;
+                        let came_from_below = prev_top >= tile_px_bottom - epsilon;
+
+                        if came_from_above {
+                            // landing on tile
                             if overlap_top <= snap_threshold {
                                 self.position.y = tile_px_top - self.size.y as f32;
                             } else {
@@ -166,7 +186,7 @@ impl Player {
                             }
                             self.velocity.y = 0.0;
                             self.on_ground = true;
-                        } else {
+                        } else if came_from_below {
                             // hit head
                             if overlap_bottom <= snap_threshold {
                                 self.position.y = tile_px_bottom;
@@ -174,30 +194,39 @@ impl Player {
                                 self.position.y += overlap_bottom;
                             }
                             self.velocity.y = 0.0;
+                        } else {
+                            // ambiguous (we were already overlapping or a large tunnelling move); pick smallest
+                            if overlap_top < overlap_bottom {
+                                if overlap_top <= snap_threshold {
+                                    self.position.y = tile_px_top - self.size.y as f32;
+                                } else {
+                                    self.position.y -= overlap_top;
+                                }
+                                self.velocity.y = 0.0;
+                                self.on_ground = true;
+                            } else {
+                                if overlap_bottom <= snap_threshold {
+                                    self.position.y = tile_px_bottom;
+                                } else {
+                                    self.position.y += overlap_bottom;
+                                }
+                                self.velocity.y = 0.0;
+                            }
                         }
                     }
                 }
             }
         }
-
-        // final safety: if we're within snap_threshold of a tile grid line vertically and not overlapping a tile,
-        // optionally snap horizontal/vertical alignment to avoid accumulating subpixel error.
-        // Example: snap x to nearest tile column if close (optional)
-        // let col = (self.position.x / tile_size).round();
-        // if (self.position.x - col * tile_size).abs() <= snap_threshold { self.position.x = col * tile_size; }
     }
+
     // Return true if tile at (tx, ty) is solid (collidable).
     fn is_tile_solid(&self, tx: i32, ty: i32) -> bool {
-        // Example placeholder:
-        // If you have something like self.level.is_solid(tx, ty) use that.
-        // Here we assume out-of-bounds is solid to prevent leaving level.
         if tx < 0 || ty < 0 {
             return true;
         }
         if tx > 20 || ty > 15 {
             return true;
         }
-        // Replace the following line with your level's tile check:
         return self.level.get_tile_info((tx, ty)).solid;
     }
 }

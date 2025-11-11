@@ -2,9 +2,8 @@ use crate::player::Player;
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
-use macroquad::math::{Rect, vec2};
-use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
+use macroquad::math::{vec2, Rect};
+use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use std::sync::Arc;
 
 pub trait GameState {

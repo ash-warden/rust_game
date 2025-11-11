@@ -49,7 +49,7 @@ struct TiledSetTiles {
 }
 
 #[derive(Serialize, Deserialize)]
-struct TiledTileSet {
+pub struct TiledTileSet {
     columns: i32,
     image: String,
     imageheight: i32,
