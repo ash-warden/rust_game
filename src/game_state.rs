@@ -32,7 +32,7 @@ impl GameState for LevelState {
     fn update(&mut self) {
         /*let info = self.level.get_tile_info((1, 1)).solid;
         println!("Tile is solid: {}", info);*/
-        self.player.handle_input();
+        self.player.handle_input(get_frame_time());
         self.player.update(get_frame_time());
     }
     fn draw(&self, scale: f32) {
