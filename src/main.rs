@@ -1,8 +1,10 @@
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
+use crate::game_state::{GameState, GameStateStack, LevelState};
 
 //module for loading the level from the map
 mod level;
+mod game_state;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -23,74 +25,6 @@ fn window_conf() -> Conf {
     }
 }
 
-pub trait GameState {
-    fn update(&self);
-    fn draw(&self, scale: f32);
-}
-
-pub struct LevelState {
-    pub level: level::Level,
-}
-
-impl LevelState {
-    pub async fn build() -> Result<LevelState, Box<dyn std::error::Error>> {
-        let level = level::Level::build("assets/maps/test_map1.json")
-            .await
-            .unwrap_or_else(|err| {
-                eprintln!("Failed to load level: {err}");
-                std::process::exit(1);
-            });
-        Ok(LevelState { level })
-    }
-}
-impl GameState for LevelState {
-    fn update(&self) {}
-    fn draw(&self, scale: f32) {
-        //draw tiles
-        let mut i = 0; //tile number
-        let mut x = 0.; //x coord
-        let mut y = 0.; //y coord
-
-        let level = &self.level;
-
-        let map_width = level.map_dimensions.0;
-        let map_height = level.map_dimensions.1;
-
-        while y < map_height {
-            //column
-            while x < map_width {
-                //row
-                draw_texture_ex(
-                    &level.tile_image,
-                    x * level.tile_size * scale,
-                    y * level.tile_size * scale,
-                    WHITE,
-                    DrawTextureParams {
-                        dest_size: Some(vec2(level.tile_size * scale, level.tile_size * scale)),
-                        source: Some(Rect::new(
-                            index_to_coords(level.tile_values[i], level.tileset_columns).0
-                                * level.tile_size,
-                            index_to_coords(level.tile_values[i], level.tileset_columns).1
-                                * level.tile_size,
-                            level.tile_size,
-                            level.tile_size,
-                        )),
-                        ..Default::default()
-                    },
-                );
-                x += 1.;
-                i += 1;
-                if i > level.tile_values.len() {
-                    println!("too many tiles to draw!");
-                    break;
-                }
-            }
-            x = 0.; // go back to beginning of row
-            y += 1.;
-        }
-    }
-}
-
 #[macroquad::main(window_conf)]
 async fn main() {
     //screen scale
@@ -99,14 +33,15 @@ async fn main() {
         eprintln!("Failed to load level state: {err}");
         std::process::exit(1);
     });
+    let mut game_state_stack = GameStateStack::new(Box::new(level_state));
 
     //supposed to improve performance?
     build_textures_atlas();
 
     loop {
+        game_state_stack.update();
         clear_background(BLACK);
-
-        level_state.draw(scale);
+        game_state_stack.draw(scale);
 
         //update screen size
         let w = screen_width();
