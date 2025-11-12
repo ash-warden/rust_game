@@ -1,6 +1,6 @@
 use crate::level;
 use crate::resources::RESOURCE_MANAGER;
-use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
+use macroquad::input::{KeyCode, is_key_down, is_key_pressed, is_key_released};
 use macroquad::math::{IVec2, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
@@ -57,9 +57,9 @@ impl Player {
     }
 
     pub fn handle_input(&mut self, _delta_time: f32) {
-        let accel = 1500.0;
+        let accel = 400.0;
         let max_speed = 200.0;
-        let friction = 1200.0;
+        let friction = 1000.0;
 
         let mut want_dir: f32 = 0.0;
         if is_key_down(KeyCode::Left) {
@@ -71,27 +71,26 @@ impl Player {
             want_dir += 1.0;
         }
 
-        if want_dir.abs() > 0.0 {
-            self.velocity.x += want_dir * accel * 1.0 / 60.0;
-            //limit max speed
-            if self.velocity.x > max_speed {
-                self.velocity.x = max_speed;
-            }
-            if self.velocity.x < -max_speed {
-                self.velocity.x = -max_speed;
-            }
-        } else {
-            //friction
-            if self.velocity.x > 0.0 {
-                self.velocity.x -= friction * 1.0 / 60.0;
-                if self.velocity.x < 0.0 {
-                    self.velocity.x = 0.0;
-                }
-            } else if self.velocity.x < 0.0 {
-                self.velocity.x += friction * 1.0 / 60.0;
-                if self.velocity.x > 0.0 {
-                    self.velocity.x = 0.0;
-                }
+        // Desired velocity based on input
+        let target_velocity = want_dir * max_speed;
+
+        // Difference between current and desired
+        let delta = target_velocity - self.velocity.x;
+
+        if delta.abs() > 0.0 {
+            // If we need to slow down (opposite direction or stopping), use friction
+            let rate = if target_velocity.signum() != self.velocity.x.signum() {
+                friction
+            } else {
+                accel
+            };
+
+            // Move velocity toward target
+            let step = rate * _delta_time;
+            if delta.abs() <= step {
+                self.velocity.x = target_velocity;
+            } else {
+                self.velocity.x += delta.signum() * step;
             }
         }
 
@@ -103,6 +102,10 @@ impl Player {
         }
         if is_key_pressed(KeyCode::Up) {
             self.uncrouch();
+        }
+        //variable jump height
+        if is_key_released(KeyCode::Space) && self.velocity.y < -200. {
+            self.velocity.y = (self.velocity.y / 2.);
         }
     }
 
@@ -125,11 +128,11 @@ impl Player {
                 }
             }
         }
-
+        println!("{}", self.velocity.x);
         println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
-        let gravity = 1800.0;
-        let max_fall_speed = 1200.0;
+        let gravity = 1600.0;
+        let max_fall_speed = 600.0;
         let epsilon = 0.001;
         let snap_threshold = 3.0; // snap when within this many pixels
 
@@ -184,7 +187,9 @@ impl Player {
 
     pub fn jump(&mut self) {
         if self.on_ground {
-            self.velocity.y = -650.0;
+            println!("{}", self.velocity.x);
+            //max -650
+            self.velocity.y = -self.velocity.x.abs() / 2. - 600.;
             self.on_ground = false;
         }
     }
