@@ -2,12 +2,19 @@ use crate::player::Player;
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{vec2, Rect};
+use macroquad::math::{vec2, Rect, Vec2};
 use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use std::sync::Arc;
 
+pub enum StateTransition {
+    None,
+    Replace(Box<dyn GameState>),
+    Push(Box<dyn GameState>),
+    Pop,
+}
+
 pub trait GameState {
-    fn update(&mut self);
+    fn update(&mut self) -> StateTransition;
     fn draw(&self, scale: f32);
 }
 
@@ -17,22 +24,70 @@ pub struct LevelState {
 }
 
 impl LevelState {
-    pub async fn build() -> Result<LevelState, Box<dyn std::error::Error>> {
+    pub fn build(level: &str, player_pos: Vec2, player_velocity: Vec2) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
-        if let Some(level) = res.get_level("test_1_1") {
-            let player = Player::new((50, 50), level.clone());
+        if let Some(level) = res.get_level(level) {
+            let player = Player::new(player_pos, level.clone(), player_velocity);
             Ok(LevelState { level, player })
         } else {
-            Err("Level 'test_1_1' not found in resources".into())
+            Err("Level not found in resources".into())
         }
     }
 }
+
+enum DirectionToMove {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 impl GameState for LevelState {
-    fn update(&mut self) {
-        /*let info = self.level.get_tile_info((1, 1)).solid;
-        println!("Tile is solid: {}", info);*/
+    fn update(&mut self) -> StateTransition {
         self.player.handle_input(get_frame_time());
         self.player.update(get_frame_time());
+        //check for switch map
+        let mut direction_to_move = DirectionToMove::Right;
+        if self.player.position.x < 0. {
+            direction_to_move = DirectionToMove::Left;
+        } else if self.player.position.x > 640. {
+            direction_to_move = DirectionToMove::Right;
+        } else if self.player.position.y < 0. {
+            direction_to_move = DirectionToMove::Up;
+        } else if self.player.position.y > 480. {
+            direction_to_move = DirectionToMove::Down;
+        }
+        let new_player_pos: Vec2;
+        match direction_to_move {
+            DirectionToMove::Left => {
+                new_player_pos = vec2(640., self.player.position.y);
+            }
+            DirectionToMove::Right => {
+                new_player_pos = vec2(-1., self.player.position.y);
+            }
+            DirectionToMove::Up => {
+                new_player_pos = vec2(self.player.position.x, 480.);
+            }
+            DirectionToMove::Down => {
+                new_player_pos = vec2(self.player.position.x, 0.);
+            }
+        }
+        let current_player_velocity = self.player.velocity;
+        //load new LevelState
+        if self.player.position.x < 0. || self.player.position.x > 640.
+            || self.player.position.y < 0. || self.player.position.y > 480.
+        {
+            match LevelState::build("test_1_1", new_player_pos, current_player_velocity) {
+                Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
+                Err(err) => {
+                    eprintln!("Failed to load level state: {err}");
+                    std::process::exit(1);
+                }
+            }
+        } else {
+            StateTransition::None
+        }
+
     }
     fn draw(&self, scale: f32) {
         //draw tiles
@@ -97,8 +152,13 @@ impl GameStateStack {
 
     pub fn update(&mut self) {
         if let Some(state) = self.states.last_mut() {
-            state.update();
+        match state.update() {
+            StateTransition::None => {}
+            StateTransition::Replace(new_state) => self.replace(new_state),
+            StateTransition::Push(new_state) => self.push(new_state),
+            StateTransition::Pop => { self.pop(); }
         }
+    }
     }
 
     pub fn draw(&self, scale: f32) {

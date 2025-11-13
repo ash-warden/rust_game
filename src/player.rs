@@ -27,10 +27,10 @@ pub enum PlayerState {
 }
 
 impl Player {
-    pub fn new(start_pos: (i32, i32), level: Arc<level::Level>) -> Self {
+    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2) -> Self {
         Player {
-            position: Vec2::new(start_pos.0 as f32, start_pos.1 as f32),
-            velocity: Vec2::new(0.0, 0.0),
+            position: Vec2::new(start_pos.x, start_pos.y),
+            velocity,
             on_ground: false,
             actual_size: IVec2::new(32, 64),
             level: level.clone(),
@@ -58,7 +58,7 @@ impl Player {
 
     pub fn handle_input(&mut self, _delta_time: f32) {
         let accel = 400.0;
-        let max_speed = 200.0;
+        let max_speed = 270.0;
         let friction = 1000.0;
 
         let mut want_dir: f32 = 0.0;
@@ -128,7 +128,6 @@ impl Player {
                 }
             }
         }
-        println!("{}", self.velocity.x);
         println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
         let gravity = 1600.0;
@@ -189,7 +188,7 @@ impl Player {
         if self.on_ground {
             println!("{}", self.velocity.x);
             //max -650
-            self.velocity.y = -self.velocity.x.abs() / 2. - 600.;
+            self.velocity.y = -self.velocity.x.abs() / 2. - 550.;
             self.on_ground = false;
         }
     }
@@ -339,12 +338,6 @@ impl Player {
 
     // Return true if tile at (tx, ty) is solid (collidable).
     fn is_tile_solid(&self, tx: i32, ty: i32) -> bool {
-        if tx < 0 || ty < 0 {
-            return true;
-        }
-        if tx > 20 || ty > 15 {
-            return true;
-        }
         return self.level.get_tile_info((tx, ty)).solid;
     }
 }

@@ -118,6 +118,12 @@ impl Level {
     }
 
     pub fn get_tile_info(&self, tile_coords: (i32, i32)) -> TileInfo {
+        if tile_coords.0 < 0 || tile_coords.1 < 0 {
+            return TileInfo { solid: false };
+        }
+        if tile_coords.0 > 19 || tile_coords.1 > 14 {
+            return TileInfo { solid: false };
+        }
         let index = coords_to_index(tile_coords.0, tile_coords.1, self.map_dimensions.0 as i32);
         let tile = self.tile_values[index as usize];
         let tileset = &self.tileset;

@@ -1,13 +1,14 @@
 use crate::game_state::{GameStateStack, LevelState};
 use crate::resources::load_all_assets;
+use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 
 //module for loading the level from the map
-mod level;
 mod game_state;
-mod resources;
+mod level;
 mod player;
+mod resources;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -39,10 +40,11 @@ async fn main() {
     load_all_assets().await;
     //screen scale
     let mut scale = 1.;
-    let level_state = LevelState::build().await.unwrap_or_else(|err| {
-        eprintln!("Failed to load level state: {err}");
-        std::process::exit(1);
-    });
+    let level_state =
+        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.)).unwrap_or_else(|err| {
+            eprintln!("Failed to load level state: {err}");
+            std::process::exit(1);
+        });
     let mut game_state_stack = GameStateStack::new(Box::new(level_state));
 
     //supposed to improve performance?
@@ -63,10 +65,7 @@ async fn main() {
             } else {
                 scale = 2.;
             }
-            set_window_size(
-                (640. * scale) as u32,
-                (480. * scale) as u32,
-            );
+            set_window_size((640. * scale) as u32, (480. * scale) as u32);
         }
 
         next_frame().await
