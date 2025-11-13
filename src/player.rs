@@ -128,7 +128,7 @@ impl Player {
                 }
             }
         }
-        println!("{:?}", self.state);
+        //println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
         let gravity = 1600.0;
         let max_fall_speed = 600.0;

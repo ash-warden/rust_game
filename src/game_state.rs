@@ -2,7 +2,7 @@ use crate::player::Player;
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{vec2, Rect, Vec2};
+use macroquad::math::{vec2, IVec2, Rect, Vec2};
 use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use std::sync::Arc;
 
@@ -35,60 +35,65 @@ impl LevelState {
     }
 }
 
+#[derive(PartialEq)]
 enum DirectionToMove {
     Left,
     Right,
     Up,
     Down,
+    None,
 }
 
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
-        self.player.handle_input(get_frame_time());
-        self.player.update(get_frame_time());
-        //check for switch map
-        let mut direction_to_move = DirectionToMove::Right;
-        if self.player.position.x < 0. {
-            direction_to_move = DirectionToMove::Left;
-        } else if self.player.position.x > 640. {
-            direction_to_move = DirectionToMove::Right;
-        } else if self.player.position.y < 0. {
-            direction_to_move = DirectionToMove::Up;
-        } else if self.player.position.y > 480. {
-            direction_to_move = DirectionToMove::Down;
-        }
-        let new_player_pos: Vec2;
-        match direction_to_move {
-            DirectionToMove::Left => {
-                new_player_pos = vec2(640., self.player.position.y);
-            }
-            DirectionToMove::Right => {
-                new_player_pos = vec2(-1., self.player.position.y);
-            }
-            DirectionToMove::Up => {
-                new_player_pos = vec2(self.player.position.x, 480.);
-            }
-            DirectionToMove::Down => {
-                new_player_pos = vec2(self.player.position.x, 0.);
-            }
-        }
-        let current_player_velocity = self.player.velocity;
-        //load new LevelState
-        if self.player.position.x < 0. || self.player.position.x > 640.
-            || self.player.position.y < 0. || self.player.position.y > 480.
-        {
-            match LevelState::build("test_1_1", new_player_pos, current_player_velocity) {
-                Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
-                Err(err) => {
-                    eprintln!("Failed to load level state: {err}");
-                    std::process::exit(1);
-                }
-            }
+        let frame_time = get_frame_time();
+        self.player.handle_input(frame_time);
+        self.player.update(frame_time);
+
+        // Determine direction based on player position
+        let direction = if self.player.position.x < -25.0 {
+            DirectionToMove::Left
+        } else if self.player.position.x > 640.0 {
+            DirectionToMove::Right
+        } else if self.player.position.y < -25.0 {
+            DirectionToMove::Up
+        } else if self.player.position.y > 480.0 {
+            DirectionToMove::Down
         } else {
-            StateTransition::None
+            DirectionToMove::None
+        };
+
+        // If no transition, return early
+        if direction == DirectionToMove::None {
+            return StateTransition::None;
         }
 
+        // Compute new player position and level offset in one match
+        let (new_player_pos, offset) = match direction {
+            DirectionToMove::Left => (vec2(640.0, self.player.position.y), IVec2::new(-1, 0)),
+            DirectionToMove::Right => (vec2(-25.0, self.player.position.y - 1.), IVec2::new(1, 0)),
+            DirectionToMove::Up => (vec2(self.player.position.x, 480.0), IVec2::new(0, -1)),
+            DirectionToMove::Down => (vec2(self.player.position.x, -25.0), IVec2::new(0, 1)),
+            DirectionToMove::None => unreachable!(),
+        };
+
+        let new_level = format!(
+            "test_{}_{}",
+            self.level.x_coord + offset.x,
+            self.level.y_coord + offset.y
+        );
+
+
+        // Load new LevelState
+        match LevelState::build(&new_level, new_player_pos, self.player.velocity) {
+            Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
+            Err(err) => {
+                eprintln!("Failed to load level state: {err}");
+                std::process::exit(1);
+            }
+        }
     }
+
     fn draw(&self, scale: f32) {
         //draw tiles
         let mut i = 0; //tile number

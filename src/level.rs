@@ -74,6 +74,8 @@ pub struct Level {
     pub tile_size: f32,
     pub tileset_columns: i32,
     pub tileset: TiledTileSet,
+    pub x_coord: i32,
+    pub y_coord: i32,
 }
 
 pub struct TileInfo {
@@ -83,6 +85,9 @@ pub struct TileInfo {
 impl Level {
     pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error> > {
         let dir = "assets/maps/";
+        let map_name_parts: Vec<&str> = map_name.split("_").collect();
+        let x_coord: i32 = map_name_parts[1].parse().unwrap();
+        let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0].parse().unwrap();
         //load tiles
         let tile_map_file = fs::read_to_string(map_name)?;
         let tile_map: TiledMap = serde_json::from_str(&tile_map_file)?;
@@ -114,6 +119,8 @@ impl Level {
             tile_size,
             tileset_columns,
             tileset,
+            x_coord,
+            y_coord,
         })
     }
 
