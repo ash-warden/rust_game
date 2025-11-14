@@ -95,11 +95,14 @@ impl Player {
             }
         }
         // test if player is over a ladder tile. check if centre of player is over it
-        if self
+        if (self
             .level
             .get_tile_info(((self.position + vec2(16., 16.)).as_ivec2()) / 32)
-            .ladder
-            && self.state != PlayerState::Crouching
+            .ladder || self
+            .level
+            .get_tile_info(((self.position + vec2(16., 64.)).as_ivec2()) / 32)
+            .ladder)
+            && self.state != PlayerState::Crouching && is_key_pressed(KeyCode::Up)
         {
             self.state = PlayerState::Climbing;
         }
@@ -107,12 +110,37 @@ impl Player {
         if is_key_pressed(KeyCode::Space) {
             self.jump();
         }
-        if is_key_pressed(KeyCode::Down) {
-            self.crouch();
+
+        if self.state != PlayerState::Climbing {
+            if is_key_pressed(KeyCode::Down) {
+                self.crouch();
+            }
+            if is_key_pressed(KeyCode::Up) {
+                self.uncrouch();
+            }
+        } else {
+            let climb_speed = 150.0;
+
+            if is_key_down(KeyCode::Up) {
+                self.velocity.y = -climb_speed;
+            } else if is_key_down(KeyCode::Down) {
+                self.velocity.y = climb_speed;
+            } else {
+                self.velocity.y = 0.0;
+            }
+
+            if !self
+                .level
+                .get_tile_info(((self.position + vec2(16., 16.)).as_ivec2()) / 32)
+                .ladder && !self
+                .level
+                .get_tile_info(((self.position + vec2(16., 64.)).as_ivec2()) / 32)
+                .ladder
+            {
+                self.state = PlayerState::Falling;
+            }
         }
-        if is_key_pressed(KeyCode::Up) {
-            self.uncrouch();
-        }
+
         //variable jump height
         if is_key_released(KeyCode::Space) && self.velocity.y < -200. {
             self.velocity.y = (self.velocity.y / 2.);
@@ -146,9 +174,11 @@ impl Player {
         let snap_threshold = 3.0; // snap when within this many pixels
 
         // apply gravity
-        self.velocity.y += gravity * delta_time;
-        if self.velocity.y > max_fall_speed {
-            self.velocity.y = max_fall_speed;
+        if self.state != PlayerState::Climbing {
+            self.velocity.y += gravity * delta_time;
+            if self.velocity.y > max_fall_speed {
+                self.velocity.y = max_fall_speed;
+            }
         }
 
         // horizontal movement handled once per frame
