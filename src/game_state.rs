@@ -51,13 +51,13 @@ impl GameState for LevelState {
         self.player.update(frame_time);
 
         // Determine direction based on player position
-        let direction = if self.player.position.x < -25.0 {
+        let direction = if self.player.position.x < -16.0 {
             DirectionToMove::Left
-        } else if self.player.position.x > 640.0 {
+        } else if self.player.position.x > 624.0 {
             DirectionToMove::Right
-        } else if self.player.position.y < -57.0 {
+        } else if self.player.position.y < -32.0 {
             DirectionToMove::Up
-        } else if self.player.position.y > 480.0 {
+        } else if self.player.position.y > 448.0 {
             DirectionToMove::Down
         } else {
             DirectionToMove::None
@@ -70,10 +70,10 @@ impl GameState for LevelState {
 
         // Compute new player position and level offset in one match
         let (new_player_pos, offset) = match direction {
-            DirectionToMove::Left => (vec2(630.0, self.player.position.y), IVec2::new(-1, 0)),
-            DirectionToMove::Right => (vec2(-22.0, self.player.position.y - 1.), IVec2::new(1, 0)),
-            DirectionToMove::Up => (vec2(self.player.position.x, 480.0), IVec2::new(0, 1)),
-            DirectionToMove::Down => (vec2(self.player.position.x, -25.0), IVec2::new(0, -1)),
+            DirectionToMove::Left => (vec2(623.0, self.player.position.y), IVec2::new(-1, 0)),
+            DirectionToMove::Right => (vec2(-15.0, self.player.position.y - 1.), IVec2::new(1, 0)),
+            DirectionToMove::Up => (vec2(self.player.position.x, 447.0), IVec2::new(0, 1)),
+            DirectionToMove::Down => (vec2(self.player.position.x, -31.0), IVec2::new(0, -1)),
             DirectionToMove::None => unreachable!(),
         };
 
