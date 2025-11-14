@@ -72,8 +72,8 @@ impl GameState for LevelState {
         let (new_player_pos, offset) = match direction {
             DirectionToMove::Left => (vec2(640.0, self.player.position.y), IVec2::new(-1, 0)),
             DirectionToMove::Right => (vec2(-25.0, self.player.position.y - 1.), IVec2::new(1, 0)),
-            DirectionToMove::Up => (vec2(self.player.position.x, 480.0), IVec2::new(0, -1)),
-            DirectionToMove::Down => (vec2(self.player.position.x, -25.0), IVec2::new(0, 1)),
+            DirectionToMove::Up => (vec2(self.player.position.x, 480.0), IVec2::new(0, 1)),
+            DirectionToMove::Down => (vec2(self.player.position.x, -25.0), IVec2::new(0, -1)),
             DirectionToMove::None => unreachable!(),
         };
 
@@ -88,7 +88,7 @@ impl GameState for LevelState {
         match LevelState::build(&new_level, new_player_pos, self.player.velocity) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
-                eprintln!("Failed to load level state: {err}");
+                eprintln!("Failed to load level state{}: {err}", &new_level);
                 std::process::exit(1);
             }
         }

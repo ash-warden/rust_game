@@ -2,6 +2,7 @@ use crate::coords_to_index;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use macroquad::math::IVec2;
 
 #[derive(Serialize, Deserialize)]
 struct TiledLayer {
@@ -78,8 +79,10 @@ pub struct Level {
     pub y_coord: i32,
 }
 
+#[derive(Debug)]
 pub struct TileInfo {
     pub solid: bool,
+    pub ladder: bool,
 }
 
 impl Level {
@@ -124,19 +127,21 @@ impl Level {
         })
     }
 
-    pub fn get_tile_info(&self, tile_coords: (i32, i32)) -> TileInfo {
-        if tile_coords.0 < 0 || tile_coords.1 < 0 {
-            return TileInfo { solid: false };
+    pub fn get_tile_info(&self, tile_coords: IVec2) -> TileInfo {
+        if tile_coords.x < 0 || tile_coords.y < 0 {
+            return TileInfo { solid: false, ladder: false, };
         }
-        if tile_coords.0 > 19 || tile_coords.1 > 14 {
-            return TileInfo { solid: false };
+        if tile_coords.x > 19 || tile_coords.y > 14 {
+            return TileInfo { solid: false, ladder: false, };
         }
-        let index = coords_to_index(tile_coords.0, tile_coords.1, self.map_dimensions.0 as i32);
+        let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.0 as i32);
         let tile = self.tile_values[index as usize];
         let tileset = &self.tileset;
         let solid = tileset.tiles[tile as usize - 1].r#type == "solid";
+        let ladder = tileset.tiles[tile as usize - 1].r#type == "ladder";
         TileInfo {
-            solid
+            solid,
+            ladder,
         }
     }
 }

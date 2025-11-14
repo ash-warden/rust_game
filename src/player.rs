@@ -1,7 +1,7 @@
 use crate::level;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::input::{KeyCode, is_key_down, is_key_pressed, is_key_released};
-use macroquad::math::{IVec2, Vec2, vec2};
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
 
@@ -24,6 +24,7 @@ pub enum PlayerState {
     Jumping,
     Falling,
     Crouching,
+    Climbing,
 }
 
 impl Player {
@@ -93,6 +94,15 @@ impl Player {
                 self.velocity.x += delta.signum() * step;
             }
         }
+        // test if player is over a ladder tile. check if centre of player is over it
+        if self
+            .level
+            .get_tile_info(((self.position + vec2(16., 16.)).as_ivec2()) / 32)
+            .ladder
+            && self.state != PlayerState::Crouching
+        {
+            self.state = PlayerState::Climbing;
+        }
 
         if is_key_pressed(KeyCode::Space) {
             self.jump();
@@ -111,7 +121,7 @@ impl Player {
 
     pub fn update(&mut self, delta_time: f32) {
         // setting state for movement
-        if !(self.state == PlayerState::Crouching) {
+        if !(self.state == PlayerState::Crouching || self.state == PlayerState::Climbing) {
             if self.on_ground {
                 if (self.velocity.x.abs()) > 199. {
                     self.state = PlayerState::Running;
@@ -128,7 +138,7 @@ impl Player {
                 }
             }
         }
-        //println!("{:?}", self.state);
+        println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
         let gravity = 1600.0;
         let max_fall_speed = 600.0;
@@ -195,7 +205,7 @@ impl Player {
 
     pub fn crouch(&mut self) {
         if self.state != PlayerState::Crouching {
-            self.actual_size.y = self.full_size  / 2;
+            self.actual_size.y = self.full_size / 2;
             self.state = PlayerState::Crouching;
             self.position.y += self.full_size as f32 / 2.;
         }
@@ -217,7 +227,7 @@ impl Player {
             }
         }
 
-        true // space is clear to uncrouch
+        true
     }
 
     pub fn uncrouch(&mut self) {
@@ -338,6 +348,6 @@ impl Player {
 
     // Return true if tile at (tx, ty) is solid (collidable).
     fn is_tile_solid(&self, tx: i32, ty: i32) -> bool {
-        return self.level.get_tile_info((tx, ty)).solid;
+        self.level.get_tile_info(ivec2(tx, ty)).solid
     }
 }
