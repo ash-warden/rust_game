@@ -1,4 +1,3 @@
-use crate::level;
 use crate::level::Level;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
@@ -7,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use walkdir::WalkDir;
 
 pub struct Resources {
-    pub levels: HashMap<String, Arc<level::Level>>,
+    pub levels: HashMap<String, Arc<Level>>,
     pub textures: HashMap<String, Texture2D>,
     pub scale: f32,
 }
@@ -39,7 +38,7 @@ impl Resources {
         self.textures.insert(key, texture);
     }
 
-    pub fn insert_level(&mut self, key: String, level: Arc<level::Level>) {
+    pub fn insert_level(&mut self, key: String, level: Arc<Level>) {
         self.levels.insert(key, level);
     }
 }
@@ -64,7 +63,7 @@ pub async fn load_all_assets() {
                     res.insert_texture(key.to_string() + ".png", texture);
                 }
                 "tmj" => {
-                    let level = level::Level::build(path_str).await.unwrap();
+                    let level = Level::build(path_str).await.unwrap();
                     res.insert_level(key.to_string(), Arc::new(level));
                 }
                 _ => {

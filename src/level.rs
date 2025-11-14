@@ -2,7 +2,7 @@ use crate::coords_to_index;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use macroquad::math::IVec2;
+use macroquad::math::{ivec2, IVec2};
 
 #[derive(Serialize, Deserialize)]
 struct TiledLayer {
@@ -71,8 +71,8 @@ pub struct TiledTileSet {
 pub struct Level {
     pub tile_image_name: String,
     pub tile_values: Vec<i32>,
-    pub map_dimensions: (f32, f32),
-    pub tile_size: f32,
+    pub map_dimensions: IVec2,
+    pub tile_size: i32,
     pub tileset_columns: i32,
     pub tileset: TiledTileSet,
     pub x_coord: i32,
@@ -95,8 +95,8 @@ impl Level {
         let tile_map_file = fs::read_to_string(map_name)?;
         let tile_map: TiledMap = serde_json::from_str(&tile_map_file)?;
 
-        let dimensions = (tile_map.width as f32, tile_map.height as f32);
-        let tile_size = tile_map.tilewidth as f32;
+        let dimensions = ivec2(tile_map.width, tile_map.height);
+        let tile_size = tile_map.tilewidth;
 
         let tileset_file_name = dir.to_string() + &tile_map
             .tilesets
@@ -131,10 +131,10 @@ impl Level {
         if tile_coords.x < 0 || tile_coords.y < 0 {
             return TileInfo { solid: false, ladder: true, };
         }
-        if tile_coords.x > 19 || tile_coords.y > 14 {
+        if tile_coords.x > self.map_dimensions.x - 1 || tile_coords.y > self.map_dimensions.y - 1 {
             return TileInfo { solid: false, ladder: true, };
         }
-        let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.0 as i32);
+        let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
         let tile = self.tile_values[index as usize];
         let tileset = &self.tileset;
         let solid = tileset.tiles[tile as usize - 1].r#type == "solid";

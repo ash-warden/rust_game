@@ -33,7 +33,7 @@ impl Player {
             position: Vec2::new(start_pos.x, start_pos.y),
             velocity,
             on_ground: false,
-            actual_size: IVec2::new(32, 64),
+            actual_size: IVec2::new(24, 64),
             level: level.clone(),
             state,
             facing_right: true,
@@ -97,11 +97,11 @@ impl Player {
         // test if player is over a ladder tile
         let offsets = [
             vec2(0., 0.),
-            vec2(0., 32.),
-            vec2(0., 64.),
-            vec2(31., 0.),
-            vec2(31., 32.),
-            vec2(31., 64.),
+            vec2(0., self.actual_size.y as f32 / 2.),
+            vec2(0., self.actual_size.y as f32),
+            vec2(self.actual_size.x as f32 - 1., 0.),
+            vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32 / 2.),
+            vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32),
         ];
 
         let on_ladder = offsets.iter().any(|offset| {
@@ -135,21 +135,6 @@ impl Player {
             } else {
                 self.velocity.y = 0.0;
             }
-
-            let offsets = [
-                vec2(0., 0.),
-                vec2(0., 32.),
-                vec2(0., 64.),
-                vec2(31., 0.),
-                vec2(31., 32.),
-                vec2(31., 64.),
-            ];
-
-            let on_ladder = offsets.iter().any(|offset| {
-                self.level
-                    .get_tile_info(((self.position + *offset).as_ivec2()) / 32)
-                    .ladder
-            });
 
             if !on_ladder {
                 self.state = PlayerState::Falling;
@@ -201,7 +186,7 @@ impl Player {
         self.position.x += move_x;
         // use prev_pos from before any sub-steps for horizontal resolution (keeps X resolution consistent)
         let prev_frame_pos = self.position;
-        self.resolve_axis_collisions(true, prev_frame_pos, tile_size, epsilon, snap_threshold);
+        self.resolve_axis_collisions(true, prev_frame_pos, tile_size as f32, epsilon, snap_threshold);
 
         // vertical movement: sub-step to avoid tunnelling/bounce
         let total_move_y = self.velocity.y * delta_time;
@@ -220,7 +205,7 @@ impl Player {
             self.position.y += step;
             // reset on_ground before resolving this sub-step; it will be set true if this sub-step lands
             self.on_ground = false;
-            self.resolve_axis_collisions(false, step_prev_pos, tile_size, epsilon, snap_threshold);
+            self.resolve_axis_collisions(false, step_prev_pos, tile_size as f32, epsilon, snap_threshold);
 
             // after resolution, if we landed, zero vertical velocity and clear remaining (we shouldn't continue moving down)
             if self.on_ground && self.velocity.y > 0.0 {
@@ -276,7 +261,7 @@ impl Player {
     }
 
     pub fn uncrouch(&mut self) {
-        if self.can_uncrouch(self.level.tile_size, 0.001) && self.state == PlayerState::Crouching {
+        if self.can_uncrouch(self.level.tile_size as f32, 0.001) && self.state == PlayerState::Crouching {
             self.actual_size.y = self.full_size;
             self.state = PlayerState::Jumping;
             self.position.y -= (self.full_size / 2) as f32;

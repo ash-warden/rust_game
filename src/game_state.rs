@@ -2,8 +2,8 @@ use crate::player::{Player, PlayerState};
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{vec2, IVec2, Rect, Vec2};
-use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
+use macroquad::math::{IVec2, Rect, Vec2, vec2};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
 
 pub enum StateTransition {
@@ -24,7 +24,12 @@ pub struct LevelState {
 }
 
 impl LevelState {
-    pub fn build(level: &str, player_pos: Vec2, player_velocity: Vec2, player_state: PlayerState) -> Result<LevelState, Box<dyn std::error::Error>> {
+    pub fn build(
+        level: &str,
+        player_pos: Vec2,
+        player_velocity: Vec2,
+        player_state: PlayerState,
+    ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
         if let Some(level) = res.get_level(level) {
             let player = Player::new(player_pos, level.clone(), player_velocity, player_state);
@@ -49,31 +54,46 @@ impl GameState for LevelState {
         let frame_time = get_frame_time();
         self.player.handle_input(frame_time);
         self.player.update(frame_time);
+        
+        let map_width = (self.level.map_dimensions.x * self.level.tile_size) as f32;
+        let map_height = (self.level.map_dimensions.y * self.level.tile_size) as f32;
+        
+        let p_size_x = self.player.actual_size.x;
+        let p_size_y = self.player.actual_size.y;
 
-        // Determine direction based on player position
-        let direction = if self.player.position.x < -16.0 {
+        let direction = if self.player.position.x < -p_size_x as f32 / 2. {
             DirectionToMove::Left
-        } else if self.player.position.x > 624.0 {
+        } else if self.player.position.x > map_width - p_size_x as f32 / 2. {
             DirectionToMove::Right
-        } else if self.player.position.y < -32.0 {
+        } else if self.player.position.y < -p_size_y as f32 / 2. {
             DirectionToMove::Up
-        } else if self.player.position.y > 448.0 {
+        } else if self.player.position.y > map_height - p_size_y as f32 / 2. {
             DirectionToMove::Down
         } else {
             DirectionToMove::None
         };
 
-        // If no transition, return early
         if direction == DirectionToMove::None {
             return StateTransition::None;
         }
 
-        // Compute new player position and level offset in one match
         let (new_player_pos, offset) = match direction {
-            DirectionToMove::Left => (vec2(623.0, self.player.position.y), IVec2::new(-1, 0)),
-            DirectionToMove::Right => (vec2(-15.0, self.player.position.y - 1.), IVec2::new(1, 0)),
-            DirectionToMove::Up => (vec2(self.player.position.x, 447.0), IVec2::new(0, 1)),
-            DirectionToMove::Down => (vec2(self.player.position.x, -31.0), IVec2::new(0, -1)),
+            DirectionToMove::Left => (
+                vec2(map_width - p_size_x as f32 / 2. - 1., self.player.position.y),
+                IVec2::new(-1, 0),
+            ),
+            DirectionToMove::Right => (
+                vec2(-p_size_x as f32 / 2. + 1., self.player.position.y - 1.),
+                IVec2::new(1, 0),
+            ),
+            DirectionToMove::Up => (
+                vec2(self.player.position.x, map_height - p_size_y as f32 / 2. - 1.),
+                IVec2::new(0, 1),
+            ),
+            DirectionToMove::Down => (
+                vec2(self.player.position.x, -p_size_y as f32 / 2. + 1.),
+                IVec2::new(0, -1),
+            ),
             DirectionToMove::None => unreachable!(),
         };
 
@@ -84,7 +104,12 @@ impl GameState for LevelState {
         );
 
         // Load new LevelState
-        match LevelState::build(&new_level, new_player_pos, self.player.velocity, self.player.state.clone()) {
+        match LevelState::build(
+            &new_level,
+            new_player_pos,
+            self.player.velocity,
+            self.player.state.clone(),
+        ) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
                 eprintln!("Failed to load level state{}: {err}", &new_level);
@@ -96,13 +121,15 @@ impl GameState for LevelState {
     fn draw(&self, scale: f32) {
         //draw tiles
         let mut i = 0; //tile number
-        let mut x = 0.; //x coord
-        let mut y = 0.; //y coord
+        let mut x = 0; //x coord
+        let mut y = 0; //y coord
 
         let level = &self.level;
 
-        let map_width = level.map_dimensions.0;
-        let map_height = level.map_dimensions.1;
+        let map_width = level.map_dimensions.x;
+        let map_height = level.map_dimensions.y;
+        
+        let t_size = level.tile_size as f32;
 
         while y < map_height {
             //column
@@ -112,31 +139,31 @@ impl GameState for LevelState {
                 let tex = res.get_texture(&level.tile_image_name);
                 draw_texture_ex(
                     tex,
-                    x * level.tile_size * scale,
-                    y * level.tile_size * scale,
+                    x as f32 * t_size * scale,
+                    y as f32 * t_size * scale,
                     WHITE,
                     DrawTextureParams {
-                        dest_size: Some(vec2(level.tile_size * scale, level.tile_size * scale)),
+                        dest_size: Some(vec2(t_size * scale, t_size * scale)),
                         source: Some(Rect::new(
                             index_to_coords(level.tile_values[i], level.tileset_columns).0
-                                * level.tile_size,
+                                * t_size,
                             index_to_coords(level.tile_values[i], level.tileset_columns).1
-                                * level.tile_size,
-                            level.tile_size,
-                            level.tile_size,
+                                * t_size,
+                            t_size,
+                            t_size,
                         )),
                         ..Default::default()
                     },
                 );
-                x += 1.;
+                x += 1;
                 if i >= level.tile_values.len() {
                     println!("too many tiles to draw!");
                     break;
                 }
                 i += 1;
             }
-            x = 0.; // go back to beginning of row
-            y += 1.;
+            x = 0; // go back to beginning of row
+            y += 1;
         }
         //draw player
         self.player.draw(scale);
@@ -156,13 +183,15 @@ impl GameStateStack {
 
     pub fn update(&mut self) {
         if let Some(state) = self.states.last_mut() {
-        match state.update() {
-            StateTransition::None => {}
-            StateTransition::Replace(new_state) => self.replace(new_state),
-            StateTransition::Push(new_state) => self.push(new_state),
-            StateTransition::Pop => { self.pop(); }
+            match state.update() {
+                StateTransition::None => {}
+                StateTransition::Replace(new_state) => self.replace(new_state),
+                StateTransition::Push(new_state) => self.push(new_state),
+                StateTransition::Pop => {
+                    self.pop();
+                }
+            }
         }
-    }
     }
 
     pub fn draw(&self, scale: f32) {
