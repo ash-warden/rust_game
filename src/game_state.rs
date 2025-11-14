@@ -1,4 +1,4 @@
-use crate::player::Player;
+use crate::player::{Player, PlayerState};
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
@@ -24,10 +24,10 @@ pub struct LevelState {
 }
 
 impl LevelState {
-    pub fn build(level: &str, player_pos: Vec2, player_velocity: Vec2) -> Result<LevelState, Box<dyn std::error::Error>> {
+    pub fn build(level: &str, player_pos: Vec2, player_velocity: Vec2, player_state: PlayerState) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
         if let Some(level) = res.get_level(level) {
-            let player = Player::new(player_pos, level.clone(), player_velocity);
+            let player = Player::new(player_pos, level.clone(), player_velocity, player_state);
             Ok(LevelState { level, player })
         } else {
             Err("Level not found in resources".into())
@@ -55,7 +55,7 @@ impl GameState for LevelState {
             DirectionToMove::Left
         } else if self.player.position.x > 640.0 {
             DirectionToMove::Right
-        } else if self.player.position.y < -25.0 {
+        } else if self.player.position.y < -57.0 {
             DirectionToMove::Up
         } else if self.player.position.y > 480.0 {
             DirectionToMove::Down
@@ -70,8 +70,8 @@ impl GameState for LevelState {
 
         // Compute new player position and level offset in one match
         let (new_player_pos, offset) = match direction {
-            DirectionToMove::Left => (vec2(640.0, self.player.position.y), IVec2::new(-1, 0)),
-            DirectionToMove::Right => (vec2(-25.0, self.player.position.y - 1.), IVec2::new(1, 0)),
+            DirectionToMove::Left => (vec2(630.0, self.player.position.y), IVec2::new(-1, 0)),
+            DirectionToMove::Right => (vec2(-22.0, self.player.position.y - 1.), IVec2::new(1, 0)),
             DirectionToMove::Up => (vec2(self.player.position.x, 480.0), IVec2::new(0, 1)),
             DirectionToMove::Down => (vec2(self.player.position.x, -25.0), IVec2::new(0, -1)),
             DirectionToMove::None => unreachable!(),
@@ -83,9 +83,8 @@ impl GameState for LevelState {
             self.level.y_coord + offset.y
         );
 
-
         // Load new LevelState
-        match LevelState::build(&new_level, new_player_pos, self.player.velocity) {
+        match LevelState::build(&new_level, new_player_pos, self.player.velocity, self.player.state.clone()) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
                 eprintln!("Failed to load level state{}: {err}", &new_level);
@@ -140,7 +139,7 @@ impl GameState for LevelState {
             y += 1.;
         }
         //draw player
-        self.player.draw();
+        self.player.draw(scale);
     }
 }
 

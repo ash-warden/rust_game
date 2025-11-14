@@ -12,11 +12,11 @@ pub struct Player {
     pub full_size: i32,
     pub on_ground: bool,
     level: Arc<level::Level>,
-    state: PlayerState,
+    pub state: PlayerState,
     facing_right: bool,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum PlayerState {
     Standing,
     Walking,
@@ -28,30 +28,30 @@ pub enum PlayerState {
 }
 
 impl Player {
-    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2) -> Self {
+    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2, state: PlayerState) -> Self {
         Player {
             position: Vec2::new(start_pos.x, start_pos.y),
             velocity,
             on_ground: false,
             actual_size: IVec2::new(32, 64),
             level: level.clone(),
-            state: PlayerState::Standing,
+            state,
             facing_right: true,
             full_size: 64,
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, scale: f32) {
         let res = RESOURCE_MANAGER.lock().unwrap();
         let tex = res.get_texture("player.png");
         draw_texture_ex(
             tex,
-            self.position.x,
-            self.position.y,
+            self.position.x * scale,
+            self.position.y * scale,
             WHITE,
             DrawTextureParams {
                 flip_x: !self.facing_right,
-                dest_size: Some(vec2(self.actual_size.x as f32, self.actual_size.y as f32)),
+                dest_size: Some(vec2(self.actual_size.x as f32 * scale, self.actual_size.y as f32 * scale)),
                 ..Default::default()
             },
         );
@@ -94,16 +94,23 @@ impl Player {
                 self.velocity.x += delta.signum() * step;
             }
         }
-        // test if player is over a ladder tile. check if centre of player is over it
-        if (self
-            .level
-            .get_tile_info(((self.position + vec2(16., 16.)).as_ivec2()) / 32)
-            .ladder || self
-            .level
-            .get_tile_info(((self.position + vec2(16., 64.)).as_ivec2()) / 32)
-            .ladder)
-            && self.state != PlayerState::Crouching && is_key_pressed(KeyCode::Up)
-        {
+        // test if player is over a ladder tile
+        let offsets = [
+            vec2(0., 0.),
+            vec2(0., 32.),
+            vec2(0., 64.),
+            vec2(31., 0.),
+            vec2(31., 32.),
+            vec2(31., 64.),
+        ];
+
+        let on_ladder = offsets.iter().any(|offset| {
+            self.level
+                .get_tile_info(((self.position + *offset).as_ivec2()) / 32)
+                .ladder
+        });
+
+        if on_ladder && self.state != PlayerState::Crouching && is_key_pressed(KeyCode::Up) {
             self.state = PlayerState::Climbing;
         }
 
@@ -129,21 +136,29 @@ impl Player {
                 self.velocity.y = 0.0;
             }
 
-            if !self
-                .level
-                .get_tile_info(((self.position + vec2(16., 16.)).as_ivec2()) / 32)
-                .ladder && !self
-                .level
-                .get_tile_info(((self.position + vec2(16., 64.)).as_ivec2()) / 32)
-                .ladder
-            {
+            let offsets = [
+                vec2(0., 0.),
+                vec2(0., 32.),
+                vec2(0., 64.),
+                vec2(31., 0.),
+                vec2(31., 32.),
+                vec2(31., 64.),
+            ];
+
+            let on_ladder = offsets.iter().any(|offset| {
+                self.level
+                    .get_tile_info(((self.position + *offset).as_ivec2()) / 32)
+                    .ladder
+            });
+
+            if !on_ladder {
                 self.state = PlayerState::Falling;
             }
         }
 
         //variable jump height
         if is_key_released(KeyCode::Space) && self.velocity.y < -200. {
-            self.velocity.y = (self.velocity.y / 2.);
+            self.velocity.y = self.velocity.y / 2.;
         }
     }
 

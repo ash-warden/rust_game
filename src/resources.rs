@@ -9,6 +9,7 @@ use walkdir::WalkDir;
 pub struct Resources {
     pub levels: HashMap<String, Arc<level::Level>>,
     pub textures: HashMap<String, Texture2D>,
+    pub scale: f32,
 }
 
 impl Resources {
@@ -16,6 +17,7 @@ impl Resources {
         Self {
             levels: HashMap::new(),
             textures: HashMap::new(),
+            scale: 1.,
         }
     }
 

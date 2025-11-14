@@ -1,8 +1,9 @@
 use crate::game_state::{GameStateStack, LevelState};
-use crate::resources::load_all_assets;
+use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
+use crate::player::PlayerState;
 
 //module for loading the level from the map
 mod game_state;
@@ -38,36 +39,44 @@ fn window_conf() -> Conf {
 #[macroquad::main(window_conf)]
 async fn main() {
     load_all_assets().await;
-    //screen scale
-    let mut scale = 1.;
+
+    {
+        let mut res = RESOURCE_MANAGER.lock().unwrap();
+        res.scale = 1.;
+    }
+
     let level_state =
-        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.)).unwrap_or_else(|err| {
+        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.), PlayerState::Standing).unwrap_or_else(|err| {
             eprintln!("Failed to load level state: {err}");
             std::process::exit(1);
         });
     let mut game_state_stack = GameStateStack::new(Box::new(level_state));
 
-    //supposed to improve performance?
     build_textures_atlas();
 
     loop {
         game_state_stack.update();
         clear_background(BLACK);
+        let scale = {
+            let res = RESOURCE_MANAGER.lock().unwrap();
+            res.scale
+        };
         game_state_stack.draw(scale);
 
-        //update screen size
         let w = screen_width();
         let h = screen_height();
 
         if w != 640. || h != 480. {
-            if w < 960. {
-                scale = 1.;
-            } else {
-                scale = 2.;
+            let new_scale = if w < 960. { 1. } else { 2. };
+
+            {
+                let mut res = RESOURCE_MANAGER.lock().unwrap();
+                res.scale = new_scale;
             }
-            set_window_size((640. * scale) as u32, (480. * scale) as u32);
+
+            set_window_size((640. * new_scale) as u32, (480. * new_scale) as u32);
         }
 
-        next_frame().await
+        next_frame().await;
     }
 }
