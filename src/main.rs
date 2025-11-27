@@ -1,9 +1,9 @@
-use crate::game_state::{GameStateStack, LevelState};
+use crate::game_state::{GameStateStack, LevelState, PlayerInfo};
+use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
-use crate::player::PlayerMovementState;
 
 //module for loading the level from the map
 mod game_state;
@@ -45,11 +45,17 @@ async fn main() {
         res.scale = 1.;
     }
 
-    let level_state =
-        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.), PlayerMovementState::Standing, false).unwrap_or_else(|err| {
-            eprintln!("Failed to load level state: {err}");
-            std::process::exit(1);
-        });
+    let player_info = PlayerInfo {
+        pos: vec2(100., 100.),
+        velocity: vec2(0., 0.),
+        state: PlayerMovementState::Standing,
+        crouch: false,
+    };
+
+    let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
+        eprintln!("Failed to load level state: {err}");
+        std::process::exit(1);
+    });
     let mut game_state_stack = GameStateStack::new(Box::new(level_state));
 
     build_textures_atlas();

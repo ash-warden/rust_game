@@ -25,7 +25,9 @@ impl Resources {
             Some(tex) => tex,
             None => {
                 println!("Warning: texture '{}' not found, using fallback", key);
-                self.textures.get("missing").expect("Missing texture not loaded")
+                self.textures
+                    .get("missing")
+                    .expect("Missing texture not loaded")
             }
         }
     }

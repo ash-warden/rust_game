@@ -1,8 +1,8 @@
-use crate::player::{Player, PlayerMovementState};
+pub(crate) use crate::player::{Player, PlayerInfo};
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{IVec2, Rect, Vec2, vec2};
+use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
 
@@ -26,14 +26,11 @@ pub struct LevelState {
 impl LevelState {
     pub fn build(
         level: &str,
-        player_pos: Vec2,
-        player_velocity: Vec2,
-        player_state: PlayerMovementState,
-        player_crouch: bool
+        player_info: PlayerInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
         if let Some(level) = res.get_level(level) {
-            let player = Player::new(player_pos, level.clone(), player_velocity, player_state, player_crouch);
+            let player = Player::new_from_info(player_info, level.clone());
             Ok(LevelState { level, player })
         } else {
             Err("Level not found in resources".into())
@@ -55,10 +52,10 @@ impl GameState for LevelState {
         let frame_time = get_frame_time();
         self.player.handle_input(frame_time);
         self.player.update(frame_time);
-        
+
         let map_width = (self.level.map_dimensions.x * self.level.tile_size) as f32;
         let map_height = (self.level.map_dimensions.y * self.level.tile_size) as f32;
-        
+
         let p_size_x = self.player.actual_size.x;
         let p_size_y = self.player.actual_size.y;
 
@@ -80,7 +77,10 @@ impl GameState for LevelState {
 
         let (new_player_pos, offset) = match direction {
             DirectionToMove::Left => (
-                vec2(map_width - p_size_x as f32 / 2. - 1., self.player.position.y),
+                vec2(
+                    map_width - p_size_x as f32 / 2. - 1.,
+                    self.player.position.y,
+                ),
                 IVec2::new(-1, 0),
             ),
             DirectionToMove::Right => (
@@ -88,7 +88,10 @@ impl GameState for LevelState {
                 IVec2::new(1, 0),
             ),
             DirectionToMove::Up => (
-                vec2(self.player.position.x, map_height - p_size_y as f32 / 2. - 1.),
+                vec2(
+                    self.player.position.x,
+                    map_height - p_size_y as f32 / 2. - 1.,
+                ),
                 IVec2::new(0, 1),
             ),
             DirectionToMove::Down => (
@@ -104,14 +107,15 @@ impl GameState for LevelState {
             self.level.y_coord + offset.y
         );
 
+        let player_info = PlayerInfo {
+            pos: new_player_pos,
+            velocity: self.player.velocity,
+            state: self.player.state.clone(),
+            crouch: self.player.crouching,
+        };
+
         // Load new LevelState
-        match LevelState::build(
-            &new_level,
-            new_player_pos,
-            self.player.velocity,
-            self.player.state.clone(),
-            self.player.crouching
-        ) {
+        match LevelState::build(&new_level, player_info) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
                 eprintln!("Failed to load level state{}: {err}", &new_level);
@@ -130,7 +134,7 @@ impl GameState for LevelState {
 
         let map_width = level.map_dimensions.x;
         let map_height = level.map_dimensions.y;
-        
+
         let t_size = level.tile_size as f32;
 
         while y < map_height {
@@ -147,10 +151,8 @@ impl GameState for LevelState {
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size * scale, t_size * scale)),
                         source: Some(Rect::new(
-                            index_to_coords(level.tile_values[i], level.tileset_columns).0
-                                * t_size,
-                            index_to_coords(level.tile_values[i], level.tileset_columns).1
-                                * t_size,
+                            index_to_coords(level.tile_values[i], level.tileset_columns).0 * t_size,
+                            index_to_coords(level.tile_values[i], level.tileset_columns).1 * t_size,
                             t_size,
                             t_size,
                         )),

@@ -17,6 +17,13 @@ pub struct Player {
     pub crouching: bool,
 }
 
+pub struct PlayerInfo {
+    pub pos: Vec2,
+    pub velocity: Vec2,
+    pub state: PlayerMovementState,
+    pub crouch: bool,
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum PlayerMovementState {
     Standing,
@@ -28,7 +35,13 @@ pub enum PlayerMovementState {
 }
 
 impl Player {
-    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2, state: PlayerMovementState, crouching: bool) -> Self {
+    pub fn new(
+        start_pos: Vec2,
+        level: Arc<level::Level>,
+        velocity: Vec2,
+        state: PlayerMovementState,
+        crouching: bool,
+    ) -> Self {
         Player {
             position: Vec2::new(start_pos.x, start_pos.y),
             velocity,
@@ -42,6 +55,16 @@ impl Player {
         }
     }
 
+    pub fn new_from_info(player_info: PlayerInfo, level: Arc<level::Level>) -> Self {
+        Player::new(
+            player_info.pos,
+            level,
+            player_info.velocity,
+            player_info.state,
+            player_info.crouch,
+        )
+    }
+
     pub fn draw(&self, scale: f32) {
         let res = RESOURCE_MANAGER.lock().unwrap();
         let tex = res.get_texture("player.png");
@@ -52,7 +75,10 @@ impl Player {
             WHITE,
             DrawTextureParams {
                 flip_x: !self.facing_right,
-                dest_size: Some(vec2(self.actual_size.x as f32 * scale, self.actual_size.y as f32 * scale)),
+                dest_size: Some(vec2(
+                    self.actual_size.x as f32 * scale,
+                    self.actual_size.y as f32 * scale,
+                )),
                 ..Default::default()
             },
         );
@@ -101,7 +127,10 @@ impl Player {
             vec2(0., self.actual_size.y as f32 / 2.),
             vec2(0., self.actual_size.y as f32),
             vec2(self.actual_size.x as f32 - 1., 0.),
-            vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32 / 2.),
+            vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 / 2.,
+            ),
             vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32),
         ];
 
@@ -116,17 +145,27 @@ impl Player {
         }
 
         //work out if at the top of the ladder
-        let on_ladder_top =
-            (self.level
-                .get_tile_info(((self.position + vec2(0., 65.)).as_ivec2()) / 32)
-                .ladder || self.level
-                .get_tile_info(((self.position + vec2(self.actual_size.x as f32 - 1., 65.)).as_ivec2()) / 32)
-                .ladder) &&
-            !(self.level
+        let on_ladder_top = (self
+            .level
+            .get_tile_info(((self.position + vec2(0., 65.)).as_ivec2()) / 32)
+            .ladder
+            || self
+                .level
+                .get_tile_info(
+                    ((self.position + vec2(self.actual_size.x as f32 - 1., 65.)).as_ivec2()) / 32,
+                )
+                .ladder)
+            && !(self
+                .level
                 .get_tile_info(((self.position + vec2(0., 63.)).as_ivec2()) / 32)
-                .ladder || self.level
-                .get_tile_info(((self.position + vec2(self.actual_size.x as f32 - 1., 63.)).as_ivec2()) / 32)
-                .ladder);
+                .ladder
+                || self
+                    .level
+                    .get_tile_info(
+                        ((self.position + vec2(self.actual_size.x as f32 - 1., 63.)).as_ivec2())
+                            / 32,
+                    )
+                    .ladder);
 
         if is_key_pressed(KeyCode::Space) {
             self.jump();
@@ -144,7 +183,7 @@ impl Player {
 
             if on_ladder_top {
                 self.on_ground = true;
-                self.position.y += - 0.1;
+                self.position.y += -0.1;
             }
 
             if is_key_down(KeyCode::Up) && !on_ladder_top {
@@ -212,7 +251,13 @@ impl Player {
         self.position.x += move_x;
         // use prev_pos from before any sub-steps for horizontal resolution (keeps X resolution consistent)
         let prev_frame_pos = self.position;
-        self.resolve_axis_collisions(true, prev_frame_pos, tile_size as f32, epsilon, snap_threshold);
+        self.resolve_axis_collisions(
+            true,
+            prev_frame_pos,
+            tile_size as f32,
+            epsilon,
+            snap_threshold,
+        );
 
         // vertical movement: sub-step to avoid tunnelling/bounce
         let total_move_y = self.velocity.y * delta_time;
@@ -231,7 +276,13 @@ impl Player {
             self.position.y += step;
             // reset on_ground before resolving this sub-step; it will be set true if this sub-step lands
             self.on_ground = false;
-            self.resolve_axis_collisions(false, step_prev_pos, tile_size as f32, epsilon, snap_threshold);
+            self.resolve_axis_collisions(
+                false,
+                step_prev_pos,
+                tile_size as f32,
+                epsilon,
+                snap_threshold,
+            );
 
             // after resolution, if we landed, zero vertical velocity and clear remaining (we shouldn't continue moving down)
             if self.on_ground && self.velocity.y > 0.0 {

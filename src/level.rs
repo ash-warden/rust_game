@@ -1,8 +1,8 @@
 use crate::coords_to_index;
+use macroquad::math::{IVec2, ivec2};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use macroquad::math::{ivec2, IVec2};
 
 #[derive(Serialize, Deserialize)]
 struct TiledLayer {
@@ -86,11 +86,13 @@ pub struct TileInfo {
 }
 
 impl Level {
-    pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error> > {
+    pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error>> {
         let dir = "assets/maps/";
         let map_name_parts: Vec<&str> = map_name.split("_").collect();
         let x_coord: i32 = map_name_parts[1].parse().unwrap();
-        let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0].parse().unwrap();
+        let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0]
+            .parse()
+            .unwrap();
         //load tiles
         let tile_map_file = fs::read_to_string(map_name)?;
         let tile_map: TiledMap = serde_json::from_str(&tile_map_file)?;
@@ -98,12 +100,13 @@ impl Level {
         let dimensions = ivec2(tile_map.width, tile_map.height);
         let tile_size = tile_map.tilewidth;
 
-        let tileset_file_name = dir.to_string() + &tile_map
-            .tilesets
-            .first()
-            .ok_or("No tileset")?
-            .source
-            .clone();
+        let tileset_file_name = dir.to_string()
+            + &tile_map
+                .tilesets
+                .first()
+                .ok_or("No tileset")?
+                .source
+                .clone();
 
         let tileset_path = Path::new(&tileset_file_name);
         let tileset_file = fs::read_to_string(tileset_path)?;
@@ -129,19 +132,22 @@ impl Level {
 
     pub fn get_tile_info(&self, tile_coords: IVec2) -> TileInfo {
         if tile_coords.x < 0 || tile_coords.y < 0 {
-            return TileInfo { solid: false, ladder: false, };
+            return TileInfo {
+                solid: false,
+                ladder: false,
+            };
         }
         if tile_coords.x > self.map_dimensions.x - 1 || tile_coords.y > self.map_dimensions.y - 1 {
-            return TileInfo { solid: false, ladder: false, };
+            return TileInfo {
+                solid: false,
+                ladder: false,
+            };
         }
         let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
         let tile = self.tile_values[index as usize];
         let tileset = &self.tileset;
         let solid = tileset.tiles[tile as usize - 1].r#type == "solid";
         let ladder = tileset.tiles[tile as usize - 1].r#type == "ladder";
-        TileInfo {
-            solid,
-            ladder,
-        }
+        TileInfo { solid, ladder }
     }
 }
