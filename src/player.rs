@@ -110,9 +110,22 @@ impl Player {
                 .ladder
         });
 
-        if on_ladder && self.state != PlayerState::Crouching && is_key_pressed(KeyCode::Up) {
+        if on_ladder {
             self.state = PlayerState::Climbing;
         }
+
+        //work out if at the top of the ladder
+        let on_ladder_top =
+            (self.level
+                .get_tile_info(((self.position + vec2(0., 65.)).as_ivec2()) / 32)
+                .ladder || self.level
+                .get_tile_info(((self.position + vec2(self.actual_size.x as f32 - 1., 65.)).as_ivec2()) / 32)
+                .ladder) &&
+            !(self.level
+                .get_tile_info(((self.position + vec2(0., 63.)).as_ivec2()) / 32)
+                .ladder || self.level
+                .get_tile_info(((self.position + vec2(self.actual_size.x as f32 - 1., 63.)).as_ivec2()) / 32)
+                .ladder);
 
         if is_key_pressed(KeyCode::Space) {
             self.jump();
@@ -128,7 +141,11 @@ impl Player {
         } else {
             let climb_speed = 150.0;
 
-            if is_key_down(KeyCode::Up) {
+            if on_ladder_top {
+                self.position.y += - 0.1;
+            }
+
+            if is_key_down(KeyCode::Up) && !on_ladder_top {
                 self.velocity.y = -climb_speed;
             } else if is_key_down(KeyCode::Down) {
                 self.velocity.y = climb_speed;
