@@ -129,10 +129,10 @@ impl Level {
 
     pub fn get_tile_info(&self, tile_coords: IVec2) -> TileInfo {
         if tile_coords.x < 0 || tile_coords.y < 0 {
-            return TileInfo { solid: false, ladder: true, };
+            return TileInfo { solid: false, ladder: false, };
         }
         if tile_coords.x > self.map_dimensions.x - 1 || tile_coords.y > self.map_dimensions.y - 1 {
-            return TileInfo { solid: false, ladder: true, };
+            return TileInfo { solid: false, ladder: false, };
         }
         let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
         let tile = self.tile_values[index as usize];

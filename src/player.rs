@@ -12,23 +12,23 @@ pub struct Player {
     pub full_size: i32,
     pub on_ground: bool,
     level: Arc<level::Level>,
-    pub state: PlayerState,
+    pub state: PlayerMovementState,
     facing_right: bool,
+    pub crouching: bool,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum PlayerState {
+pub enum PlayerMovementState {
     Standing,
     Walking,
     Running,
     Jumping,
     Falling,
-    Crouching,
     Climbing,
 }
 
 impl Player {
-    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2, state: PlayerState) -> Self {
+    pub fn new(start_pos: Vec2, level: Arc<level::Level>, velocity: Vec2, state: PlayerMovementState, crouching: bool) -> Self {
         Player {
             position: Vec2::new(start_pos.x, start_pos.y),
             velocity,
@@ -38,6 +38,7 @@ impl Player {
             state,
             facing_right: true,
             full_size: 64,
+            crouching,
         }
     }
 
@@ -111,7 +112,7 @@ impl Player {
         });
 
         if on_ladder {
-            self.state = PlayerState::Climbing;
+            self.state = PlayerMovementState::Climbing;
         }
 
         //work out if at the top of the ladder
@@ -131,7 +132,7 @@ impl Player {
             self.jump();
         }
 
-        if self.state != PlayerState::Climbing {
+        if self.state != PlayerMovementState::Climbing {
             if is_key_pressed(KeyCode::Down) {
                 self.crouch();
             }
@@ -142,6 +143,7 @@ impl Player {
             let climb_speed = 150.0;
 
             if on_ladder_top {
+                self.on_ground = true;
                 self.position.y += - 0.1;
             }
 
@@ -154,7 +156,7 @@ impl Player {
             }
 
             if !on_ladder {
-                self.state = PlayerState::Falling;
+                self.state = PlayerMovementState::Falling;
             }
         }
 
@@ -165,21 +167,28 @@ impl Player {
     }
 
     pub fn update(&mut self, delta_time: f32) {
+        //set player size
+        if self.crouching {
+            self.actual_size.y = self.full_size / 2;
+        } else {
+            self.actual_size.y = self.full_size;
+        }
+        println!("{}", self.crouching);
         // setting state for movement
-        if !(self.state == PlayerState::Crouching || self.state == PlayerState::Climbing) {
+        if !(self.crouching || self.state == PlayerMovementState::Climbing) {
             if self.on_ground {
                 if (self.velocity.x.abs()) > 199. {
-                    self.state = PlayerState::Running;
+                    self.state = PlayerMovementState::Running;
                 } else if self.velocity.x.abs() > 0. {
-                    self.state = PlayerState::Walking;
+                    self.state = PlayerMovementState::Walking;
                 } else {
-                    self.state = PlayerState::Standing;
+                    self.state = PlayerMovementState::Standing;
                 }
             } else {
                 if self.velocity.y > 0. {
-                    self.state = PlayerState::Falling;
+                    self.state = PlayerMovementState::Falling;
                 } else {
-                    self.state = PlayerState::Jumping;
+                    self.state = PlayerMovementState::Jumping;
                 }
             }
         }
@@ -191,7 +200,7 @@ impl Player {
         let snap_threshold = 3.0; // snap when within this many pixels
 
         // apply gravity
-        if self.state != PlayerState::Climbing {
+        if self.state != PlayerMovementState::Climbing {
             self.velocity.y += gravity * delta_time;
             if self.velocity.y > max_fall_speed {
                 self.velocity.y = max_fall_speed;
@@ -251,9 +260,8 @@ impl Player {
     }
 
     pub fn crouch(&mut self) {
-        if self.state != PlayerState::Crouching {
-            self.actual_size.y = self.full_size / 2;
-            self.state = PlayerState::Crouching;
+        if !self.crouching {
+            self.crouching = true;
             self.position.y += self.full_size as f32 / 2.;
         }
     }
@@ -278,9 +286,8 @@ impl Player {
     }
 
     pub fn uncrouch(&mut self) {
-        if self.can_uncrouch(self.level.tile_size as f32, 0.001) && self.state == PlayerState::Crouching {
-            self.actual_size.y = self.full_size;
-            self.state = PlayerState::Jumping;
+        if self.can_uncrouch(self.level.tile_size as f32, 0.001) && self.crouching {
+            self.crouching = false;
             self.position.y -= (self.full_size / 2) as f32;
         }
     }

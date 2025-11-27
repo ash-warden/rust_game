@@ -1,4 +1,4 @@
-use crate::player::{Player, PlayerState};
+use crate::player::{Player, PlayerMovementState};
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
@@ -28,11 +28,12 @@ impl LevelState {
         level: &str,
         player_pos: Vec2,
         player_velocity: Vec2,
-        player_state: PlayerState,
+        player_state: PlayerMovementState,
+        player_crouch: bool
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock().unwrap();
         if let Some(level) = res.get_level(level) {
-            let player = Player::new(player_pos, level.clone(), player_velocity, player_state);
+            let player = Player::new(player_pos, level.clone(), player_velocity, player_state, player_crouch);
             Ok(LevelState { level, player })
         } else {
             Err("Level not found in resources".into())
@@ -109,6 +110,7 @@ impl GameState for LevelState {
             new_player_pos,
             self.player.velocity,
             self.player.state.clone(),
+            self.player.crouching
         ) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {

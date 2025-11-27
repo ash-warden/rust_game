@@ -3,7 +3,7 @@ use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
-use crate::player::PlayerState;
+use crate::player::PlayerMovementState;
 
 //module for loading the level from the map
 mod game_state;
@@ -46,7 +46,7 @@ async fn main() {
     }
 
     let level_state =
-        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.), PlayerState::Standing).unwrap_or_else(|err| {
+        LevelState::build("test_2_1", vec2(100., 100.), vec2(0., 0.), PlayerMovementState::Standing, false).unwrap_or_else(|err| {
             eprintln!("Failed to load level state: {err}");
             std::process::exit(1);
         });
