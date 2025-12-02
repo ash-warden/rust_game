@@ -140,7 +140,7 @@ impl Player {
                 .ladder
         });
 
-        if on_ladder {
+        if on_ladder && !self.crouching {
             self.state = PlayerMovementState::Climbing;
         }
 
@@ -451,7 +451,7 @@ impl Player {
         }
     }
 
-    // Return true if tile at (tx, ty) is solid (collidable).
+    // Return true if tile at (tx, ty) is solid.
     fn is_tile_solid(&self, tx: i32, ty: i32) -> bool {
         self.level.get_tile_info(ivec2(tx, ty)).solid
     }
