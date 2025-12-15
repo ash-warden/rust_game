@@ -3,12 +3,14 @@ use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use macroquad::text::{load_ttf_font, Font};
 use walkdir::WalkDir;
 
 pub struct Resources {
     pub levels: HashMap<String, Arc<Level>>,
     pub textures: HashMap<String, Texture2D>,
     pub scale: f32,
+    pub font: Option<Font>
 }
 
 impl Resources {
@@ -17,6 +19,7 @@ impl Resources {
             levels: HashMap::new(),
             textures: HashMap::new(),
             scale: 1.,
+            font: None,
         }
     }
 
@@ -43,12 +46,22 @@ impl Resources {
     pub fn insert_level(&mut self, key: String, level: Arc<Level>) {
         self.levels.insert(key, level);
     }
+
+    pub fn set_font(&mut self, font: Font) {
+        self.font = Some(font);
+    }
+    pub fn get_font(&self) -> &Font {self.font.as_ref().unwrap()}
 }
 
 pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Resources::new()));
 
 pub async fn load_all_assets() {
     let mut res = RESOURCE_MANAGER.lock().unwrap();
+    //load font
+    res.set_font(load_ttf_font("assets/Hack-Regular.ttf")
+        .await
+        .unwrap());
+
     for entry in WalkDir::new("assets") {
         let entry = entry.unwrap();
         let path = entry.path();

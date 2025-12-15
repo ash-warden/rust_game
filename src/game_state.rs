@@ -5,6 +5,7 @@ use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
+use crate::menu::Menu;
 
 pub enum StateTransition {
     None,
@@ -171,6 +172,26 @@ impl GameState for LevelState {
         }
         //draw player
         self.player.draw(scale);
+    }
+}
+
+pub struct MenuState {
+    pub menu: Menu,
+}
+
+impl MenuState {
+    pub fn new() -> Self {
+        let menu = Menu::new();
+        MenuState{menu}
+    }
+}
+
+impl GameState for MenuState {
+    fn update(&mut self) -> StateTransition {
+        StateTransition::None
+    }
+    fn draw(&self, scale: f32) {
+        self.menu.draw(scale);
     }
 }
 

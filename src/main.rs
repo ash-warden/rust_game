@@ -1,4 +1,4 @@
-use crate::game_state::{GameStateStack, LevelState, PlayerInfo};
+use crate::game_state::{GameStateStack, LevelState, MenuState, PlayerInfo};
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
@@ -10,6 +10,7 @@ mod game_state;
 mod level;
 mod player;
 mod resources;
+mod menu;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -45,7 +46,7 @@ async fn main() {
         res.scale = 1.;
     }
 
-    let player_info = PlayerInfo {
+    /*let player_info = PlayerInfo {
         pos: vec2(100., 100.),
         velocity: vec2(0., 0.),
         state: PlayerMovementState::Standing,
@@ -57,6 +58,10 @@ async fn main() {
         std::process::exit(1);
     });
     let mut game_state_stack = GameStateStack::new(Box::new(level_state));
+    */
+
+    let menu_state = MenuState::new();
+    let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
 
     build_textures_atlas();
 
