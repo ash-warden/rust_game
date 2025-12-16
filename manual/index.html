@@ -1,0 +1,21 @@
+---
+layout: default
+title: Home
+---
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+  </head>
+  <body>
+    <h1>Manual</h1>
+    <h2>Contents:</h2>
+      {% for item in site.data.pages_list %}
+      <a href="{{ item.link }}"{% if page.url == item.link %} class="current"{% endif %}>{{ item.number }}. {{ item.name }}<br></a>
+      {% endfor %}
+      {% assign page_to_show = site.data.pages_list | where: "number","2" | first%}
+      {{ page_to_show.name }}
+  </body>
+</html>

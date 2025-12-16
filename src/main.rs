@@ -29,8 +29,8 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "Game".to_owned(),
         fullscreen: false,
-        window_width: 640,
-        window_height: 480,
+        window_width: 680,
+        window_height: 520,
         sample_count: 1,
         window_resizable: true,
         ..Default::default() // fill in the rest with defaults
@@ -45,20 +45,19 @@ async fn main() {
         let mut res = RESOURCE_MANAGER.lock().unwrap();
         res.scale = 1.;
     }
-    /*
-        let player_info = PlayerInfo {
-            pos: vec2(100., 100.),
-            velocity: vec2(0., 0.),
-            state: PlayerMovementState::Standing,
-            crouch: false,
-        };
 
-        let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
-            eprintln!("Failed to load level state: {err}");
-            std::process::exit(1);
-        });
-        let mut game_state_stack = GameStateStack::new(Box::new(level_state));
-    */
+    // let player_info = PlayerInfo {
+    //     pos: vec2(100., 100.),
+    //     velocity: vec2(0., 0.),
+    //     state: PlayerMovementState::Standing,
+    //     crouch: false,
+    // };
+    //
+    // let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
+    //     eprintln!("Failed to load level state: {err}");
+    //     std::process::exit(1);
+    // });
+    // let mut game_state_stack = GameStateStack::new(Box::new(level_state));
 
     let menu_state = MenuState::new();
     let mut game_state_stack = GameStateStack::new(Box::new(menu_state));

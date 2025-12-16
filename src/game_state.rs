@@ -188,6 +188,7 @@ impl MenuState {
 
 impl GameState for MenuState {
     fn update(&mut self) -> StateTransition {
+        self.menu.update();
         StateTransition::None
     }
     fn draw(&self, scale: f32) {

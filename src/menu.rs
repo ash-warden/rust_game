@@ -1,20 +1,34 @@
 use crate::index_to_coords;
 use crate::resources::RESOURCE_MANAGER;
-use macroquad::color::WHITE;
+use macroquad::color::{Color, WHITE, YELLOW};
+use macroquad::input::{is_key_pressed, KeyCode};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, Texture2D, draw_texture_ex};
 use macroquad::text::{TextParams, draw_text, draw_text_ex};
 
 pub struct Menu {
     menu_items: Vec<MenuItem>,
+    current_index: u32,
 }
 
 impl Menu {
     pub fn new() -> Self {
         let mut menu_items = Vec::new();
-        let test_item = MenuItem::new("Item1012\n34");
+        let test_item = MenuItem::new("Item_1");
         menu_items.push(test_item);
-        Menu { menu_items }
+        let test_item2 = MenuItem::new("Item2");
+        menu_items.push(test_item2);
+        Menu { menu_items, current_index: 0 }
+    }
+
+    pub fn update(&mut self) {
+        if is_key_pressed(KeyCode::Down) {
+            self.current_index += 1;
+        }
+        if is_key_pressed(KeyCode::Up) {
+            self.current_index -= 1;
+        }
+        println!("{}", self.current_index);
     }
 
     pub fn draw(&self, scale: f32) {
@@ -33,8 +47,14 @@ impl Menu {
                 },
             );
         }
+        let mut i = 0.;
         for item in &self.menu_items {
-            item.draw(scale);
+            let mut selected = false;
+            if self.current_index == i as u32 {
+                selected = true;
+            }
+            item.draw(scale, vec2(0., i), selected);
+            i += 1.;
         }
     }
 }
@@ -50,7 +70,7 @@ impl MenuItem {
         }
     }
 
-    pub fn draw(&self, scale: f32) {
+    pub fn draw(&self, scale: f32, offset: Vec2, selected: bool) {
         let mut row = 0.;
         let mut col = 0.;
         for (index, item) in self.label_text.chars().enumerate() {
@@ -68,11 +88,15 @@ impl MenuItem {
                 {
                     let res = RESOURCE_MANAGER.lock().unwrap();
                     let tex = res.get_texture("font.png");
+                    let mut color: Color = WHITE;
+                    if selected {
+                        color = YELLOW;
+                    }
                     draw_texture_ex(
                         tex,
-                        letter_pos.x,
-                        letter_pos.y,
-                        WHITE,
+                        letter_pos.x + offset.x,
+                        letter_pos.y + offset.y * 38.,
+                        color,
                         DrawTextureParams {
                             dest_size: Some(vec2(19. * scale, 38. * scale)),
                             source: Some(Rect::new(

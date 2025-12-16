@@ -1,0 +1,9 @@
+- name: Starting the game
+  link: start.html
+  number: 1
+- name: Game screen
+  link: game_screen.html
+  number: 2
+- name: Controls
+  link: controls.html
+  number: 3
