@@ -45,24 +45,23 @@ async fn main() {
         let mut res = RESOURCE_MANAGER.lock().unwrap();
         res.scale = 1.;
     }
-/*
-    let player_info = PlayerInfo {
-        pos: vec2(100., 100.),
-        velocity: vec2(0., 0.),
-        state: PlayerMovementState::Standing,
-        crouch: false,
-    };
+    /*
+        let player_info = PlayerInfo {
+            pos: vec2(100., 100.),
+            velocity: vec2(0., 0.),
+            state: PlayerMovementState::Standing,
+            crouch: false,
+        };
 
-    let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
-        eprintln!("Failed to load level state: {err}");
-        std::process::exit(1);
-    });
-    let mut game_state_stack = GameStateStack::new(Box::new(level_state));
-*/
+        let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
+            eprintln!("Failed to load level state: {err}");
+            std::process::exit(1);
+        });
+        let mut game_state_stack = GameStateStack::new(Box::new(level_state));
+    */
 
-        let menu_state = MenuState::new();
-        let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
-
+    let menu_state = MenuState::new();
+    let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
 
     build_textures_atlas();
 
@@ -91,11 +90,33 @@ async fn main() {
             ..Default::default()
         });
 
-        clear_background(BLACK);
         game_state_stack.update();
         game_state_stack.draw(1.0);
 
         set_default_camera();
+
+        clear_background(MAGENTA);
+
+        //draw background tiles
+        {
+            let cols = (screen_width() / 32.).ceil() as i32;
+            let rows = (screen_height() / 32.).ceil() as i32;
+            let res = RESOURCE_MANAGER.lock().unwrap();
+            let tex = res.get_texture("s_back_test.png");
+            for y in 0..rows {
+                for x in 0..cols {
+                    draw_texture_ex(
+                        tex,
+                        x as f32 * 32.,
+                        y as f32 * 32.,
+                        WHITE,
+                        DrawTextureParams {
+                            ..Default::default()
+                        },
+                    );
+                }
+            }
+        }
 
         let w = screen_width();
         let h = screen_height();
