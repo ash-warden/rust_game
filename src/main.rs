@@ -8,9 +8,9 @@ use macroquad::prelude::*;
 //module for loading the level from the map
 mod game_state;
 mod level;
+mod menu;
 mod player;
 mod resources;
-mod menu;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -45,8 +45,8 @@ async fn main() {
         let mut res = RESOURCE_MANAGER.lock().unwrap();
         res.scale = 1.;
     }
-
-    /*let player_info = PlayerInfo {
+/*
+    let player_info = PlayerInfo {
         pos: vec2(100., 100.),
         velocity: vec2(0., 0.),
         state: PlayerMovementState::Standing,
@@ -58,35 +58,67 @@ async fn main() {
         std::process::exit(1);
     });
     let mut game_state_stack = GameStateStack::new(Box::new(level_state));
-    */
+*/
 
-    let menu_state = MenuState::new();
-    let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
+        let menu_state = MenuState::new();
+        let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
+
 
     build_textures_atlas();
 
+    const BASE_W: f32 = 640.0;
+    const BASE_H: f32 = 480.0;
+
+    let render_target = render_target(BASE_W as u32, BASE_H as u32);
+    render_target.texture.set_filter(FilterMode::Nearest);
+
     loop {
-        game_state_stack.update();
-        clear_background(BLACK);
-        let scale = {
-            let res = RESOURCE_MANAGER.lock().unwrap();
-            res.scale
-        };
-        game_state_stack.draw(scale);
+        // prevent screen getting too small
+        let min_w = 640.0;
+        let min_h = 480.0;
 
         let w = screen_width();
         let h = screen_height();
 
-        if w != 640. || h != 480. {
-            let new_scale = if w < 960. { 1. } else { 2. };
-
-            {
-                let mut res = RESOURCE_MANAGER.lock().unwrap();
-                res.scale = new_scale;
-            }
-
-            set_window_size((640. * new_scale) as u32, (480. * new_scale) as u32);
+        if w < min_w || h < min_h {
+            set_window_size(min_w as u32, min_h as u32);
         }
+
+        set_camera(&Camera2D {
+            render_target: Some(render_target.clone()),
+            zoom: vec2(2.0 / BASE_W, 2.0 / BASE_H),
+            target: vec2(BASE_W / 2.0, BASE_H / 2.0),
+            ..Default::default()
+        });
+
+        clear_background(BLACK);
+        game_state_stack.update();
+        game_state_stack.draw(1.0);
+
+        set_default_camera();
+
+        let w = screen_width();
+        let h = screen_height();
+
+        let scale = ((w / BASE_W).floor().min((h / BASE_H).floor()) as i32).max(1) as f32;
+        println!("{}", scale);
+
+        let dest_w = (BASE_W * scale).round();
+        let dest_h = (BASE_H * scale).round();
+
+        let x = ((w - dest_w) / 2.0).round();
+        let y = ((h - dest_h) / 2.0).round();
+
+        draw_texture_ex(
+            &render_target.texture,
+            x,
+            y,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(dest_w, dest_h)),
+                ..Default::default()
+            },
+        );
 
         next_frame().await;
     }

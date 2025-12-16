@@ -9,6 +9,7 @@ pub struct Resources {
     pub levels: HashMap<String, Arc<Level>>,
     pub textures: HashMap<String, Texture2D>,
     pub scale: f32,
+    pub background_texture: Option<String>,
 }
 
 impl Resources {
@@ -17,6 +18,7 @@ impl Resources {
             levels: HashMap::new(),
             textures: HashMap::new(),
             scale: 1.,
+            background_texture: None,
         }
     }
 
@@ -43,6 +45,8 @@ impl Resources {
     pub fn insert_level(&mut self, key: String, level: Arc<Level>) {
         self.levels.insert(key, level);
     }
+
+
 }
 
 pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Resources::new()));
@@ -63,6 +67,7 @@ pub async fn load_all_assets() {
             match ext {
                 "png" => {
                     let texture = macroquad::texture::load_texture(path_str).await.unwrap();
+                    texture.set_filter(macroquad::texture::FilterMode::Nearest);
                     res.insert_texture(key.to_string() + ".png", texture);
                 }
                 "tmj" => {
