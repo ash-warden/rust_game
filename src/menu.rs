@@ -1,7 +1,8 @@
+use crate::game_state::StateTransition;
 use crate::index_to_coords;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::color::{Color, WHITE, YELLOW};
-use macroquad::input::{is_key_pressed, KeyCode};
+use macroquad::input::{KeyCode, is_key_pressed};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, Texture2D, draw_texture_ex};
 use macroquad::text::{TextParams, draw_text, draw_text_ex};
@@ -13,22 +14,28 @@ pub struct Menu {
 
 impl Menu {
     pub fn new() -> Self {
-        let mut menu_items = Vec::new();
-        let test_item = MenuItem::new("Item_1");
-        menu_items.push(test_item);
-        let test_item2 = MenuItem::new("Item2");
-        menu_items.push(test_item2);
-        Menu { menu_items, current_index: 0 }
+        let menu_items = Vec::new();
+        Menu {
+            menu_items,
+            current_index: 0,
+        }
     }
 
-    pub fn update(&mut self) {
+    pub fn add_item(&mut self, item: MenuItem) {
+        self.menu_items.push(item);
+    }
+
+    pub fn update(&mut self) -> StateTransition {
         if is_key_pressed(KeyCode::Down) {
             self.current_index += 1;
         }
         if is_key_pressed(KeyCode::Up) {
             self.current_index -= 1;
         }
-        println!("{}", self.current_index);
+        if is_key_pressed(KeyCode::Enter) {
+            return self.menu_items[self.current_index as usize].activate();
+        }
+        StateTransition::None
     }
 
     pub fn draw(&self, scale: f32) {
@@ -61,13 +68,22 @@ impl Menu {
 
 pub struct MenuItem {
     label_text: String,
+    action: Box<dyn FnMut() -> StateTransition>,
 }
 
 impl MenuItem {
-    pub fn new(label: &str) -> Self {
+    pub fn new<F>(label: &str, action: F) -> Self
+    where
+        F: FnMut() -> StateTransition + 'static,
+    {
         MenuItem {
             label_text: label.to_string(),
+            action: Box::new(action),
         }
+    }
+
+    pub fn activate(&mut self) -> StateTransition {
+        (self.action)()
     }
 
     pub fn draw(&self, scale: f32, offset: Vec2, selected: bool) {

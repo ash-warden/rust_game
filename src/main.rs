@@ -1,4 +1,5 @@
-use crate::game_state::{GameStateStack, LevelState, MenuState, PlayerInfo};
+use crate::game_state::{GameStateStack, LevelState, MenuState, PlayerInfo, StateTransition};
+use crate::menu::{Menu, MenuItem};
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
@@ -6,6 +7,7 @@ use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 
 //module for loading the level from the map
+mod current_game;
 mod game_state;
 mod level;
 mod menu;
@@ -46,20 +48,24 @@ async fn main() {
         res.scale = 1.;
     }
 
-    // let player_info = PlayerInfo {
-    //     pos: vec2(100., 100.),
-    //     velocity: vec2(0., 0.),
-    //     state: PlayerMovementState::Standing,
-    //     crouch: false,
-    // };
-    //
-    // let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
-    //     eprintln!("Failed to load level state: {err}");
-    //     std::process::exit(1);
-    // });
-    // let mut game_state_stack = GameStateStack::new(Box::new(level_state));
+    let player_info = PlayerInfo {
+        pos: vec2(100., 100.),
+        velocity: vec2(0., 0.),
+        state: PlayerMovementState::Standing,
+        crouch: false,
+    };
 
-    let menu_state = MenuState::new();
+    let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
+        eprintln!("Failed to load level state: {err}");
+        std::process::exit(1);
+    });
+
+    let mut menu = Menu::new();
+    let test_item = MenuItem::new("Item_1", move || {StateTransition::Replace(Box::new(level_state.clone()))});
+    menu.add_item(test_item);
+    let test_item2 = MenuItem::new("Item2", || {StateTransition::None});
+    menu.add_item(test_item2);
+    let menu_state = MenuState::new(menu);
     let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
 
     build_textures_atlas();
@@ -121,7 +127,6 @@ async fn main() {
         let h = screen_height();
 
         let scale = ((w / BASE_W).floor().min((h / BASE_H).floor()) as i32).max(1) as f32;
-        println!("{}", scale);
 
         let dest_w = (BASE_W * scale).round();
         let dest_h = (BASE_H * scale).round();
@@ -139,7 +144,7 @@ async fn main() {
                 ..Default::default()
             },
         );
-
+        println!("frame time: {}", get_frame_time());
         next_frame().await;
     }
 }

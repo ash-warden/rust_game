@@ -89,7 +89,7 @@ impl Level {
     pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error>> {
         let dir = "assets/maps/";
         let map_name_parts: Vec<&str> = map_name.split("_").collect();
-        let x_coord: i32 = map_name_parts[1].parse().unwrap();
+        let x_coord: i32 = map_name_parts[1].parse()?;
         let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0]
             .parse()?;
         //load tiles

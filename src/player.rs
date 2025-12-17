@@ -5,6 +5,7 @@ use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Player {
     pub position: Vec2,
     pub velocity: Vec2,

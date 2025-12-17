@@ -19,6 +19,7 @@ pub trait GameState {
     fn draw(&self, scale: f32);
 }
 
+#[derive(Clone)]
 pub struct LevelState {
     pub level: Arc<level::Level>,
     pub player: Player,
@@ -29,7 +30,7 @@ impl LevelState {
         level: &str,
         player_info: PlayerInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
-        let res = RESOURCE_MANAGER.lock().unwrap();
+        let res = RESOURCE_MANAGER.lock()?;
         if let Some(level) = res.get_level(level) {
             let player = Player::new_from_info(player_info, level.clone());
             Ok(LevelState { level, player })
@@ -180,16 +181,14 @@ pub struct MenuState {
 }
 
 impl MenuState {
-    pub fn new() -> Self {
-        let menu = Menu::new();
+    pub fn new(menu: Menu) -> Self {
         MenuState{menu}
     }
 }
 
 impl GameState for MenuState {
     fn update(&mut self) -> StateTransition {
-        self.menu.update();
-        StateTransition::None
+        self.menu.update()
     }
     fn draw(&self, scale: f32) {
         self.menu.draw(scale);
