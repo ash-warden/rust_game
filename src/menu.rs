@@ -1,11 +1,9 @@
 use crate::game_state::StateTransition;
-use crate::index_to_coords;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::color::{Color, WHITE, YELLOW};
 use macroquad::input::{KeyCode, is_key_pressed};
 use macroquad::math::{Rect, Vec2, vec2};
-use macroquad::prelude::{DrawTextureParams, Texture2D, draw_texture_ex};
-use macroquad::text::{TextParams, draw_text, draw_text_ex};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
 
 pub struct Menu {
     menu_items: Vec<MenuItem>,
@@ -38,7 +36,7 @@ impl Menu {
         StateTransition::None
     }
 
-    pub fn draw(&self, scale: f32) {
+    pub fn draw(&self) {
         {
             let res = RESOURCE_MANAGER.lock().unwrap();
             let tex = res.get_texture("background.png");
@@ -48,7 +46,7 @@ impl Menu {
                 0.,
                 WHITE,
                 DrawTextureParams {
-                    dest_size: Some(vec2(48. * scale, 48. * scale)),
+                    dest_size: Some(vec2(48., 48.)),
                     source: None,
                     ..Default::default()
                 },
@@ -60,7 +58,7 @@ impl Menu {
             if self.current_index == i as u32 {
                 selected = true;
             }
-            item.draw(scale, vec2(0., i), selected);
+            item.draw(vec2(0., i), selected);
             i += 1.;
         }
     }
@@ -86,10 +84,10 @@ impl MenuItem {
         (self.action)()
     }
 
-    pub fn draw(&self, scale: f32, offset: Vec2, selected: bool) {
+    pub fn draw(&self, offset: Vec2, selected: bool) {
         let mut row = 0.;
         let mut col = 0.;
-        for (index, item) in self.label_text.chars().enumerate() {
+        for item in self.label_text.chars() {
             let letter_ascii: i32 = item.to_ascii_lowercase() as i32;
             //println!("{}", letter_ascii);
 
@@ -100,7 +98,7 @@ impl MenuItem {
                 let letter_pos = Vec2 {
                     x: col * 19. + 30.,
                     y: row * 38. + 30.,
-                } * scale;
+                };
                 {
                     let res = RESOURCE_MANAGER.lock().unwrap();
                     let tex = res.get_texture("font.png");
@@ -114,7 +112,7 @@ impl MenuItem {
                         letter_pos.y + offset.y * 38.,
                         color,
                         DrawTextureParams {
-                            dest_size: Some(vec2(19. * scale, 38. * scale)),
+                            dest_size: Some(vec2(19., 38.)),
                             source: Some(Rect::new(
                                 19. * (letter_ascii % 32) as f32,
                                 38. * (letter_ascii / 32) as f32 - 38.,

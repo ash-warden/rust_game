@@ -96,7 +96,7 @@ async fn main() {
         });
 
         game_state_stack.update();
-        game_state_stack.draw(1.0);
+        game_state_stack.draw();
 
         set_default_camera();
 

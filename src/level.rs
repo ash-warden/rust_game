@@ -1,3 +1,5 @@
+// for level info, such as tiles etc. other stuff handled in level state (game_state.rs)
+
 use crate::coords_to_index;
 use macroquad::math::{IVec2, ivec2};
 use serde::{Deserialize, Serialize};

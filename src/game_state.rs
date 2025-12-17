@@ -16,7 +16,7 @@ pub enum StateTransition {
 
 pub trait GameState {
     fn update(&mut self) -> StateTransition;
-    fn draw(&self, scale: f32);
+    fn draw(&self);
 }
 
 #[derive(Clone)]
@@ -126,7 +126,7 @@ impl GameState for LevelState {
         }
     }
 
-    fn draw(&self, scale: f32) {
+    fn draw(&self) {
         //draw tiles
         let mut i = 0; //tile number
         let mut x = 0; //x coord
@@ -147,11 +147,11 @@ impl GameState for LevelState {
                 let tex = res.get_texture(&level.tile_image_name);
                 draw_texture_ex(
                     tex,
-                    x as f32 * t_size * scale,
-                    y as f32 * t_size * scale,
+                    x as f32 * t_size,
+                    y as f32 * t_size,
                     WHITE,
                     DrawTextureParams {
-                        dest_size: Some(vec2(t_size * scale, t_size * scale)),
+                        dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
                             index_to_coords(level.tile_values[i], level.tileset_columns).0 * t_size,
                             index_to_coords(level.tile_values[i], level.tileset_columns).1 * t_size,
@@ -172,7 +172,7 @@ impl GameState for LevelState {
             y += 1;
         }
         //draw player
-        self.player.draw(scale);
+        self.player.draw();
     }
 }
 
@@ -190,8 +190,8 @@ impl GameState for MenuState {
     fn update(&mut self) -> StateTransition {
         self.menu.update()
     }
-    fn draw(&self, scale: f32) {
-        self.menu.draw(scale);
+    fn draw(&self) {
+        self.menu.draw();
     }
 }
 
@@ -219,9 +219,9 @@ impl GameStateStack {
         }
     }
 
-    pub fn draw(&self, scale: f32) {
+    pub fn draw(&self) {
         if let Some(state) = self.states.last() {
-            state.draw(scale);
+            state.draw();
         }
     }
 

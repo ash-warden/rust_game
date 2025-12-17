@@ -66,19 +66,19 @@ impl Player {
         )
     }
 
-    pub fn draw(&self, scale: f32) {
+    pub fn draw(&self) {
         let res = RESOURCE_MANAGER.lock().unwrap();
         let tex = res.get_texture("player.png");
         draw_texture_ex(
             tex,
-            self.position.x * scale,
-            self.position.y * scale,
+            self.position.x,
+            self.position.y,
             WHITE,
             DrawTextureParams {
                 flip_x: !self.facing_right,
                 dest_size: Some(vec2(
-                    self.actual_size.x as f32 * scale,
-                    self.actual_size.y as f32 * scale,
+                    self.actual_size.x as f32,
+                    self.actual_size.y as f32,
                 )),
                 ..Default::default()
             },
