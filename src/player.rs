@@ -85,7 +85,7 @@ impl Player {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        let accel = 700.0;
+        let accel = 300.0;
         let walk_speed = 200.0;
         let run_speed = walk_speed * 1.7;
         let crawl_speed = walk_speed * 0.5;
@@ -269,6 +269,7 @@ impl Player {
         if self.on_ground {
             println!("{}", self.velocity.x);
             //max -650
+            self.uncrouch();
             self.velocity.y = -self.velocity.x.abs() / 2. - 550.;
             self.on_ground = false;
         }
