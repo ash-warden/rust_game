@@ -1,7 +1,8 @@
-use crate::game_state::{GameStateStack, LevelState, MenuState, PlayerInfo, StateTransition};
+use crate::game_state::{GameStateStack, MenuState, PlayerInfo, SillyState, StateTransition};
 use crate::menu::{Menu, MenuItem};
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
+use level_state::LevelState;
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
@@ -10,6 +11,7 @@ use macroquad::prelude::*;
 mod current_game;
 mod game_state;
 mod level;
+mod level_state;
 mod menu;
 mod player;
 mod resources;
@@ -60,12 +62,25 @@ async fn main() {
         std::process::exit(1);
     });
 
+    let silly_state = SillyState::new();
+
     let mut menu = Menu::new();
-    let test_item = MenuItem::new("Item_1", move || {StateTransition::Replace(Box::new(level_state.clone()))});
-    menu.add_item(test_item);
-    let test_item2 = MenuItem::new("Item2", || {StateTransition::None});
+    let title = MenuItem::new("game_25", || StateTransition::None, false);
+    menu.add_item(title);
+    let start_game = MenuItem::new(
+        "Start Game",
+        move || StateTransition::Replace(Box::new(level_state.clone())),
+        true,
+    );
+    menu.add_item(start_game);
+    let test_item2 = MenuItem::new(
+        "Test Item 1",
+        move || StateTransition::Push(Box::new(silly_state.clone())),
+        true,
+    );
     menu.add_item(test_item2);
     let menu_state = MenuState::new(menu);
+
     let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
 
     build_textures_atlas();
