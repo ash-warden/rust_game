@@ -39,7 +39,6 @@ enum DirectionToMove {
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         let frame_time = get_frame_time();
-        self.player.handle_input(frame_time);
         self.player.update(frame_time);
 
         let map_width = (self.level.map_dimensions.x * self.level.tile_size) as f32;

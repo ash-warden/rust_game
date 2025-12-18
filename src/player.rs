@@ -32,6 +32,8 @@ pub enum PlayerMovementState {
     Running,
     Jumping,
     Falling,
+    Crouching,
+    Crawling,
     Climbing,
 }
 
@@ -76,19 +78,19 @@ impl Player {
             WHITE,
             DrawTextureParams {
                 flip_x: !self.facing_right,
-                dest_size: Some(vec2(
-                    self.actual_size.x as f32,
-                    self.actual_size.y as f32,
-                )),
+                dest_size: Some(vec2(self.actual_size.x as f32, self.actual_size.y as f32)),
                 ..Default::default()
             },
         );
     }
 
-    pub fn handle_input(&mut self, _delta_time: f32) {
-        let accel = 400.0;
-        let max_speed = 270.0;
-        let friction = 1000.0;
+    pub fn update(&mut self, delta_time: f32) {
+        let accel = 700.0;
+        let walk_speed = 200.0;
+        let run_speed = walk_speed * 1.7;
+        let crawl_speed = walk_speed * 0.5;
+        let max_speed: f32;
+        let friction = 700.0;
 
         let mut want_dir: f32 = 0.0;
         if is_key_down(KeyCode::Left) {
@@ -98,6 +100,13 @@ impl Player {
         if is_key_down(KeyCode::Right) {
             self.facing_right = true;
             want_dir += 1.0;
+        }
+        if self.crouching {
+            max_speed = crawl_speed;
+        } else if is_key_down(KeyCode::LeftShift) {
+            max_speed = run_speed;
+        } else {
+            max_speed = walk_speed;
         }
 
         // Desired velocity based on input
@@ -115,116 +124,49 @@ impl Player {
             };
 
             // Move velocity toward target
-            let step = rate * _delta_time;
+            let step = rate * delta_time;
             if delta.abs() <= step {
                 self.velocity.x = target_velocity;
             } else {
                 self.velocity.x += delta.signum() * step;
             }
         }
-        // test if player is over a ladder tile
-        let offsets = [
-            vec2(0., 0.),
-            vec2(0., self.actual_size.y as f32 / 2.),
-            vec2(0., self.actual_size.y as f32),
-            vec2(self.actual_size.x as f32 - 1., 0.),
-            vec2(
-                self.actual_size.x as f32 - 1.,
-                self.actual_size.y as f32 / 2.,
-            ),
-            vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32),
-        ];
-
-        let on_ladder = offsets.iter().any(|offset| {
-            self.level
-                .get_tile_info(((self.position + *offset).as_ivec2()) / 32)
-                .ladder
-        });
-
-        if on_ladder && !self.crouching {
-            self.state = PlayerMovementState::Climbing;
-        }
-
-        //work out if at the top of the ladder
-        let on_ladder_top = (self
-            .level
-            .get_tile_info(((self.position + vec2(0., 65.)).as_ivec2()) / 32)
-            .ladder
-            || self
-                .level
-                .get_tile_info(
-                    ((self.position + vec2(self.actual_size.x as f32 - 1., 65.)).as_ivec2()) / 32,
-                )
-                .ladder)
-            && !(self
-                .level
-                .get_tile_info(((self.position + vec2(0., 63.)).as_ivec2()) / 32)
-                .ladder
-                || self
-                    .level
-                    .get_tile_info(
-                        ((self.position + vec2(self.actual_size.x as f32 - 1., 63.)).as_ivec2())
-                            / 32,
-                    )
-                    .ladder);
 
         if is_key_pressed(KeyCode::Space) {
             self.jump();
-        }
-
-        if self.state != PlayerMovementState::Climbing {
-            if is_key_pressed(KeyCode::Down) {
-                self.crouch();
-            }
-            if is_key_pressed(KeyCode::Up) {
-                self.uncrouch();
-            }
-        } else {
-            let climb_speed = 150.0;
-
-            if on_ladder_top {
-                self.on_ground = true;
-                self.position.y += -0.1;
-            }
-
-            if is_key_down(KeyCode::Up) && !on_ladder_top {
-                self.velocity.y = -climb_speed;
-            } else if is_key_down(KeyCode::Down) {
-                self.velocity.y = climb_speed;
-            } else {
-                self.velocity.y = 0.0;
-            }
-
-            if !on_ladder {
-                self.state = PlayerMovementState::Falling;
-            }
         }
 
         //variable jump height
         if is_key_released(KeyCode::Space) && self.velocity.y < -200. {
             self.velocity.y = self.velocity.y / 2.;
         }
-    }
 
-    pub fn update(&mut self, delta_time: f32) {
-        //set player size
-        if self.crouching {
-            self.actual_size.y = self.full_size / 2;
-        } else {
-            self.actual_size.y = self.full_size;
-        }
-        println!("{}", self.crouching);
-        // setting state for movement
-        if !(self.crouching || self.state == PlayerMovementState::Climbing) {
-            if self.on_ground {
-                if (self.velocity.x.abs()) > 199. {
-                    self.state = PlayerMovementState::Running;
-                } else if self.velocity.x.abs() > 0. {
-                    self.state = PlayerMovementState::Walking;
+        //update states
+        if self.on_ground
+        {
+            if (self.state == PlayerMovementState::Crouching
+                || self.state == PlayerMovementState::Crawling) {
+                if self.velocity.x.abs() < 0.1 {
+                    self.state = PlayerMovementState::Crouching;
+                    self.velocity.x = 0.;
                 } else {
-                    self.state = PlayerMovementState::Standing;
+                    self.state = PlayerMovementState::Crawling;
                 }
             } else {
+                if self.velocity.x.abs() < 0.1 {
+                    self.state = PlayerMovementState::Standing;
+                    self.velocity.x = 0.;
+                } else if self.velocity.x.abs() < 201.0 {
+                    self.state = PlayerMovementState::Walking;
+                } else {
+                    self.state = PlayerMovementState::Running;
+                }
+            }
+        } else {
+            if self.state == PlayerMovementState::Climbing {
+                //nothing yet
+            } else if !(self.state == PlayerMovementState::Crouching
+                || self.state == PlayerMovementState::Crawling) {
                 if self.velocity.y > 0. {
                     self.state = PlayerMovementState::Falling;
                 } else {
@@ -232,6 +174,27 @@ impl Player {
                 }
             }
         }
+
+        //handle crouching
+        if self.state == PlayerMovementState::Standing || self.state == PlayerMovementState::Walking {
+            if is_key_pressed(KeyCode::Down) {
+                self.crouch();
+            }
+        }
+        if self.state == PlayerMovementState::Crouching || self.state == PlayerMovementState::Crawling {
+            if is_key_pressed(KeyCode::Up) {
+                self.uncrouch();
+            }
+        }
+
+        //set player size
+        if self.crouching {
+            self.actual_size.y = self.full_size / 2;
+        } else {
+            self.actual_size.y = self.full_size;
+        }
+        println!("{}", self.crouching);
+
         println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
         let gravity = 1600.0;
@@ -314,6 +277,7 @@ impl Player {
     pub fn crouch(&mut self) {
         if !self.crouching {
             self.crouching = true;
+            self.state = PlayerMovementState::Crouching;
             self.position.y += self.full_size as f32 / 2.;
         }
     }
@@ -333,13 +297,13 @@ impl Player {
                 return false; // blocked by tile above
             }
         }
-
         true
     }
 
     pub fn uncrouch(&mut self) {
         if self.can_uncrouch(self.level.tile_size as f32, 0.001) && self.crouching {
             self.crouching = false;
+            self.state = PlayerMovementState::Standing;
             self.position.y -= (self.full_size / 2) as f32;
         }
     }
