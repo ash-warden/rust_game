@@ -55,7 +55,6 @@ async fn main() {
         pos: vec2(100., 100.),
         velocity: vec2(0., 0.),
         state: PlayerMovementState::Standing,
-        crouch: false,
     };
 
     let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {

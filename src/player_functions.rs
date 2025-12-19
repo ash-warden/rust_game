@@ -1,7 +1,7 @@
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
-    PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_CRAWL,
-    PLAYER_SPEED_RUN, PLAYER_SPEED_WALK, Player, PlayerMovementState,
+    PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD,
+    PLAYER_SPEED_RUN, PLAYER_SPEED_WALK, Player,
 };
 use macroquad::input::{KeyCode, is_key_down, is_key_pressed, is_key_released};
 use macroquad::math::{Vec2, ivec2};
@@ -18,9 +18,7 @@ impl Player {
             self.facing_right = true;
             want_dir += 1.0;
         }
-        if self.crouching {
-            max_speed = PLAYER_SPEED_CRAWL;
-        } else if is_key_down(KeyCode::LeftShift) {
+        if is_key_down(KeyCode::LeftShift) {
             max_speed = PLAYER_SPEED_RUN;
         } else {
             max_speed = PLAYER_SPEED_WALK;
@@ -61,36 +59,10 @@ impl Player {
         }
     }
 
-    pub fn handle_crouching(&mut self) {
-        if self.state == PlayerMovementState::Standing || self.state == PlayerMovementState::Walking
-        {
-            if is_key_pressed(KeyCode::Down) {
-                self.crouch();
-            }
-        }
-        if self.state == PlayerMovementState::Crouching
-            || self.state == PlayerMovementState::Crawling
-        {
-            if is_key_pressed(KeyCode::Up) {
-                self.uncrouch();
-            }
-        }
-
-        //set player size
-        if self.crouching {
-            self.actual_size.y = self.full_size / 2;
-        } else {
-            self.actual_size.y = self.full_size;
-        }
-        println!("{}", self.crouching);
-    }
-
     pub fn apply_gravity(&mut self, delta_time: f32) {
-        if self.state != PlayerMovementState::Climbing {
-            self.velocity.y += PLAYER_GRAVITY * delta_time;
-            if self.velocity.y > PLAYER_MAX_FALL_SPEED {
-                self.velocity.y = PLAYER_MAX_FALL_SPEED;
-            }
+        self.velocity.y += PLAYER_GRAVITY * delta_time;
+        if self.velocity.y > PLAYER_MAX_FALL_SPEED {
+            self.velocity.y = PLAYER_MAX_FALL_SPEED;
         }
     }
 
@@ -155,44 +127,8 @@ impl Player {
     pub fn jump(&mut self) {
         if self.on_ground {
             println!("{}", self.velocity.x);
-            //max -650
-            self.uncrouch();
             self.velocity.y = -self.velocity.x.abs() / 2. - PLAYER_JUMP_MIN;
             self.on_ground = false;
-        }
-    }
-
-    pub fn crouch(&mut self) {
-        if !self.crouching {
-            self.crouching = true;
-            self.state = PlayerMovementState::Crouching;
-            self.position.y += self.full_size as f32 / 2.;
-        }
-    }
-
-    fn can_uncrouch(&self, tile_size: f32, epsilon: f32) -> bool {
-        let head_clearance = self.full_size as f32 / 2.;
-        let check_top = self.position.y - head_clearance;
-        let left = self.position.x;
-        let right = self.position.x + self.actual_size.x as f32;
-
-        let tile_left = (left / tile_size).floor() as i32;
-        let tile_right = ((right - epsilon) / tile_size).floor() as i32;
-        let tile_check_y = (check_top / tile_size).floor() as i32;
-
-        for tx in tile_left..=tile_right {
-            if self.is_tile_solid(tx, tile_check_y) {
-                return false; // blocked by tile above
-            }
-        }
-        true
-    }
-
-    pub fn uncrouch(&mut self) {
-        if self.can_uncrouch(self.level.tile_size as f32, PLAYER_EPSILON) && self.crouching {
-            self.crouching = false;
-            self.state = PlayerMovementState::Standing;
-            self.position.y -= (self.full_size / 2) as f32;
         }
     }
 

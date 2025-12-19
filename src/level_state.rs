@@ -99,7 +99,6 @@ impl GameState for LevelState {
             pos: new_player_pos,
             velocity: self.player.velocity,
             state: self.player.state.clone(),
-            crouch: self.player.crouching,
         };
 
         // Load new LevelState
