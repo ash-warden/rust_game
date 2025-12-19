@@ -25,6 +25,18 @@ pub struct PlayerInfo {
     pub crouch: bool,
 }
 
+const PLAYER_ACCEL: f32 = 300.0;
+const PLAYER_SPEED_WALK: f32 = 200.0;
+const PLAYER_SPEED_RUN: f32 = PLAYER_SPEED_WALK * 1.7;
+const PLAYER_SPEED_CRAWL: f32 = PLAYER_SPEED_WALK * 0.5;
+const PLAYER_FRICTION: f32 = 700.;
+const PLAYER_GRAVITY: f32 = 1600.;
+const PLAYER_MAX_FALL_SPEED: f32 = 600.0;
+const PLAYER_EPSILON: f32 = 0.001;
+const PLAYER_SNAP_THRESHOLD: f32 = 3.0;
+const PLAYER_JUMP_MIN: f32 = 550.;
+const PLAYER_JUMP_VARY_LIMIT: f32 = -200.;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum PlayerMovementState {
     Standing,
@@ -85,13 +97,7 @@ impl Player {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        let accel = 300.0;
-        let walk_speed = 200.0;
-        let run_speed = walk_speed * 1.7;
-        let crawl_speed = walk_speed * 0.5;
         let max_speed: f32;
-        let friction = 700.0;
-
         let mut want_dir: f32 = 0.0;
         if is_key_down(KeyCode::Left) {
             self.facing_right = false;
@@ -102,11 +108,11 @@ impl Player {
             want_dir += 1.0;
         }
         if self.crouching {
-            max_speed = crawl_speed;
+            max_speed = PLAYER_SPEED_CRAWL;
         } else if is_key_down(KeyCode::LeftShift) {
-            max_speed = run_speed;
+            max_speed = PLAYER_SPEED_RUN;
         } else {
-            max_speed = walk_speed;
+            max_speed = PLAYER_SPEED_WALK;
         }
 
         // Desired velocity based on input
@@ -118,9 +124,9 @@ impl Player {
         if delta.abs() > 0.0 {
             // If we need to slow down (opposite direction or stopping), use friction
             let rate = if target_velocity.signum() != self.velocity.x.signum() {
-                friction
+                PLAYER_FRICTION
             } else {
-                accel
+                PLAYER_ACCEL
             };
 
             // Move velocity toward target
@@ -137,15 +143,15 @@ impl Player {
         }
 
         //variable jump height
-        if is_key_released(KeyCode::Space) && self.velocity.y < -200. {
+        if is_key_released(KeyCode::Space) && self.velocity.y < PLAYER_JUMP_VARY_LIMIT {
             self.velocity.y = self.velocity.y / 2.;
         }
 
         //update states
-        if self.on_ground
-        {
+        if self.on_ground {
             if (self.state == PlayerMovementState::Crouching
-                || self.state == PlayerMovementState::Crawling) {
+                || self.state == PlayerMovementState::Crawling)
+            {
                 if self.velocity.x.abs() < 0.1 {
                     self.state = PlayerMovementState::Crouching;
                     self.velocity.x = 0.;
@@ -166,7 +172,8 @@ impl Player {
             if self.state == PlayerMovementState::Climbing {
                 //nothing yet
             } else if !(self.state == PlayerMovementState::Crouching
-                || self.state == PlayerMovementState::Crawling) {
+                || self.state == PlayerMovementState::Crawling)
+            {
                 if self.velocity.y > 0. {
                     self.state = PlayerMovementState::Falling;
                 } else {
@@ -176,12 +183,15 @@ impl Player {
         }
 
         //handle crouching
-        if self.state == PlayerMovementState::Standing || self.state == PlayerMovementState::Walking {
+        if self.state == PlayerMovementState::Standing || self.state == PlayerMovementState::Walking
+        {
             if is_key_pressed(KeyCode::Down) {
                 self.crouch();
             }
         }
-        if self.state == PlayerMovementState::Crouching || self.state == PlayerMovementState::Crawling {
+        if self.state == PlayerMovementState::Crouching
+            || self.state == PlayerMovementState::Crawling
+        {
             if is_key_pressed(KeyCode::Up) {
                 self.uncrouch();
             }
@@ -197,16 +207,12 @@ impl Player {
 
         println!("{:?}", self.state);
         let tile_size = self.level.tile_size;
-        let gravity = 1600.0;
-        let max_fall_speed = 600.0;
-        let epsilon = 0.001;
-        let snap_threshold = 3.0; // snap when within this many pixels
 
         // apply gravity
         if self.state != PlayerMovementState::Climbing {
-            self.velocity.y += gravity * delta_time;
-            if self.velocity.y > max_fall_speed {
-                self.velocity.y = max_fall_speed;
+            self.velocity.y += PLAYER_GRAVITY * delta_time;
+            if self.velocity.y > PLAYER_MAX_FALL_SPEED {
+                self.velocity.y = PLAYER_MAX_FALL_SPEED;
             }
         }
 
@@ -219,8 +225,8 @@ impl Player {
             true,
             prev_frame_pos,
             tile_size as f32,
-            epsilon,
-            snap_threshold,
+            PLAYER_EPSILON,
+            PLAYER_SNAP_THRESHOLD,
         );
 
         // vertical movement: sub-step to avoid tunnelling/bounce
@@ -244,8 +250,8 @@ impl Player {
                 false,
                 step_prev_pos,
                 tile_size as f32,
-                epsilon,
-                snap_threshold,
+                PLAYER_EPSILON,
+                PLAYER_SNAP_THRESHOLD,
             );
 
             // after resolution, if we landed, zero vertical velocity and clear remaining (we shouldn't continue moving down)
@@ -270,7 +276,7 @@ impl Player {
             println!("{}", self.velocity.x);
             //max -650
             self.uncrouch();
-            self.velocity.y = -self.velocity.x.abs() / 2. - 550.;
+            self.velocity.y = -self.velocity.x.abs() / 2. - PLAYER_JUMP_MIN;
             self.on_ground = false;
         }
     }
@@ -302,7 +308,7 @@ impl Player {
     }
 
     pub fn uncrouch(&mut self) {
-        if self.can_uncrouch(self.level.tile_size as f32, 0.001) && self.crouching {
+        if self.can_uncrouch(self.level.tile_size as f32, PLAYER_EPSILON) && self.crouching {
             self.crouching = false;
             self.state = PlayerMovementState::Standing;
             self.position.y -= (self.full_size / 2) as f32;
