@@ -2,7 +2,7 @@ use std::sync::Arc;
 use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use macroquad::math::{vec2, IVec2, Rect};
 use macroquad::color::WHITE;
-use crate::game_state::{GameState, Player, PlayerInfo, StateTransition};
+use crate::game_state::{GameState, Player, PlayerInitialInfo, StateTransition};
 use crate::{index_to_coords, level};
 use crate::resources::RESOURCE_MANAGER;
 
@@ -15,7 +15,7 @@ pub struct LevelState {
 impl LevelState {
     pub fn build(
         level: &str,
-        player_info: PlayerInfo,
+        player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(level) = res.get_level(level) {
@@ -95,7 +95,7 @@ impl GameState for LevelState {
             self.level.y_coord + offset.y
         );
 
-        let player_info = PlayerInfo {
+        let player_info = PlayerInitialInfo {
             pos: new_player_pos,
             velocity: self.player.velocity,
             state: self.player.state.clone(),

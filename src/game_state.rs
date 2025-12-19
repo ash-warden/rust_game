@@ -1,4 +1,4 @@
-pub(crate) use crate::player::{Player, PlayerInfo};
+pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::menu::Menu;
 
 pub enum StateTransition {

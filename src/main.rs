@@ -1,4 +1,4 @@
-use crate::game_state::{GameStateStack, MenuState, PlayerInfo, SillyState, StateTransition};
+use crate::game_state::{GameStateStack, MenuState, PlayerInitialInfo, SillyState, StateTransition};
 use crate::menu::{Menu, MenuItem};
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
@@ -15,6 +15,7 @@ mod level_state;
 mod menu;
 mod player;
 mod resources;
+mod player_functions;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -50,7 +51,7 @@ async fn main() {
         res.scale = 1.;
     }
 
-    let player_info = PlayerInfo {
+    let player_info = PlayerInitialInfo {
         pos: vec2(100., 100.),
         velocity: vec2(0., 0.),
         state: PlayerMovementState::Standing,
