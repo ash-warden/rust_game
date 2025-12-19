@@ -1,10 +1,10 @@
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
-    PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD,
-    PLAYER_SPEED_RUN, PLAYER_SPEED_WALK, Player,
+    PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_RUN,
+    PLAYER_SPEED_WALK, Player,
 };
 use macroquad::input::{KeyCode, is_key_down, is_key_pressed, is_key_released};
-use macroquad::math::{Vec2, ivec2};
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 
 impl Player {
     pub fn calc_horizontal_velocity(&mut self, delta_time: f32) {
@@ -238,6 +238,102 @@ impl Player {
                 }
             }
         }
+    }
+
+    pub fn check_for_ladder(&self) -> Option<IVec2> {
+        let offsets1 = [
+            //vec2(0., 0.),
+            vec2(0., self.actual_size.y as f32 / 2.),
+            //vec2(0., self.actual_size.y as f32 - 1.),
+            //vec2(self.actual_size.x as f32 - 1., 0.),
+            vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 / 2.,
+            ),
+            //vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32 - 1.),
+        ];
+        let offsets2 = [
+            //vec2(0., 0.),
+            //vec2(0., self.actual_size.y as f32 / 2.),
+            vec2(0., self.actual_size.y as f32 - 1.),
+            //vec2(self.actual_size.x as f32 - 1., 0.),
+            /*vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 / 2.,
+            ),*/
+            vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 - 1.,
+            ),
+        ];
+        let mut coords: IVec2 = ivec2(0, 0);
+        let on_ladder = offsets1.iter().any(|offset1| {
+            coords = ((self.position + *offset1).as_ivec2()) / 32;
+            self.level.get_tile_info(coords).ladder
+        }) && offsets2.iter().any(|offset2| {
+            coords = ((self.position + *offset2).as_ivec2()) / 32;
+            self.level.get_tile_info(coords).ladder
+        });
+        if on_ladder {
+            Option::from(coords)
+        } else {
+            None
+        }
+    }
+
+    pub fn over_solid_tile(&self) -> bool {
+        let offsets = [
+            vec2(0., 0.),
+            vec2(0., self.actual_size.y as f32 / 2.),
+            vec2(0., self.actual_size.y as f32 - 1.),
+            vec2(self.actual_size.x as f32 - 1., 0.),
+            vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 / 2.,
+            ),
+            vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 - 1.,
+            ),
+        ];
+        offsets.iter().any(|offset| {
+            let coords = ((self.position + *offset).as_ivec2()) / 32;
+            self.level.get_tile_info(coords).solid
+        })
+    }
+
+    pub fn want_to_climb() -> bool {
+        is_key_down(KeyCode::Up) || is_key_down(KeyCode::Down)
+    }
+
+    pub fn handle_climb(&mut self, col: i32) -> bool {
+        let ladder_pos_x = (col * self.level.tile_size + self.level.tile_size/2) as f32;
+        let player_centre = self.position.x + (self.actual_size.x/2) as f32;
+        if player_centre - ladder_pos_x > 5.1 {
+            self.position.x -= 5.;
+        } else if player_centre - ladder_pos_x < - 5.1 {
+            self.position.x += 5.;
+        } else {
+            self.position.x = ladder_pos_x - (self.actual_size.x / 2) as f32;
+        }
+
+        self.velocity = vec2(0., 0.);
+        if is_key_down(KeyCode::Up) {
+            self.position.y -= 1.;
+            if self.check_for_ladder() == None {
+                self.position.y += 1.;
+            }
+        } else if is_key_down(KeyCode::Down) {
+            self.position.y += 1.;
+            if self.check_for_ladder() == None {
+                self.position.y -= 1.;
+            }
+        } else if (is_key_down(KeyCode::Left) || is_key_down(KeyCode::Right))
+            && !self.over_solid_tile()
+        {
+            return true;
+        }
+        false
     }
 
     // Return true if tile at (tx, ty) is solid.

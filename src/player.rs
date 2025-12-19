@@ -106,12 +106,31 @@ impl Player {
                 self.apply_gravity(delta_time);
                 self.horizontal_movement(delta_time);
                 self.vertical_movement(delta_time);
+                if self.on_ground {
+                    let ladder = self.check_for_ladder();
+                    if ladder != None {
+                        if Self::want_to_climb() {
+                            self.state = PlayerMovementState::Climbing;
+                        }
+                    }
+                }
             }
-            PlayerMovementState::Climbing => {}
+            PlayerMovementState::Climbing => {
+                let ladder = self.check_for_ladder();
+                if ladder != None {
+                    //true is player is trying to get off ladder
+                    if self.handle_climb(ladder.unwrap().x) {
+                        self.state = PlayerMovementState::Standing;
+
+                    }
+                }
+            }
         }
         // handle different "horizontal" states
         match self.state {
-            PlayerMovementState::Standing | PlayerMovementState::Walking | PlayerMovementState::Running => {
+            PlayerMovementState::Standing
+            | PlayerMovementState::Walking
+            | PlayerMovementState::Running => {
                 if self.velocity.x.abs() > PLAYER_SPEED_WALK {
                     self.state = PlayerMovementState::Running;
                 } else if self.velocity.x.abs() > 0.1 {

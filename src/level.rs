@@ -46,9 +46,16 @@ struct TiledMap {
 }
 
 #[derive(Serialize, Deserialize)]
+struct TileProperties {
+    name: String,
+    r#type: String,
+    value: bool,
+}
+
+#[derive(Serialize, Deserialize)]
 struct TiledSetTiles {
     id: i32,
-    r#type: String,
+    properties: Vec<TileProperties>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -147,8 +154,17 @@ impl Level {
         let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
         let tile = self.tile_values[index as usize];
         let tileset = &self.tileset;
-        let solid = tileset.tiles[tile as usize - 1].r#type == "solid";
-        let ladder = tileset.tiles[tile as usize - 1].r#type == "ladder";
+        let tile_properties = &tileset.tiles[tile as usize - 1].properties;
+        let mut solid: bool = false;
+        let mut ladder: bool = false;
+        for i in tile_properties {
+            if i.name == "solid" && i.value {
+                solid = true;
+            }
+            if i.name == "ladder" && i.value {
+                ladder = true;
+            }
+        }
         TileInfo { solid, ladder }
     }
 }

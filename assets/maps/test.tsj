@@ -1,29 +1,125 @@
-{ "columns":2,
+{ "columns":4,
  "image":"test_tiles.png",
  "imageheight":64,
- "imagewidth":64,
+ "imagewidth":128,
  "margin":0,
  "name":"test_tiles",
  "spacing":0,
- "tilecount":4,
+ "tilecount":8,
  "tiledversion":"1.11.0",
  "tileheight":32,
  "tiles":[
         {
          "id":0,
-         "type":"solid"
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
         }, 
         {
          "id":1,
-         "type":"ladder"
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":true
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
         }, 
         {
          "id":2,
-         "type":"solid"
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
         }, 
         {
          "id":3,
-         "type":"air"
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":true
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":4,
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":5,
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
+        }, 
+        {
+         "id":6,
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":true
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
+        }, 
+        {
+         "id":7,
+         "properties":[
+                {
+                 "name":"ladder",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":false
+                }]
         }],
  "tilewidth":32,
  "type":"tileset",
