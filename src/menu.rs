@@ -1,10 +1,10 @@
 use crate::game_state::StateTransition;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::color::{Color, WHITE, YELLOW};
-use macroquad::input::{KeyCode, is_key_pressed};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
 use macroquad::texture::Texture2D;
+use crate::controls::CONTROLS;
 
 pub struct Menu {
     menu_items: Vec<MenuItem>,
@@ -29,8 +29,8 @@ impl Menu {
         if !self.menu_items[self.current_index as usize].selectable {
             self.current_index += 1;
         }
-
-        if is_key_pressed(KeyCode::Down) {
+        let mut input = CONTROLS.lock().unwrap();
+        if input.controls_down() {
             if self.current_index < self.menu_items.len() as u32 - 1 {
                 self.current_index += 1;
                 if !self.menu_items[self.current_index as usize].selectable {
@@ -40,7 +40,7 @@ impl Menu {
                 }
             }
         }
-        if is_key_pressed(KeyCode::Up) {
+        if input.controls_up() {
             if self.current_index > 0 {
                 self.current_index -= 1;
                 if !self.menu_items[self.current_index as usize].selectable {
@@ -50,7 +50,7 @@ impl Menu {
                 }
             }
         }
-        if is_key_pressed(KeyCode::Enter) {
+        if input.controls_enter() {
             return self.menu_items[self.current_index as usize].activate();
         }
         StateTransition::None

@@ -1,21 +1,24 @@
-use crate::game_state::{GameStateStack, MenuState, PlayerInitialInfo, SillyState, StateTransition};
+use crate::game_state::{
+    GameStateStack, MenuState, PlayerInitialInfo, SillyState, StateTransition,
+};
 use crate::menu::{Menu, MenuItem};
 use crate::player::PlayerMovementState;
-use crate::resources::{RESOURCE_MANAGER, load_all_assets};
+use crate::resources::{load_all_assets, RESOURCE_MANAGER};
 use level_state::LevelState;
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 
 //module for loading the level from the map
+mod controls;
 mod current_game;
 mod game_state;
 mod level;
 mod level_state;
 mod menu;
 mod player;
-mod resources;
 mod player_functions;
+mod resources;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -45,7 +48,6 @@ fn window_conf() -> Conf {
 #[macroquad::main(window_conf)]
 async fn main() {
     load_all_assets().await;
-
     {
         let mut res = RESOURCE_MANAGER.lock().unwrap();
         res.scale = 1.;

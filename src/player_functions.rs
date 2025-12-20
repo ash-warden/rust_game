@@ -1,24 +1,25 @@
+use crate::controls::CONTROLS;
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
     PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_RUN,
     PLAYER_SPEED_WALK, Player,
 };
-use macroquad::input::{KeyCode, is_key_down, is_key_pressed, is_key_released};
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 
 impl Player {
     pub fn calc_horizontal_velocity(&mut self, delta_time: f32) {
         let max_speed: f32;
         let mut want_dir: f32 = 0.0;
-        if is_key_down(KeyCode::Left) {
+        let mut input = CONTROLS.lock().unwrap();
+        if input.controls_left() {
             self.facing_right = false;
             want_dir -= 1.0;
         }
-        if is_key_down(KeyCode::Right) {
+        if input.controls_right() {
             self.facing_right = true;
             want_dir += 1.0;
         }
-        if is_key_down(KeyCode::LeftShift) {
+        if input.controls_secondary() {
             max_speed = PLAYER_SPEED_RUN;
         } else {
             max_speed = PLAYER_SPEED_WALK;
@@ -49,12 +50,13 @@ impl Player {
     }
 
     pub fn handle_jumping(&mut self) {
-        if is_key_pressed(KeyCode::Space) {
+        let mut input = CONTROLS.lock().unwrap();
+        if input.controls_primary() {
             self.jump();
         }
 
         //variable jump height
-        if is_key_released(KeyCode::Space) && self.velocity.y < PLAYER_JUMP_VARY_LIMIT {
+        if !input.controls_primary() && self.velocity.y < PLAYER_JUMP_VARY_LIMIT {
             self.velocity.y = self.velocity.y / 2.;
         }
     }
@@ -127,7 +129,7 @@ impl Player {
     pub fn jump(&mut self) {
         if self.on_ground {
             println!("{}", self.velocity.x);
-            self.velocity.y = -self.velocity.x.abs() / 2. - PLAYER_JUMP_MIN;
+            self.velocity.y = -self.velocity.x.abs() / 3. - PLAYER_JUMP_MIN;
             self.on_ground = false;
         }
     }
@@ -303,35 +305,35 @@ impl Player {
     }
 
     pub fn want_to_climb() -> bool {
-        is_key_down(KeyCode::Up) || is_key_down(KeyCode::Down)
+        let mut input = CONTROLS.lock().unwrap();
+        (input.controls_up() || input.controls_down())
+            && !(input.controls_left() || input.controls_right())
     }
-
+    //return true to get off ladder
     pub fn handle_climb(&mut self, col: i32) -> bool {
-        let ladder_pos_x = (col * self.level.tile_size + self.level.tile_size/2) as f32;
-        let player_centre = self.position.x + (self.actual_size.x/2) as f32;
+        let ladder_pos_x = (col * self.level.tile_size + self.level.tile_size / 2) as f32;
+        let player_centre = self.position.x + (self.actual_size.x / 2) as f32;
         if player_centre - ladder_pos_x > 5.1 {
             self.position.x -= 5.;
-        } else if player_centre - ladder_pos_x < - 5.1 {
+        } else if player_centre - ladder_pos_x < -5.1 {
             self.position.x += 5.;
         } else {
             self.position.x = ladder_pos_x - (self.actual_size.x / 2) as f32;
         }
-
+        let mut input = CONTROLS.lock().unwrap();
         self.velocity = vec2(0., 0.);
-        if is_key_down(KeyCode::Up) {
-            self.position.y -= 1.;
-            if self.check_for_ladder() == None {
-                self.position.y += 1.;
-            }
-        } else if is_key_down(KeyCode::Down) {
-            self.position.y += 1.;
-            if self.check_for_ladder() == None {
-                self.position.y -= 1.;
-            }
-        } else if (is_key_down(KeyCode::Left) || is_key_down(KeyCode::Right))
-            && !self.over_solid_tile()
-        {
+        if (input.controls_left() || input.controls_right() || input.controls_primary()) && !self.over_solid_tile() {
             return true;
+        } else if input.controls_up() {
+            self.position.y -= 2.;
+            if self.check_for_ladder() == None {
+                self.position.y += 2.;
+            }
+        } else if input.controls_down() {
+            self.position.y += 2.;
+            if self.check_for_ladder() == None {
+                self.position.y -= 2.;
+            }
         }
         false
     }
