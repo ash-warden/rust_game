@@ -21,15 +21,15 @@ pub struct PlayerInitialInfo {
     pub state: PlayerMovementState,
 }
 
-pub const PLAYER_ACCEL: f32 = 300.0;
+pub const PLAYER_ACCEL: f32 = 600.0;
 pub const PLAYER_SPEED_WALK: f32 = 200.0;
 pub const PLAYER_SPEED_RUN: f32 = PLAYER_SPEED_WALK * 1.7;
-pub const PLAYER_FRICTION: f32 = 700.;
+pub const PLAYER_FRICTION: f32 = 1000.;
 pub const PLAYER_GRAVITY: f32 = 1600.;
 pub const PLAYER_MAX_FALL_SPEED: f32 = 600.0;
 pub const PLAYER_EPSILON: f32 = 0.001;
 pub const PLAYER_SNAP_THRESHOLD: f32 = 3.0;
-pub const PLAYER_JUMP_MIN: f32 = 550.;
+pub const PLAYER_JUMP_MIN: f32 = 600.;
 pub const PLAYER_JUMP_VARY_LIMIT: f32 = -200.;
 
 #[derive(Debug, PartialEq, Clone)]
