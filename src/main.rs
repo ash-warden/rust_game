@@ -59,7 +59,7 @@ async fn main() {
         state: PlayerMovementState::Standing,
     };
 
-    let level_state = LevelState::build("test_2_1", player_info).unwrap_or_else(|err| {
+    let level_state = LevelState::build("a1_0_0", player_info).unwrap_or_else(|err| {
         eprintln!("Failed to load level state: {err}");
         std::process::exit(1);
     });

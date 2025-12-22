@@ -245,12 +245,12 @@ impl Player {
     pub fn check_for_ladder(&self) -> Option<IVec2> {
         let offsets1 = [
             //vec2(0., 0.),
-            vec2(0., self.actual_size.y as f32 / 2.),
+            vec2(0., self.actual_size.y as f32 / 2. + 1.),
             //vec2(0., self.actual_size.y as f32 - 1.),
             //vec2(self.actual_size.x as f32 - 1., 0.),
             vec2(
                 self.actual_size.x as f32 - 1.,
-                self.actual_size.y as f32 / 2.,
+                self.actual_size.y as f32 / 2. + 1.,
             ),
             //vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32 - 1.),
         ];
@@ -268,14 +268,44 @@ impl Player {
                 self.actual_size.y as f32 - 1.,
             ),
         ];
+        let offsets3 = [
+            vec2(0., 0.),
+            //vec2(0., self.actual_size.y as f32 / 2.),
+            //vec2(0., self.actual_size.y as f32 - 1.),
+            vec2(self.actual_size.x as f32 - 1., 0.),
+            /*vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 / 2.,
+            ),*/
+            /*vec2(
+                self.actual_size.x as f32 - 1.,
+                self.actual_size.y as f32 - 1.,
+            ),*/
+        ];
         let mut coords: IVec2 = ivec2(0, 0);
-        let on_ladder = offsets1.iter().any(|offset1| {
+        let on_ladder: bool;
+        println!("{}", self.position.y);
+        if self.position.y > 400. {
+            on_ladder = offsets1.iter().any(|offset1| {
             coords = ((self.position + *offset1).as_ivec2()) / 32;
             self.level.get_tile_info(coords).ladder
-        }) && offsets2.iter().any(|offset2| {
-            coords = ((self.position + *offset2).as_ivec2()) / 32;
-            self.level.get_tile_info(coords).ladder
-        });
+        }) || offsets2.iter().any(|offset2| {
+                coords = ((self.position + *offset2).as_ivec2()) / 32;
+                self.level.get_tile_info(coords).ladder
+            }) || offsets3.iter().any(|offset3| {
+                coords = ((self.position + *offset3).as_ivec2()) / 32;
+                self.level.get_tile_info(coords).ladder
+            });
+        } else {
+            on_ladder = offsets1.iter().any(|offset1| {
+                coords = ((self.position + *offset1).as_ivec2()) / 32;
+                self.level.get_tile_info(coords).ladder
+            }) && offsets2.iter().any(|offset2| {
+                coords = ((self.position + *offset2).as_ivec2()) / 32;
+                self.level.get_tile_info(coords).ladder
+            });
+        }
+
         if on_ladder {
             Option::from(coords)
         } else {

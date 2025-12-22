@@ -90,7 +90,7 @@ impl GameState for LevelState {
         };
 
         let new_level = format!(
-            "test_{}_{}",
+            "a1_{}_{}",
             self.level.x_coord + offset.x,
             self.level.y_coord + offset.y
         );
@@ -105,7 +105,7 @@ impl GameState for LevelState {
         match LevelState::build(&new_level, player_info) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
-                eprintln!("Failed to load level state{}: {err}", &new_level);
+                eprintln!("Failed to load level state \"{}\": {err}", &new_level);
                 std::process::exit(1);
             }
         }
