@@ -1,13 +1,10 @@
-use crate::game_state::{
-    GameStateStack, MenuState, PlayerInitialInfo, SillyState, StateTransition,
-};
+use crate::game_state::{GameStateStack, LoadSaveState, MenuState, SillyState, StateTransition};
 use crate::menu::{Menu, MenuItem};
-use crate::player::PlayerMovementState;
-use crate::resources::{load_all_assets, RESOURCE_MANAGER};
-use level_state::LevelState;
+use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
+use serde::{Deserialize, Serialize};
 
 //module for loading the level from the map
 mod controls;
@@ -45,33 +42,39 @@ fn window_conf() -> Conf {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SaveData {
+    area: String,
+    checkpoint: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Checkpoint {
+    id: i32,
+    room_x: i32,
+    room_y: i32,
+    pos_x: f32,
+    pos_y: f32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Checkpoints {
+    checkpoints: Vec<Checkpoint>
+}
+
 #[macroquad::main(window_conf)]
 async fn main() {
     load_all_assets().await;
-    {
-        let mut res = RESOURCE_MANAGER.lock().unwrap();
-        res.scale = 1.;
-    }
 
-    let player_info = PlayerInitialInfo {
-        pos: vec2(100., 100.),
-        velocity: vec2(0., 0.),
-        state: PlayerMovementState::Standing,
-    };
-
-    let level_state = LevelState::build("a1_0_0", player_info).unwrap_or_else(|err| {
-        eprintln!("Failed to load level state: {err}");
-        std::process::exit(1);
-    });
-
+    //todo get rid of the sillystate some time
     let silly_state = SillyState::new();
-
+    let load_state = LoadSaveState::new();
     let mut menu = Menu::new();
     let title = MenuItem::new("game_25", || StateTransition::None, false);
     menu.add_item(title);
     let start_game = MenuItem::new(
-        "Start Game",
-        move || StateTransition::Replace(Box::new(level_state.clone())),
+        "Load file and start game",
+        move || StateTransition::Replace(Box::new(load_state.clone())),
         true,
     );
     menu.add_item(start_game);
@@ -161,7 +164,7 @@ async fn main() {
                 ..Default::default()
             },
         );
-        println!("frame time: {}", get_frame_time());
+        //println!("frame time: {}", get_frame_time());
         next_frame().await;
     }
 }

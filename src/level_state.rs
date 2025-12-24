@@ -88,7 +88,7 @@ impl GameState for LevelState {
             ),
             DirectionToMove::None => unreachable!(),
         };
-
+        //todo FIX THIS TO ALLOW DIFFERENT LEVELS
         let new_level = format!(
             "a1_{}_{}",
             self.level.x_coord + offset.x,
