@@ -4,6 +4,7 @@ use macroquad::math::{ivec2, vec2};
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::menu::Menu;
 use crate::{Checkpoints, SaveData};
+use crate::controls::CONTROLS;
 use crate::level_state::LevelState;
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER};
@@ -53,6 +54,28 @@ impl GameState for SillyState {
     fn update(&mut self) -> StateTransition {
         println!("nonsense!");
         StateTransition::Pop
+    }
+    fn draw(&self) {
+    }
+}
+
+#[derive(Clone)]
+pub struct PauseMenu {
+}
+
+impl PauseMenu {
+    pub fn new() -> Self { PauseMenu{} }
+}
+
+impl GameState for PauseMenu {
+    fn update(&mut self) -> StateTransition {
+        println!("Paused");
+        {
+            let mut input = CONTROLS.lock().unwrap();
+            if input.controls_enter() {
+                StateTransition::Pop
+            } else { StateTransition::None }
+        }
     }
     fn draw(&self) {
     }

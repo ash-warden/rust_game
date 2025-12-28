@@ -2,8 +2,9 @@ use std::sync::Arc;
 use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use macroquad::math::{vec2, IVec2, Rect};
 use macroquad::color::WHITE;
-use crate::game_state::{GameState, Player, PlayerInitialInfo, StateTransition};
+use crate::game_state::{GameState, PauseMenu, Player, PlayerInitialInfo, StateTransition};
 use crate::{index_to_coords, level};
+use crate::controls::CONTROLS;
 use crate::resources::RESOURCE_MANAGER;
 
 #[derive(Clone)]
@@ -38,6 +39,15 @@ enum DirectionToMove {
 
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
+        //pausing
+        {
+            let mut input = CONTROLS.lock().unwrap();
+            if input.controls_enter() {
+                let pause_state = PauseMenu::new();
+                return StateTransition::Push(Box::new(pause_state.clone()))
+            }
+        }
+        
         let frame_time = get_frame_time();
         self.player.update(frame_time);
 
