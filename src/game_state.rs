@@ -12,7 +12,7 @@ pub enum StateTransition {
     None,
     Replace(Box<dyn GameState>),
     Push(Box<dyn GameState>),
-    Pop,
+    Pop(i32),
 }
 
 pub trait GameState {
@@ -55,7 +55,7 @@ impl SillyState {
 impl GameState for SillyState {
     fn update(&mut self) -> StateTransition {
         println!("nonsense!");
-        StateTransition::Pop
+        StateTransition::Pop(1)
     }
     fn draw(&self) {}
     fn transparent(&self) -> bool {
@@ -112,7 +112,7 @@ impl GameState for LoadSaveState {
             }
         } else {
             println!("User cancelled the dialog");
-            return StateTransition::Pop;
+            return StateTransition::Pop(1);
         }
 
         {
@@ -158,8 +158,10 @@ impl GameStateStack {
                 StateTransition::None => {}
                 StateTransition::Replace(new_state) => self.replace(new_state),
                 StateTransition::Push(new_state) => self.push(new_state),
-                StateTransition::Pop => {
-                    self.pop();
+                StateTransition::Pop(number) => {
+                    for _ in 0..number {
+                        self.pop();
+                    }
                 }
             }
         }

@@ -42,16 +42,22 @@ impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         //pausing
         {
-            let pause_menu_pos = menu_centre_pos(6, 2);
+            let pause_menu_pos = menu_centre_pos(6, 3);
             let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
             let title = MenuItem::new("pause", || StateTransition::None, false);
             pause_menu.add_item(title);
-            let start_game = MenuItem::new(
+            let resume_game = MenuItem::new(
                 "Resume",
-                move || StateTransition::Pop,
+                move || StateTransition::Pop(1),
                 true,
             );
-            pause_menu.add_item(start_game);
+            pause_menu.add_item(resume_game);
+            let quit_game = MenuItem::new(
+                "Quit",
+                move || {StateTransition::Pop(2)},
+                true,
+            );
+            pause_menu.add_item(quit_game);
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_enter() {
