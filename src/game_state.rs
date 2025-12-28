@@ -74,7 +74,7 @@ impl GameState for LoadSaveState {
 
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
-        let saves_path = exe_path.join("saves");
+        let saves_path = exe_path.join("../../saves"); //temporary for when working on game? may need to change
 
         let file = FileDialog::new()
             .add_filter("game_25 save", &["save"])

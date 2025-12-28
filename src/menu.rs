@@ -9,14 +9,16 @@ use crate::controls::CONTROLS;
 pub struct Menu {
     menu_items: Vec<MenuItem>,
     current_index: u32,
+    pos: Vec2,
 }
 
 impl Menu {
-    pub fn new() -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         let menu_items = Vec::new();
         Menu {
             menu_items,
             current_index: 0,
+            pos: vec2(x, y),
         }
     }
 
@@ -71,8 +73,8 @@ impl Menu {
             //top left
             draw_texture_ex(
                 tex,
-                0.,
-                0.,
+                self.pos.x,
+                self.pos.y,
                 WHITE,
                 DrawTextureParams {
                     dest_size: Some(vec2(16., 16.)),
@@ -83,8 +85,8 @@ impl Menu {
             //top right
             draw_texture_ex(
                 tex,
-                menu_width as f32 * 16. + 16.,
-                0.,
+                self.pos.x + menu_width as f32 * 16. + 16.,
+                self.pos.y,
                 WHITE,
                 DrawTextureParams {
                     dest_size: Some(vec2(16., 16.)),
@@ -95,8 +97,8 @@ impl Menu {
             //bottom left
             draw_texture_ex(
                 tex,
-                0.,
-                menu_height as f32 * 32. + 16.,
+                self.pos.x,
+                self.pos.y + menu_height as f32 * 32. + 16.,
                 WHITE,
                 DrawTextureParams {
                     dest_size: Some(vec2(16., 16.)),
@@ -107,8 +109,8 @@ impl Menu {
             //bottom right
             draw_texture_ex(
                 tex,
-                menu_width as f32 * 16. + 16.,
-                menu_height as f32 * 32. + 16.,
+                self.pos.x + menu_width as f32 * 16. + 16.,
+                self.pos.y + menu_height as f32 * 32. + 16.,
                 WHITE,
                 DrawTextureParams {
                     dest_size: Some(vec2(16., 16.)),
@@ -121,8 +123,8 @@ impl Menu {
             for i in 0..menu_width {
                 draw_texture_ex(
                     tex,
-                    i as f32 * 16. + 16.,
-                    0.,
+                    self.pos.x + i as f32 * 16. + 16.,
+                    self.pos.y,
                     WHITE,
                     DrawTextureParams {
                         dest_size: Some(vec2(16., 16.)),
@@ -135,8 +137,8 @@ impl Menu {
             for i in 0..menu_width {
                 draw_texture_ex(
                     tex,
-                    i as f32 * 16. + 16.,
-                    menu_height as f32 * 32. + 16.,
+                    self.pos.x + i as f32 * 16. + 16.,
+                    self.pos.y + menu_height as f32 * 32. + 16.,
                     WHITE,
                     DrawTextureParams {
                         dest_size: Some(vec2(16., 16.)),
@@ -149,8 +151,8 @@ impl Menu {
             for j in 0..menu_height*2 {
                 draw_texture_ex(
                     tex,
-                    0.,
-                    j as f32 * 16. + 16.,
+                    self.pos.x,
+                    self.pos.y + j as f32 * 16. + 16.,
                     WHITE,
                     DrawTextureParams {
                         dest_size: Some(vec2(16., 16.)),
@@ -164,8 +166,8 @@ impl Menu {
             for j in 0..menu_height*2 {
                 draw_texture_ex(
                     tex,
-                    menu_width as f32 * 16. + 16.,
-                    j as f32 * 16. + 16.,
+                    self.pos.x + menu_width as f32 * 16. + 16.,
+                    self.pos.y + j as f32 * 16. + 16.,
                     WHITE,
                     DrawTextureParams {
                         dest_size: Some(vec2(16., 16.)),
@@ -180,8 +182,8 @@ impl Menu {
                 for j in 0..menu_height * 2 {
                     draw_texture_ex(
                         tex,
-                        i as f32 * 16. + 16.,
-                        j as f32 * 16. + 16.,
+                        self.pos.x + i as f32 * 16. + 16.,
+                        self.pos.y + j as f32 * 16. + 16.,
                         WHITE,
                         DrawTextureParams {
                             dest_size: Some(vec2(16., 16.)),
@@ -198,7 +200,7 @@ impl Menu {
             if self.current_index == i as u32 {
                 selected = true;
             }
-            item.draw(vec2(16., i), selected);
+            item.draw(vec2(self.pos.x + 16., self.pos.y + 16.), i, selected);
             i += 1.;
         }
     }
@@ -226,7 +228,7 @@ impl MenuItem {
         (self.action)()
     }
 
-    pub fn draw(&self, offset: Vec2, selected: bool) {
+    pub fn draw(&self, offset: Vec2, line: f32, selected: bool) {
         let mut row = 0.;
         let mut col = 0.;
         for item in self.label_text.chars() {
@@ -256,7 +258,7 @@ impl MenuItem {
                     draw_texture_ex(
                         tex,
                         letter_pos.x + offset.x,
-                        letter_pos.y + offset.y * 32. + 16.,
+                        letter_pos.y + line * 32. + offset.y,
                         color,
                         DrawTextureParams {
                             dest_size: Some(vec2(16., 32.)),
@@ -274,4 +276,10 @@ impl MenuItem {
             }
         }
     }
+}
+
+pub fn menu_centre_pos(char_w: i32, char_h: i32) -> Vec2 {
+    let centre_w = 640. / 2. - (char_w * 16 + 32) as f32 / 2.;
+    let centre_h = 480. / 2. - (char_h * 32 + 32) as f32 / 2.;
+    vec2(centre_w, centre_h)
 }

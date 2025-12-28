@@ -5,7 +5,7 @@ use macroquad::color::WHITE;
 use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
 use crate::{index_to_coords, level};
 use crate::controls::CONTROLS;
-use crate::menu::{Menu, MenuItem};
+use crate::menu::{menu_centre_pos, Menu, MenuItem};
 use crate::resources::RESOURCE_MANAGER;
 
 #[derive(Clone)]
@@ -42,7 +42,8 @@ impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         //pausing
         {
-            let mut pause_menu = Menu::new();
+            let pause_menu_pos = menu_centre_pos(6, 2);
+            let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
             let title = MenuItem::new("pause", || StateTransition::None, false);
             pause_menu.add_item(title);
             let start_game = MenuItem::new(

@@ -1,5 +1,5 @@
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, SillyState, StateTransition};
-use crate::menu::{Menu, MenuItem};
+use crate::menu::{menu_centre_pos, Menu, MenuItem};
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
@@ -69,7 +69,8 @@ async fn main() {
     //todo get rid of the sillystate some time
     let silly_state = SillyState::new();
     let load_state = LoadSaveState::new();
-    let mut menu = Menu::new();
+    let menu_pos = menu_centre_pos(24, 3);
+    let mut menu = Menu::new(menu_pos.x, menu_pos.y);
     let title = MenuItem::new("game_25", || StateTransition::None, false);
     menu.add_item(title);
     let start_game = MenuItem::new(
