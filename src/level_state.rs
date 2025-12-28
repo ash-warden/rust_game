@@ -2,9 +2,10 @@ use std::sync::Arc;
 use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use macroquad::math::{vec2, IVec2, Rect};
 use macroquad::color::WHITE;
-use crate::game_state::{GameState, PauseMenu, Player, PlayerInitialInfo, StateTransition};
+use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
 use crate::{index_to_coords, level};
 use crate::controls::CONTROLS;
+use crate::menu::{Menu, MenuItem};
 use crate::resources::RESOURCE_MANAGER;
 
 #[derive(Clone)]
@@ -41,10 +42,19 @@ impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         //pausing
         {
+            let mut pause_menu = Menu::new();
+            let title = MenuItem::new("pause", || StateTransition::None, false);
+            pause_menu.add_item(title);
+            let start_game = MenuItem::new(
+                "Resume",
+                move || StateTransition::Pop,
+                true,
+            );
+            pause_menu.add_item(start_game);
+            let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_enter() {
-                let pause_state = PauseMenu::new();
-                return StateTransition::Push(Box::new(pause_state.clone()))
+                return StateTransition::Push(Box::new(menu_state))
             }
         }
         

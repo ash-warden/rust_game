@@ -1,12 +1,9 @@
 use std::env::current_exe;
 use std::fs;
-use macroquad::color::WHITE;
-use macroquad::math::{ivec2, vec2, Rect};
-use macroquad::texture::{draw_texture_ex, DrawTextureParams};
+use macroquad::math::{ivec2, vec2};
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::menu::Menu;
 use crate::{Checkpoints, SaveData};
-use crate::controls::CONTROLS;
 use crate::level_state::LevelState;
 use crate::player::PlayerMovementState;
 use crate::resources::{RESOURCE_MANAGER};
@@ -58,41 +55,6 @@ impl GameState for SillyState {
         StateTransition::Pop
     }
     fn draw(&self) {
-    }
-}
-
-#[derive(Clone)]
-pub struct PauseMenu {
-}
-
-impl PauseMenu {
-    pub fn new() -> Self { PauseMenu{} }
-}
-
-impl GameState for PauseMenu {
-    fn update(&mut self) -> StateTransition {
-        println!("Paused");
-        {
-            let mut input = CONTROLS.lock().unwrap();
-            if input.controls_enter() {
-                StateTransition::Pop
-            } else { StateTransition::None }
-        }
-    }
-    fn draw(&self) {
-        let res = RESOURCE_MANAGER.lock().unwrap();
-        let tex = res.get_texture("missing.png");
-        draw_texture_ex(
-                tex,
-                0.,
-                0.,
-                WHITE,
-                DrawTextureParams {
-                    dest_size: Some(vec2(16., 16.)),
-                    source: Some(Rect::new(0., 0., 16., 16.)),
-                    ..Default::default()
-                },
-            );
     }
 }
 
