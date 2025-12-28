@@ -1,6 +1,8 @@
 use std::env::current_exe;
 use std::fs;
-use macroquad::math::{ivec2, vec2};
+use macroquad::color::WHITE;
+use macroquad::math::{ivec2, vec2, Rect};
+use macroquad::texture::{draw_texture_ex, DrawTextureParams};
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::menu::Menu;
 use crate::{Checkpoints, SaveData};
@@ -78,6 +80,19 @@ impl GameState for PauseMenu {
         }
     }
     fn draw(&self) {
+        let res = RESOURCE_MANAGER.lock().unwrap();
+        let tex = res.get_texture("missing.png");
+        draw_texture_ex(
+                tex,
+                0.,
+                0.,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(16., 16.)),
+                    source: Some(Rect::new(0., 0., 16., 16.)),
+                    ..Default::default()
+                },
+            );
     }
 }
 
@@ -129,7 +144,7 @@ impl GameState for LoadSaveState {
             }
         } else {
             println!("User cancelled the dialog");
-            return StateTransition::None;
+            return StateTransition::Pop;
         }
 
         {

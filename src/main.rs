@@ -74,7 +74,7 @@ async fn main() {
     menu.add_item(title);
     let start_game = MenuItem::new(
         "Load file and start game",
-        move || StateTransition::Replace(Box::new(load_state.clone())),
+        move || StateTransition::Push(Box::new(load_state.clone())),
         true,
     );
     menu.add_item(start_game);
@@ -114,6 +114,8 @@ async fn main() {
             target: vec2(BASE_W / 2.0, BASE_H / 2.0),
             ..Default::default()
         });
+
+        clear_background(YELLOW);
 
         game_state_stack.update();
         game_state_stack.draw();
