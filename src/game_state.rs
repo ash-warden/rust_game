@@ -1,12 +1,12 @@
+use crate::level_state::LevelState;
+use crate::menu::Menu;
+use crate::player::PlayerMovementState;
+pub(crate) use crate::player::{Player, PlayerInitialInfo};
+use crate::resources::RESOURCE_MANAGER;
+use crate::{Checkpoints, SaveData};
+use macroquad::math::{ivec2, vec2};
 use std::env::current_exe;
 use std::fs;
-use macroquad::math::{ivec2, vec2};
-pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::menu::Menu;
-use crate::{Checkpoints, SaveData};
-use crate::level_state::LevelState;
-use crate::player::PlayerMovementState;
-use crate::resources::{RESOURCE_MANAGER};
 
 pub enum StateTransition {
     None,
@@ -18,6 +18,7 @@ pub enum StateTransition {
 pub trait GameState {
     fn update(&mut self) -> StateTransition;
     fn draw(&self);
+    fn transparent(&self) -> bool;
 }
 
 pub struct MenuState {
@@ -26,7 +27,7 @@ pub struct MenuState {
 
 impl MenuState {
     pub fn new(menu: Menu) -> Self {
-        MenuState{menu}
+        MenuState { menu }
     }
 }
 
@@ -37,15 +38,17 @@ impl GameState for MenuState {
     fn draw(&self) {
         self.menu.draw();
     }
+    fn transparent(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Clone)]
-pub struct SillyState {
-}
+pub struct SillyState {}
 
 impl SillyState {
     pub fn new() -> Self {
-        SillyState{}
+        SillyState {}
     }
 }
 
@@ -54,17 +57,18 @@ impl GameState for SillyState {
         println!("nonsense!");
         StateTransition::Pop
     }
-    fn draw(&self) {
+    fn draw(&self) {}
+    fn transparent(&self) -> bool {
+        true
     }
 }
 
 #[derive(Clone)]
-pub struct LoadSaveState {
-}
+pub struct LoadSaveState {}
 
 impl LoadSaveState {
     pub fn new() -> Self {
-        LoadSaveState{}
+        LoadSaveState {}
     }
 }
 
@@ -89,14 +93,16 @@ impl GameState for LoadSaveState {
 
         if let Some(path) = file {
             let contents = fs::read_to_string(&path);
-            let save: SaveData = serde_json::from_str(&contents.unwrap().as_str()).expect("Error 1");
+            let save: SaveData =
+                serde_json::from_str(&contents.unwrap().as_str()).expect("Error 1");
 
             area = save.area;
             checkpoint = save.checkpoint;
 
             let checkpoints_path = format!("assets/maps/{}_check.json", area);
             let checkpoints_file = fs::read_to_string(checkpoints_path);
-            let checkpoints: Checkpoints = serde_json::from_str(&checkpoints_file.unwrap().as_str()).expect("Error 2");
+            let checkpoints: Checkpoints =
+                serde_json::from_str(&checkpoints_file.unwrap().as_str()).expect("Error 2");
 
             for i in checkpoints.checkpoints {
                 if i.id == checkpoint {
@@ -128,7 +134,10 @@ impl GameState for LoadSaveState {
         });
         StateTransition::Replace(Box::new(level_state.clone()))
     }
-    fn draw(&self) {
+    fn draw(&self) {}
+
+    fn transparent(&self) -> bool {
+        true
     }
 }
 
@@ -157,7 +166,14 @@ impl GameStateStack {
     }
 
     pub fn draw(&self) {
-        if let Some(state) = self.states.last() {
+        let mut start_index = 0;
+        for (i, state) in self.states.iter().enumerate().rev() {
+            if !state.transparent() {
+                start_index = i;
+                break;
+            }
+        }
+        for state in &self.states[start_index..] {
             state.draw();
         }
     }

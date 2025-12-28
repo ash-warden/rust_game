@@ -180,4 +180,8 @@ impl GameState for LevelState {
         //draw player
         self.player.draw();
     }
+
+    fn transparent(&self) -> bool {
+        false
+    }
 }
