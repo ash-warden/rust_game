@@ -16,6 +16,7 @@ mod menu;
 mod player;
 mod player_functions;
 mod resources;
+mod npc;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {

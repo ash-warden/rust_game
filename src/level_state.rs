@@ -6,12 +6,14 @@ use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTr
 use crate::{index_to_coords, level};
 use crate::controls::CONTROLS;
 use crate::menu::{menu_centre_pos, Menu, MenuItem};
+use crate::npc::Npc;
 use crate::resources::RESOURCE_MANAGER;
 
 #[derive(Clone)]
 pub struct LevelState {
     pub level: Arc<level::Level>,
     pub player: Player,
+    pub npcs: Vec<Npc>,
 }
 
 impl LevelState {
@@ -22,7 +24,8 @@ impl LevelState {
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(level) = res.get_level(level) {
             let player = Player::new_from_info(player_info, level.clone());
-            Ok(LevelState { level, player })
+            let test_npc = Npc::new(vec2(300., 400.));
+            Ok(LevelState { level, player, npcs: vec![test_npc] })
         } else {
             Err("Level not found in resources".into())
         }
@@ -87,6 +90,11 @@ impl GameState for LevelState {
         };
 
         if direction == DirectionToMove::None {
+            //check npc player interact
+            let mut input = CONTROLS.lock().unwrap();
+            if self.player.position.x > self.npcs.last().unwrap().pos.x && input.controls_secondary() {
+                return self.npcs.last().unwrap().interact()
+            }
             return StateTransition::None;
         }
 
@@ -185,6 +193,20 @@ impl GameState for LevelState {
         }
         //draw player
         self.player.draw();
+        //draw npcs
+        for npc in &self.npcs {
+            let res = RESOURCE_MANAGER.lock().unwrap();
+                let tex = res.get_texture("npc.png");
+                draw_texture_ex(
+                    tex,
+                    npc.pos.x,
+                    npc.pos.y,
+                    WHITE,
+                    DrawTextureParams {
+                        ..Default::default()
+                    },
+                );
+        }
     }
 
     fn transparent(&self) -> bool {
