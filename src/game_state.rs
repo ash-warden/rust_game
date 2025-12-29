@@ -3,7 +3,7 @@ use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::resources::RESOURCE_MANAGER;
-use crate::{Checkpoints, SaveData};
+use crate::{LevelObjects, SaveData};
 use macroquad::math::{ivec2, vec2};
 use std::env::current_exe;
 use std::fs;
@@ -99,17 +99,24 @@ impl GameState for LoadSaveState {
             area = save.area;
             checkpoint = save.checkpoint;
 
-            let checkpoints_path = format!("assets/maps/{}_check.json", area);
-            let checkpoints_file = fs::read_to_string(checkpoints_path);
-            let checkpoints: Checkpoints =
-                serde_json::from_str(&checkpoints_file.unwrap().as_str()).expect("Error 2");
+            let objects_path = format!("assets/maps/{}_objects.json", area);
+            let objects_file = fs::read_to_string(objects_path);
+            let objects: LevelObjects =
+                serde_json::from_str(&objects_file.unwrap().as_str()).expect("Error 2");
 
-            for i in checkpoints.checkpoints {
+            for i in objects.checkpoints {
                 if i.id == checkpoint {
                     player_pos = vec2(i.pos_x, i.pos_y);
                     room = ivec2(i.room_x, i.room_y);
                 }
             }
+            /*for i in objects.npcs {
+                if i.id == checkpoint {
+                    player_pos = vec2(i.pos_x, i.pos_y);
+                    room = ivec2(i.room_x, i.room_y);
+                }
+            }*/
+
         } else {
             println!("User cancelled the dialog");
             return StateTransition::Pop(1);

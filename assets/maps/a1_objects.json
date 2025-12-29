@@ -1,0 +1,21 @@
+{
+    "checkpoints":[
+	{
+	    "id": 0,
+	    "room_x":0,
+	    "room_y":0,
+	    "pos_x":100.0,
+	    "pos_y":300.0
+	}
+    ],
+    "npcs":[
+	{
+	    "id": 0,
+	    "name": "Test1",
+	    "room_x":0,
+	    "room_y":0,
+	    "pos_x":100.0,
+	    "pos_y":400.0
+	}
+    ]
+}

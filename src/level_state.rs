@@ -1,19 +1,19 @@
-use std::sync::Arc;
-use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
-use macroquad::math::{vec2, IVec2, Rect};
-use macroquad::color::WHITE;
-use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
-use crate::{index_to_coords, level};
 use crate::controls::CONTROLS;
-use crate::menu::{menu_centre_pos, Menu, MenuItem};
-use crate::npc::Npc;
+use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
+use crate::menu::{Menu, MenuItem, menu_centre_pos};
+use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
+use crate::{index_to_coords, level};
+use macroquad::color::WHITE;
+use macroquad::math::{IVec2, Rect, vec2};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct LevelState {
     pub level: Arc<level::Level>,
     pub player: Player,
-    pub npcs: Vec<Npc>,
+    pub npcs: Vec<NpcInGame>,
 }
 
 impl LevelState {
@@ -24,7 +24,7 @@ impl LevelState {
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(level) = res.get_level(level) {
             let player = Player::new_from_info(player_info, level.clone());
-            let test_npc = Npc::new(vec2(300., 400.));
+            let test_npc = NpcInGame::new(vec2(300., 400.));
             Ok(LevelState { level, player, npcs: vec![test_npc] })
         } else {
             Err("Level not found in resources".into())
@@ -49,25 +49,17 @@ impl GameState for LevelState {
             let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
             let title = MenuItem::new("pause", || StateTransition::None, false);
             pause_menu.add_item(title);
-            let resume_game = MenuItem::new(
-                "Resume",
-                move || StateTransition::Pop(1),
-                true,
-            );
+            let resume_game = MenuItem::new("Resume", move || StateTransition::Pop(1), true);
             pause_menu.add_item(resume_game);
-            let quit_game = MenuItem::new(
-                "Quit",
-                move || {StateTransition::Pop(2)},
-                true,
-            );
+            let quit_game = MenuItem::new("Quit", move || StateTransition::Pop(2), true);
             pause_menu.add_item(quit_game);
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_enter() {
-                return StateTransition::Push(Box::new(menu_state))
+                return StateTransition::Push(Box::new(menu_state));
             }
         }
-        
+
         let frame_time = get_frame_time();
         self.player.update(frame_time);
 
@@ -92,8 +84,17 @@ impl GameState for LevelState {
         if direction == DirectionToMove::None {
             //check npc player interact
             let mut input = CONTROLS.lock().unwrap();
-            if self.player.position.x > self.npcs.last().unwrap().pos.x && input.controls_secondary() {
-                return self.npcs.last().unwrap().interact()
+            let player = &self.player;
+            for npc in &self.npcs {
+                let overlapping_x = player.position.x < npc.pos.x + npc.size.x
+                    && player.position.x + player.actual_size.x as f32 > npc.pos.x;
+
+                let overlapping_y = player.position.y < npc.pos.y + npc.size.y
+                    && player.position.y + player.actual_size.y as f32 > npc.pos.y;
+
+                if overlapping_x && overlapping_y && input.controls_up() {
+                    return npc.interact();
+                }
             }
             return StateTransition::None;
         }
@@ -196,16 +197,16 @@ impl GameState for LevelState {
         //draw npcs
         for npc in &self.npcs {
             let res = RESOURCE_MANAGER.lock().unwrap();
-                let tex = res.get_texture("npc.png");
-                draw_texture_ex(
-                    tex,
-                    npc.pos.x,
-                    npc.pos.y,
-                    WHITE,
-                    DrawTextureParams {
-                        ..Default::default()
-                    },
-                );
+            let tex = res.get_texture("npc.png");
+            draw_texture_ex(
+                tex,
+                npc.pos.x,
+                npc.pos.y,
+                WHITE,
+                DrawTextureParams {
+                    ..Default::default()
+                },
+            );
         }
     }
 

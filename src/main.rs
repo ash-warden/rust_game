@@ -59,7 +59,7 @@ pub struct Checkpoint {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Checkpoints {
+pub struct LevelObjects {
     checkpoints: Vec<Checkpoint>
 }
 
