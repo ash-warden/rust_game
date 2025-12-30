@@ -1,31 +1,16 @@
-use std::fs;
-use std::path::PathBuf;
 use crate::controls::CONTROLS;
 use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
-use crate::menu::{Menu, MenuItem, menu_centre_pos};
+use crate::menu::{menu_centre_pos, Menu, MenuItem};
 use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
-use crate::{index_to_coords, level, LevelObjects, SaveData};
+use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{IVec2, Rect, vec2, ivec2};
-use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
+use macroquad::math::{vec2, IVec2, Rect};
+use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
 use std::sync::Arc;
-use serde::{Deserialize, Serialize};
-use crate::player::PlayerMovementState;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NpcsFromFile {
-    id: i32,
-    name: String,
-    room_x: i32,
-    room_y: i32,
-    pos_x: f32,
-    pos_y: f32,
-}
-
 #[derive(Clone)]
 pub struct LevelState {
-    pub level: Arc<level::Level>,
+    pub room: Arc<level::Room>,
     pub player: Player,
     pub npcs: Vec<NpcInGame>,
 }
@@ -36,10 +21,10 @@ impl LevelState {
         player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let res = RESOURCE_MANAGER.lock()?;
-        if let Some(level) = res.get_level(level) {
+        if let Some(level) = res.get_room(level) {
             let player = Player::new_from_info(player_info, level.clone());
             let test_npc = NpcInGame::new(vec2(300., 400.));
-            Ok(LevelState { level, player, npcs: vec![test_npc] })
+            Ok(LevelState { room: level, player, npcs: vec![test_npc] })
         } else {
             Err("Level not found in resources".into())
         }
@@ -77,8 +62,8 @@ impl GameState for LevelState {
         let frame_time = get_frame_time();
         self.player.update(frame_time);
 
-        let map_width = (self.level.map_dimensions.x * self.level.tile_size) as f32;
-        let map_height = (self.level.map_dimensions.y * self.level.tile_size) as f32;
+        let map_width = (self.room.map_dimensions.x * self.room.tile_size) as f32;
+        let map_height = (self.room.map_dimensions.y * self.room.tile_size) as f32;
 
         let p_size_x = self.player.actual_size.x;
         let p_size_y = self.player.actual_size.y;
@@ -141,8 +126,8 @@ impl GameState for LevelState {
         //todo FIX THIS TO ALLOW DIFFERENT LEVELS
         let new_level = format!(
             "a1_{}_{}",
-            self.level.x_coord + offset.x,
-            self.level.y_coord + offset.y
+            self.room.x_coord + offset.x,
+            self.room.y_coord + offset.y
         );
 
         let player_info = PlayerInitialInfo {
@@ -167,7 +152,7 @@ impl GameState for LevelState {
         let mut x = 0; //x coord
         let mut y = 0; //y coord
 
-        let level = &self.level;
+        let level = &self.room;
 
         let map_width = level.map_dimensions.x;
         let map_height = level.map_dimensions.y;

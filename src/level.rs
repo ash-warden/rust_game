@@ -77,7 +77,7 @@ pub struct TiledTileSet {
 }
 
 //game level
-pub struct Level {
+pub struct Room {
     pub tile_image_name: String,
     pub tile_values: Vec<i32>,
     pub map_dimensions: IVec2,
@@ -94,8 +94,8 @@ pub struct TileInfo {
     pub ladder: bool,
 }
 
-impl Level {
-    pub async fn build(map_name: &str) -> Result<Level, Box<dyn std::error::Error>> {
+impl Room {
+    pub async fn build(map_name: &str) -> Result<Room, Box<dyn std::error::Error>> {
         let dir = "assets/maps/";
         let map_name_parts: Vec<&str> = map_name.split("_").collect();
         let x_coord: i32 = map_name_parts[1].parse()?;
@@ -126,7 +126,7 @@ impl Level {
 
         let tileset_columns = tileset.columns;
 
-        Ok(Level {
+        Ok(Room {
             tile_image_name,
             tile_values: values,
             map_dimensions: dimensions,

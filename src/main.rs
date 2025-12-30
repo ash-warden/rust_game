@@ -1,12 +1,10 @@
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, SillyState, StateTransition};
-use crate::menu::{menu_centre_pos, Menu, MenuItem};
+use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::level_state::NpcsFromFile;
-
 //module for loading the level from the map
 mod controls;
 mod current_game;
@@ -14,10 +12,10 @@ mod game_state;
 mod level;
 mod level_state;
 mod menu;
+mod npc;
 mod player;
 mod player_functions;
 mod resources;
-mod npc;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -42,27 +40,6 @@ fn window_conf() -> Conf {
         window_resizable: true,
         ..Default::default() // fill in the rest with defaults
     }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SaveData {
-    area: String,
-    checkpoint: i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Checkpoint {
-    id: i32,
-    room_x: i32,
-    room_y: i32,
-    pos_x: f32,
-    pos_y: f32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct LevelObjects {
-    checkpoints: Vec<Checkpoint>,
-    npcs: Vec<NpcsFromFile>
 }
 
 #[macroquad::main(window_conf)]

@@ -1,12 +1,17 @@
-use crate::level::Level;
+use crate::level::Room;
+use crate::npc::NpcInGame;
+use macroquad::math::{f32, i32};
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs;
 use std::sync::{Arc, Mutex};
 use walkdir::WalkDir;
 
 pub struct Resources {
-    pub levels: HashMap<String, Arc<Level>>,
+    pub rooms: HashMap<String, Arc<Room>>,
+    pub room_objects: HashMap<String, Arc<RoomObjects>>,
     pub textures: HashMap<String, Texture2D>,
     pub scale: f32,
     pub background_texture: Option<String>,
@@ -15,7 +20,8 @@ pub struct Resources {
 impl Resources {
     pub fn new() -> Self {
         Self {
-            levels: HashMap::new(),
+            rooms: HashMap::new(),
+            room_objects: HashMap::new(),
             textures: HashMap::new(),
             scale: 1.,
             background_texture: None,
@@ -34,19 +40,25 @@ impl Resources {
         }
     }
 
-    pub fn get_level(&self, key: &str) -> Option<Arc<Level>> {
-        self.levels.get(key).cloned()
+    pub fn get_room(&self, key: &str) -> Option<Arc<Room>> {
+        self.rooms.get(key).cloned()
+    }
+
+    pub fn get_room_object(&self, key: &str) -> Option<Arc<RoomObjects>> {
+        self.room_objects.get(key).cloned()
     }
 
     pub fn insert_texture(&mut self, key: String, texture: Texture2D) {
         self.textures.insert(key, texture);
     }
 
-    pub fn insert_level(&mut self, key: String, level: Arc<Level>) {
-        self.levels.insert(key, level);
+    pub fn insert_room(&mut self, key: String, level: Arc<Room>) {
+        self.rooms.insert(key, level);
     }
 
-
+    pub fn insert_object(&mut self, key: String, object: Arc<RoomObjects>) {
+        self.room_objects.insert(key, object);
+    }
 }
 
 pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Resources::new()));
@@ -71,8 +83,26 @@ pub async fn load_all_assets() {
                     res.insert_texture(key.to_string() + ".png", texture);
                 }
                 "tmj" => {
-                    let level = Level::build(path_str).await.unwrap();
-                    res.insert_level(key.to_string(), Arc::new(level));
+                    let level = Room::build(path_str).await.unwrap();
+                    res.insert_room(key.to_string(), Arc::new(level));
+                    println!("{}", key);
+                }
+                "roj" => {
+                    //"room object json"
+                    let objects_file = fs::read_to_string(path_str);
+                    let objects: RoomObjectsFromFile =
+                        serde_json::from_str(&objects_file.unwrap().as_str())
+                            .expect("Error couldn't load objects");
+                    let area_name = key.split('_').collect::<Vec<&str>>()[0];
+                    let mut checkpoints: HashMap<String, Checkpoint> = HashMap::new();
+                    for i in objects.checkpoints {
+                        let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
+                        let cur_checkpoint: Checkpoint = Checkpoint::new(i.id, i.pos_x, i.pos_y);
+                        checkpoints.insert(room, cur_checkpoint);
+                    }
+                    println!("{:?}", checkpoints);
+
+                    //res.insert_room(key.to_string(), Arc::new(level));
                 }
                 _ => {
                     println!("Skipping unsupported file: {}", path_str);
@@ -85,4 +115,48 @@ pub async fn load_all_assets() {
         .unwrap();
     missing_texture.set_filter(macroquad::texture::FilterMode::Nearest);
     res.insert_texture("missing".to_string(), missing_texture);
+}
+
+#[derive(Clone)]
+pub struct RoomObjects {
+    pub checkpoints: Vec<Checkpoint>,
+    pub npcs: Vec<NpcInGame>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RoomObjectsFromFile {
+    pub checkpoints: Vec<CheckpointFromFile>,
+    pub npcs: Vec<NpcFromFile>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NpcFromFile {
+    id: i32,
+    name: String,
+    room_x: i32,
+    room_y: i32,
+    pos_x: f32,
+    pos_y: f32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CheckpointFromFile {
+    pub id: i32,
+    pub room_x: i32,
+    pub room_y: i32,
+    pub pos_x: f32,
+    pub pos_y: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct Checkpoint {
+    pub id: i32,
+    pub pos_x: f32,
+    pub pos_y: f32,
+}
+
+impl Checkpoint {
+    pub fn new(id: i32, pos_x: f32, pos_y: f32) -> Checkpoint {
+        Checkpoint { id, pos_x, pos_y }
+    }
 }

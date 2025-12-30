@@ -2,9 +2,9 @@ use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::resources::RESOURCE_MANAGER;
-use crate::{LevelObjects, SaveData};
-use macroquad::math::{ivec2, vec2};
+use crate::resources::{RESOURCE_MANAGER, RoomObjects, RoomObjectsFromFile};
+use macroquad::math::{i32, ivec2, vec2};
+use serde::{Deserialize, Serialize};
 use std::env::current_exe;
 use std::fs;
 
@@ -99,9 +99,9 @@ impl GameState for LoadSaveState {
             area = save.area;
             checkpoint = save.checkpoint;
 
-            let objects_path = format!("assets/maps/{}_objects.json", area);
+            let objects_path = format!("assets/maps/{}_objects.roj", area);
             let objects_file = fs::read_to_string(objects_path);
-            let objects: LevelObjects =
+            let objects: RoomObjectsFromFile =
                 serde_json::from_str(&objects_file.unwrap().as_str()).expect("Error 2");
 
             for i in objects.checkpoints {
@@ -110,13 +110,6 @@ impl GameState for LoadSaveState {
                     room = ivec2(i.room_x, i.room_y);
                 }
             }
-            /*for i in objects.npcs {
-                if i.id == checkpoint {
-                    player_pos = vec2(i.pos_x, i.pos_y);
-                    room = ivec2(i.room_x, i.room_y);
-                }
-            }*/
-
         } else {
             println!("User cancelled the dialog");
             return StateTransition::Pop(1);
@@ -203,4 +196,10 @@ impl GameStateStack {
     pub fn is_empty(&self) -> bool {
         self.states.is_empty()
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SaveData {
+    area: String,
+    checkpoint: i32,
 }

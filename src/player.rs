@@ -10,7 +10,7 @@ pub struct Player {
     pub velocity: Vec2,
     pub actual_size: IVec2,
     pub on_ground: bool,
-    pub level: Arc<level::Level>,
+    pub level: Arc<level::Room>,
     pub state: PlayerMovementState,
     pub facing_right: bool,
 }
@@ -45,7 +45,7 @@ pub enum PlayerMovementState {
 impl Player {
     pub fn new(
         start_pos: Vec2,
-        level: Arc<level::Level>,
+        level: Arc<level::Room>,
         velocity: Vec2,
         state: PlayerMovementState,
     ) -> Self {
@@ -60,7 +60,7 @@ impl Player {
         }
     }
 
-    pub fn new_from_info(player_info: PlayerInitialInfo, level: Arc<level::Level>) -> Self {
+    pub fn new_from_info(player_info: PlayerInitialInfo, level: Arc<level::Room>) -> Self {
         Player::new(
             player_info.pos,
             level,
