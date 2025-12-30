@@ -1,6 +1,6 @@
 use crate::level::Room;
 use crate::npc::NpcInGame;
-use macroquad::math::{f32, i32};
+use macroquad::math::{f32, i32, vec2};
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -100,9 +100,19 @@ pub async fn load_all_assets() {
                         let cur_checkpoint: Checkpoint = Checkpoint::new(i.id, i.pos_x, i.pos_y);
                         checkpoints.insert(room, cur_checkpoint);
                     }
-                    println!("{:?}", checkpoints);
 
-                    //res.insert_room(key.to_string(), Arc::new(level));
+                    let mut npcs: HashMap<String, NpcInGame> = HashMap::new();
+                    for i in objects.npcs {
+                        let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
+                        let cur_npc: NpcInGame = NpcInGame::new(vec2(i.pos_x, i.pos_y));
+                        npcs.insert(room, cur_npc);
+                    }
+                    println!("{:?}", checkpoints);
+                    println!("{:?}", npcs);
+
+                    let room_objects = RoomObjects { checkpoints, npcs };
+
+                    res.insert_object(area_name.to_string(), Arc::new(room_objects));
                 }
                 _ => {
                     println!("Skipping unsupported file: {}", path_str);
@@ -117,10 +127,10 @@ pub async fn load_all_assets() {
     res.insert_texture("missing".to_string(), missing_texture);
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RoomObjects {
-    pub checkpoints: Vec<Checkpoint>,
-    pub npcs: Vec<NpcInGame>,
+    pub checkpoints: HashMap<String, Checkpoint>,
+    pub npcs: HashMap<String, NpcInGame>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

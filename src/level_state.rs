@@ -1,12 +1,12 @@
 use crate::controls::CONTROLS;
 use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
-use crate::menu::{menu_centre_pos, Menu, MenuItem};
+use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{vec2, IVec2, Rect};
-use macroquad::prelude::{draw_texture_ex, get_frame_time, DrawTextureParams};
+use macroquad::math::{IVec2, Rect, vec2};
+use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
 #[derive(Clone)]
 pub struct LevelState {
@@ -24,7 +24,11 @@ impl LevelState {
         if let Some(level) = res.get_room(level) {
             let player = Player::new_from_info(player_info, level.clone());
             let test_npc = NpcInGame::new(vec2(300., 400.));
-            Ok(LevelState { room: level, player, npcs: vec![test_npc] })
+            Ok(LevelState {
+                room: level,
+                player,
+                npcs: vec![test_npc],
+            })
         } else {
             Err("Level not found in resources".into())
         }
@@ -95,6 +99,11 @@ impl GameState for LevelState {
                     return npc.interact();
                 }
             }
+
+            let res = RESOURCE_MANAGER.lock().unwrap();
+            let objects = res.get_room_object("a1");
+            println!("{:#?}", objects);
+
             return StateTransition::None;
         }
 
