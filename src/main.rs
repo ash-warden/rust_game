@@ -5,6 +5,7 @@ use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::level_state::NpcsFromFile;
 
 //module for loading the level from the map
 mod controls;
@@ -60,7 +61,8 @@ pub struct Checkpoint {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LevelObjects {
-    checkpoints: Vec<Checkpoint>
+    checkpoints: Vec<Checkpoint>,
+    npcs: Vec<NpcsFromFile>
 }
 
 #[macroquad::main(window_conf)]

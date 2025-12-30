@@ -1,13 +1,27 @@
+use std::fs;
+use std::path::PathBuf;
 use crate::controls::CONTROLS;
 use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
-use crate::{index_to_coords, level};
+use crate::{index_to_coords, level, LevelObjects, SaveData};
 use macroquad::color::WHITE;
-use macroquad::math::{IVec2, Rect, vec2};
+use macroquad::math::{IVec2, Rect, vec2, ivec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::sync::Arc;
+use serde::{Deserialize, Serialize};
+use crate::player::PlayerMovementState;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NpcsFromFile {
+    id: i32,
+    name: String,
+    room_x: i32,
+    room_y: i32,
+    pos_x: f32,
+    pos_y: f32,
+}
 
 #[derive(Clone)]
 pub struct LevelState {
