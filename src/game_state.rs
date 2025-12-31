@@ -2,7 +2,7 @@ use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::resources::{RESOURCE_MANAGER, RoomObjects, RoomObjectsFromFile};
+use crate::resources::{RESOURCE_MANAGER, RoomObjectsFromFile};
 use macroquad::math::{i32, ivec2, vec2};
 use serde::{Deserialize, Serialize};
 use std::env::current_exe;

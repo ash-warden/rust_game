@@ -99,8 +99,7 @@ impl Room {
         let dir = "assets/maps/";
         let map_name_parts: Vec<&str> = map_name.split("_").collect();
         let x_coord: i32 = map_name_parts[1].parse()?;
-        let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0]
-            .parse()?;
+        let y_coord: i32 = map_name_parts[2].split(".").collect::<Vec<&str>>()[0].parse()?;
         //load tiles
         let tile_map_file = fs::read_to_string(map_name)?;
         let tile_map: TiledMap = serde_json::from_str(&tile_map_file)?;

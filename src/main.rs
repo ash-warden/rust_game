@@ -4,7 +4,6 @@ use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
-use serde::{Deserialize, Serialize};
 //module for loading the level from the map
 mod controls;
 mod current_game;

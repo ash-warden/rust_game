@@ -101,11 +101,11 @@ pub async fn load_all_assets() {
                         checkpoints.insert(room, cur_checkpoint);
                     }
 
-                    let mut npcs: HashMap<String, NpcInGame> = HashMap::new();
+                    let mut npcs: HashMap<String, Vec<NpcInGame>> = HashMap::new();
                     for i in objects.npcs {
-                        let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
-                        let cur_npc: NpcInGame = NpcInGame::new(vec2(i.pos_x, i.pos_y));
-                        npcs.insert(room, cur_npc);
+                        let room = format!("{}_{}", i.room_x, i.room_y);
+                        let cur_npc = NpcInGame::new(vec2(i.pos_x, i.pos_y));
+                        npcs.entry(room).or_insert_with(Vec::new).push(cur_npc);
                     }
                     println!("{:?}", checkpoints);
                     println!("{:?}", npcs);
@@ -130,7 +130,7 @@ pub async fn load_all_assets() {
 #[derive(Clone, Debug)]
 pub struct RoomObjects {
     pub checkpoints: HashMap<String, Checkpoint>,
-    pub npcs: HashMap<String, NpcInGame>,
+    pub npcs: HashMap<String, Vec<NpcInGame>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

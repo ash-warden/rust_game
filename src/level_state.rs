@@ -7,9 +7,12 @@ use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
+use std::collections::HashMap;
 use std::sync::Arc;
+
 #[derive(Clone)]
 pub struct LevelState {
+    pub area: String,
     pub room: Arc<level::Room>,
     pub player: Player,
     pub npcs: Vec<NpcInGame>,
@@ -20,14 +23,24 @@ impl LevelState {
         level: &str,
         player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
+        let (area, room_name) = level.split_once('_').unwrap();
         let res = RESOURCE_MANAGER.lock()?;
-        if let Some(level) = res.get_room(level) {
-            let player = Player::new_from_info(player_info, level.clone());
-            let test_npc = NpcInGame::new(vec2(300., 400.));
+        if let Some(room) = res.get_room(level) {
+            let player = Player::new_from_info(player_info, room.clone());
+            let area_npcs: HashMap<String, Vec<NpcInGame>>;
+            let area_objects = res.get_room_object(area);
+            area_npcs = area_objects.unwrap().npcs.clone();
+            let npcs: Vec<NpcInGame>;
+            if area_npcs.contains_key(room_name) {
+                npcs = area_npcs.get(room_name).unwrap().clone();
+            } else {
+                npcs = vec![];
+            }
             Ok(LevelState {
-                room: level,
+                area: level.split('_').collect::<Vec<&str>>()[0].to_string(),
+                room: room,
                 player,
-                npcs: vec![test_npc],
+                npcs: npcs,
             })
         } else {
             Err("Level not found in resources".into())
@@ -46,6 +59,7 @@ enum DirectionToMove {
 
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
+        println!("{}", self.area);
         //pausing
         {
             let pause_menu_pos = menu_centre_pos(6, 3);
@@ -99,11 +113,6 @@ impl GameState for LevelState {
                     return npc.interact();
                 }
             }
-
-            let res = RESOURCE_MANAGER.lock().unwrap();
-            let objects = res.get_room_object("a1");
-            println!("{:#?}", objects);
-
             return StateTransition::None;
         }
 
@@ -132,9 +141,10 @@ impl GameState for LevelState {
             ),
             DirectionToMove::None => unreachable!(),
         };
-        //todo FIX THIS TO ALLOW DIFFERENT LEVELS
+
         let new_level = format!(
-            "a1_{}_{}",
+            "{}_{}_{}",
+            self.area,
             self.room.x_coord + offset.x,
             self.room.y_coord + offset.y
         );

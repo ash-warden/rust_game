@@ -1,7 +1,6 @@
 use crate::game_state::{MenuState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use macroquad::math::{Vec2, vec2};
-use serde::{Deserialize, Serialize};
 
 fn simple_dialog(text: &str) -> StateTransition {
     let dialog_menu_pos = menu_centre_pos(36, 1000); //h not used
