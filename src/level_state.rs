@@ -68,7 +68,7 @@ enum DirectionToMove {
 
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
-        println!("{}", self.area);
+        // println!("{}", self.area);
         //pausing
         {
             let pause_menu_pos = menu_centre_pos(6, 3);

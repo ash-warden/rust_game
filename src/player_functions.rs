@@ -128,7 +128,7 @@ impl Player {
 
     pub fn jump(&mut self) {
         if self.on_ground {
-            println!("{}", self.velocity.x);
+            // println!("{}", self.velocity.x);
             self.velocity.y = -self.velocity.x.abs() / 3. - PLAYER_JUMP_MIN;
             self.on_ground = false;
         }
@@ -284,12 +284,12 @@ impl Player {
         ];
         let mut coords: IVec2 = ivec2(0, 0);
         let on_ladder: bool;
-        println!("{}", self.position.y);
+        // println!("{}", self.position.y);
         if self.position.y > 400. {
             on_ladder = offsets1.iter().any(|offset1| {
-            coords = ((self.position + *offset1).as_ivec2()) / 32;
-            self.level.get_tile_info(coords).ladder
-        }) || offsets2.iter().any(|offset2| {
+                coords = ((self.position + *offset1).as_ivec2()) / 32;
+                self.level.get_tile_info(coords).ladder
+            }) || offsets2.iter().any(|offset2| {
                 coords = ((self.position + *offset2).as_ivec2()) / 32;
                 self.level.get_tile_info(coords).ladder
             }) || offsets3.iter().any(|offset3| {
@@ -352,7 +352,9 @@ impl Player {
         }
         let mut input = CONTROLS.lock().unwrap();
         self.velocity = vec2(0., 0.);
-        if (input.controls_left() || input.controls_right() || input.controls_primary()) && !self.over_solid_tile() {
+        if (input.controls_left() || input.controls_right() || input.controls_primary())
+            && !self.over_solid_tile()
+        {
             return true;
         } else if input.controls_up() {
             self.position.y -= 2.;

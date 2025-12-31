@@ -121,7 +121,6 @@ impl Player {
                     //true is player is trying to get off ladder
                     if self.handle_climb(ladder.unwrap().x) {
                         self.state = PlayerMovementState::Standing;
-
                     }
                 }
             }
@@ -142,6 +141,6 @@ impl Player {
             _ => {} //don't do anything when in other states
         }
 
-        println!("{:?}", self.state);
+        // println!("{:?}", self.state);
     }
 }
