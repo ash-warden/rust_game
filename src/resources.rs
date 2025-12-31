@@ -104,7 +104,7 @@ pub async fn load_all_assets() {
                     let mut npcs: HashMap<String, Vec<NpcInGame>> = HashMap::new();
                     for i in objects.npcs {
                         let room = format!("{}_{}", i.room_x, i.room_y);
-                        let cur_npc = NpcInGame::new(vec2(i.pos_x, i.pos_y));
+                        let cur_npc = NpcInGame::new(vec2(i.pos_x, i.pos_y), i.name);
                         npcs.entry(room).or_insert_with(Vec::new).push(cur_npc);
                     }
                     println!("{:?}", checkpoints);

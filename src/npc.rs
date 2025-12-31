@@ -13,14 +13,9 @@ fn simple_dialog(text: &str) -> StateTransition {
     StateTransition::Push(Box::new(menu_state))
 }
 
-enum Npcs {
-    Test1,
-    Test2,
-}
-
-fn npc_function(npc: Npcs) -> StateTransition {
-    match npc {
-        Npcs::Test1 => StateTransition::None,
+fn npc_function(npc_name: &str) -> StateTransition {
+    match npc_name {
+        "Test1" => StateTransition::None,
         _ => simple_dialog("Error, NPC has no function"),
     }
 }
@@ -29,16 +24,18 @@ fn npc_function(npc: Npcs) -> StateTransition {
 pub struct NpcInGame {
     pub pos: Vec2,
     pub size: Vec2,
+    pub npc_type: String,
 }
 
 impl NpcInGame {
-    pub fn new(pos: Vec2) -> Self {
+    pub fn new(pos: Vec2, npc_type: String) -> Self {
         NpcInGame {
             pos,
             size: vec2(32., 64.),
+            npc_type,
         }
     }
     pub fn interact(&self) -> StateTransition {
-        npc_function(Npcs::Test2)
+        npc_function(&self.npc_type)
     }
 }
