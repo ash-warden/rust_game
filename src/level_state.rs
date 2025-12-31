@@ -2,7 +2,7 @@ use crate::controls::CONTROLS;
 use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::{Checkpoint, RESOURCE_MANAGER};
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
@@ -16,6 +16,7 @@ pub struct LevelState {
     pub room: Arc<level::Room>,
     pub player: Player,
     pub npcs: Vec<NpcInGame>,
+    pub checkpoint: Option<Checkpoint>,
 }
 
 impl LevelState {
@@ -28,19 +29,27 @@ impl LevelState {
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
             let area_npcs: HashMap<String, Vec<NpcInGame>>;
-            let area_objects = res.get_room_object(area);
-            area_npcs = area_objects.unwrap().npcs.clone();
+            let area_objects = res.get_room_object(area).unwrap();
+            area_npcs = area_objects.npcs.clone();
             let npcs: Vec<NpcInGame>;
             if area_npcs.contains_key(room_name) {
                 npcs = area_npcs.get(room_name).unwrap().clone();
             } else {
                 npcs = vec![];
             }
+            let area_checkpoints = area_objects.checkpoints.clone();
+            let checkpoint: Option<Checkpoint>;
+            if area_checkpoints.contains_key(room_name) {
+                checkpoint = Some(area_checkpoints.get(room_name).unwrap().clone());
+            } else {
+                checkpoint = None;
+            }
             Ok(LevelState {
                 area: level.split('_').collect::<Vec<&str>>()[0].to_string(),
                 room: room,
                 player,
                 npcs: npcs,
+                checkpoint,
             })
         } else {
             Err("Level not found in resources".into())
@@ -220,6 +229,19 @@ impl GameState for LevelState {
                 tex,
                 npc.pos.x,
                 npc.pos.y,
+                WHITE,
+                DrawTextureParams {
+                    ..Default::default()
+                },
+            );
+        }
+        if let Some(checkpoint) = &self.checkpoint {
+            let res = RESOURCE_MANAGER.lock().unwrap();
+            let tex = res.get_texture("checkpoint.png");
+            draw_texture_ex(
+                tex,
+                checkpoint.pos_x,
+                checkpoint.pos_y,
                 WHITE,
                 DrawTextureParams {
                     ..Default::default()
