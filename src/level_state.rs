@@ -162,7 +162,7 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < npc.pos.y + npc.size.y
                     && player.position.y + player.actual_size.y as f32 > npc.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_up() {
+                if overlapping_x && overlapping_y && input.controls_tertirary() {
                     return npc.interact();
                 }
             }
@@ -174,7 +174,7 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < checkpoint.pos.y + checkpoint.size.y
                     && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_up() {
+                if overlapping_x && overlapping_y && input.controls_tertirary() {
                     return checkpoint.interact(self.area.clone());
                 }
             }

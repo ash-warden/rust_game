@@ -1,21 +1,28 @@
 {
-    "checkpoints":[
-	{
-	    "id": 0,
-	    "room_x":0,
-	    "room_y":0,
-	    "pos_x":300.0,
-	    "pos_y":400.0
-	}
-    ],
-    "npcs":[
-	{
-	    "id": 0,
-	    "name": "Test2",
-	    "room_x":0,
-	    "room_y":0,
-	    "pos_x":100.0,
-	    "pos_y":400.0
-	}
-    ]
+  "checkpoints": [
+    {
+      "id": 0,
+      "room_x": 0,
+      "room_y": 0,
+      "pos_x": 300.0,
+      "pos_y": 400.0
+    },
+    {
+      "id": 1,
+      "room_x": 1,
+      "room_y": 0,
+      "pos_x": 300.0,
+      "pos_y": 400.0
+    }
+  ],
+  "npcs": [
+    {
+      "id": 0,
+      "name": "Test2",
+      "room_x": 0,
+      "room_y": 0,
+      "pos_x": 100.0,
+      "pos_y": 400.0
+    }
+  ]
 }

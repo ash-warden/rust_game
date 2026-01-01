@@ -6,6 +6,7 @@ use std::sync::Mutex;
 pub struct Controls {
     pads: Gamepads,
     enter_down: bool,
+    z_down: bool,
 }
 
 impl Controls {
@@ -13,6 +14,7 @@ impl Controls {
         Self {
             pads: Gamepads::new(),
             enter_down: false,
+            z_down: false,
         }
     }
 
@@ -47,11 +49,18 @@ impl Controls {
     pub fn controls_secondary(&mut self) -> bool {
         self.check_pad_input(Button::ActionLeft) || is_key_down(KeyCode::LeftShift)
     }
+    pub fn controls_tertirary(&mut self) -> bool {
+        let pressed = self.check_pad_input(Button::ActionRight) || is_key_down(KeyCode::Z);
+        let just_released = self.z_down && !pressed;
+        self.z_down = pressed;
+        just_released
+    }
     pub fn controls_enter(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::RightCenterCluster);
+        let pressed =
+            self.check_pad_input(Button::RightCenterCluster) || is_key_down(KeyCode::Enter);
         let just_released = self.enter_down && !pressed;
         self.enter_down = pressed;
-        just_released || is_key_pressed(KeyCode::Enter)
+        just_released
     }
 }
 
