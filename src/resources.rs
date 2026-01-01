@@ -1,6 +1,7 @@
 use crate::level::Room;
+use crate::level_state::Checkpoint;
 use crate::npc::NpcInGame;
-use macroquad::math::{f32, i32, vec2};
+use macroquad::math::{Vec2, f32, i32, vec2};
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -97,7 +98,8 @@ pub async fn load_all_assets() {
                     let mut checkpoints: HashMap<String, Checkpoint> = HashMap::new();
                     for i in objects.checkpoints {
                         let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
-                        let cur_checkpoint: Checkpoint = Checkpoint::new(i.id, i.pos_x, i.pos_y);
+                        let cur_checkpoint: Checkpoint =
+                            Checkpoint::new(i.id, vec2(i.pos_x, i.pos_y));
                         checkpoints.insert(room, cur_checkpoint);
                     }
 
@@ -156,17 +158,4 @@ pub struct CheckpointFromFile {
     pub room_y: i32,
     pub pos_x: f32,
     pub pos_y: f32,
-}
-
-#[derive(Debug, Clone)]
-pub struct Checkpoint {
-    pub id: i32,
-    pub pos_x: f32,
-    pub pos_y: f32,
-}
-
-impl Checkpoint {
-    pub fn new(id: i32, pos_x: f32, pos_y: f32) -> Checkpoint {
-        Checkpoint { id, pos_x, pos_y }
-    }
 }

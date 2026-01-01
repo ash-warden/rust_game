@@ -1,5 +1,5 @@
-use std::sync::Mutex;
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 pub struct CurrentGame {
     pub last_checkpoint: i32,
@@ -15,5 +15,5 @@ impl CurrentGame {
     }
 }
 
-pub static CURRENT_GAME_MANAGER: Lazy<Mutex<CurrentGame>> = Lazy::new(|| Mutex::new(CurrentGame::new()));
-
+pub static CURRENT_GAME_MANAGER: Lazy<Mutex<CurrentGame>> =
+    Lazy::new(|| Mutex::new(CurrentGame::new()));

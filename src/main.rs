@@ -1,4 +1,4 @@
-use crate::game_state::{GameStateStack, LoadSaveState, MenuState, SillyState, StateTransition};
+use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NothingState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
@@ -46,7 +46,7 @@ async fn main() {
     load_all_assets().await;
 
     //todo get rid of the sillystate some time
-    let silly_state = SillyState::new();
+    let silly_state = NothingState::new();
     let load_state = LoadSaveState::new();
     let menu_pos = menu_centre_pos(24, 3);
     let mut menu = Menu::new(menu_pos.x, menu_pos.y);

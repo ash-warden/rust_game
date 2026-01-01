@@ -1,15 +1,19 @@
-use std::sync::Mutex;
 use gamepads::{Button, Gamepads};
-use macroquad::input::{is_key_down, is_key_pressed, KeyCode};
+use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 pub struct Controls {
     pads: Gamepads,
+    enter_down: bool,
 }
 
 impl Controls {
     fn new() -> Self {
-        Self { pads: Gamepads::new() }
+        Self {
+            pads: Gamepads::new(),
+            enter_down: false,
+        }
     }
 
     fn poll(&mut self) {
@@ -44,12 +48,10 @@ impl Controls {
         self.check_pad_input(Button::ActionLeft) || is_key_down(KeyCode::LeftShift)
     }
     pub fn controls_enter(&mut self) -> bool {
-        self.poll();
-        self.pads
-            .all()
-            .next()
-            .map(|g| g.is_just_pressed(Button::RightCenterCluster))
-            .unwrap_or(false) || is_key_pressed(KeyCode::Enter)
+        let pressed = self.check_pad_input(Button::RightCenterCluster);
+        let just_released = self.enter_down && !pressed;
+        self.enter_down = pressed;
+        just_released || is_key_pressed(KeyCode::Enter)
     }
 }
 

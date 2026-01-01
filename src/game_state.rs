@@ -44,15 +44,15 @@ impl GameState for MenuState {
 }
 
 #[derive(Clone)]
-pub struct SillyState {}
+pub struct NothingState {}
 
-impl SillyState {
+impl NothingState {
     pub fn new() -> Self {
-        SillyState {}
+        NothingState {}
     }
 }
 
-impl GameState for SillyState {
+impl GameState for NothingState {
     fn update(&mut self) -> StateTransition {
         println!("nonsense!");
         StateTransition::Pop(1)
@@ -200,6 +200,6 @@ impl GameStateStack {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SaveData {
-    area: String,
-    checkpoint: i32,
+    pub area: String,
+    pub checkpoint: i32,
 }

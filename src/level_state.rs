@@ -1,14 +1,58 @@
 use crate::controls::CONTROLS;
-use crate::game_state::{GameState, MenuState, Player, PlayerInitialInfo, StateTransition};
+use crate::game_state::{
+    GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
+};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
-use crate::resources::{Checkpoint, RESOURCE_MANAGER};
+use crate::resources::RESOURCE_MANAGER;
 use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{IVec2, Rect, vec2};
+use macroquad::math::{IVec2, Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::collections::HashMap;
+use std::env::current_exe;
+use std::fs;
 use std::sync::Arc;
+
+#[derive(Debug, Clone)]
+pub struct Checkpoint {
+    pub id: i32,
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
+impl Checkpoint {
+    pub fn new(id: i32, pos: Vec2) -> Checkpoint {
+        let size = vec2(32., 32.);
+        Checkpoint { id, pos, size }
+    }
+
+    pub fn interact(&self, area: String) -> StateTransition {
+        println!("{}", "interacting with checkpoint");
+        use rfd::FileDialog;
+        let mut exe_path = current_exe().unwrap();
+        exe_path.pop(); //remove the executable filename
+        let saves_path = exe_path.join("../../saves"); //temporary for when working on game? may need to change
+
+        let file = FileDialog::new()
+            .add_filter("game_25 save", &["save"])
+            .set_directory(saves_path)
+            .set_title("Choose file to save over")
+            .pick_file();
+        let new_save = SaveData {
+            area: area,
+            checkpoint: self.id,
+        };
+
+        if let Some(path) = file {
+            let json_data = serde_json::to_string_pretty(&new_save).unwrap();
+            println!("{}", path.display());
+            fs::write(path, json_data);
+        }
+
+        StateTransition::None
+    }
+}
 
 #[derive(Clone)]
 pub struct LevelState {
@@ -120,6 +164,18 @@ impl GameState for LevelState {
 
                 if overlapping_x && overlapping_y && input.controls_up() {
                     return npc.interact();
+                }
+            }
+            // check interact with checkpoint
+            if let Some(checkpoint) = &self.checkpoint {
+                let overlapping_x = player.position.x < checkpoint.pos.x + checkpoint.size.x
+                    && player.position.x + player.actual_size.x as f32 > checkpoint.pos.x;
+
+                let overlapping_y = player.position.y < checkpoint.pos.y + checkpoint.size.y
+                    && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
+
+                if overlapping_x && overlapping_y && input.controls_up() {
+                    return checkpoint.interact(self.area.clone());
                 }
             }
             return StateTransition::None;
@@ -240,8 +296,8 @@ impl GameState for LevelState {
             let tex = res.get_texture("checkpoint.png");
             draw_texture_ex(
                 tex,
-                checkpoint.pos_x,
-                checkpoint.pos_y,
+                checkpoint.pos.x,
+                checkpoint.pos.y,
                 WHITE,
                 DrawTextureParams {
                     ..Default::default()

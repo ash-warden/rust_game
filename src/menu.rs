@@ -1,10 +1,10 @@
+use crate::controls::CONTROLS;
 use crate::game_state::StateTransition;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::color::{Color, WHITE, YELLOW};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
 use macroquad::texture::Texture2D;
-use crate::controls::CONTROLS;
 
 pub struct Menu {
     menu_items: Vec<MenuItem>,
@@ -38,7 +38,9 @@ impl Menu {
                 if !self.menu_items[self.current_index as usize].selectable {
                     if self.current_index < self.menu_items.len() as u32 - 1 {
                         self.current_index += 1;
-                    } else { self.current_index -= 1 }
+                    } else {
+                        self.current_index -= 1
+                    }
                 }
             }
         }
@@ -48,11 +50,13 @@ impl Menu {
                 if !self.menu_items[self.current_index as usize].selectable {
                     if self.current_index > 0 {
                         self.current_index -= 1;
-                    } else { self.current_index += 1 }
+                    } else {
+                        self.current_index += 1
+                    }
                 }
             }
         }
-        if input.controls_enter() || input.controls_primary() {
+        if input.controls_enter() {
             return self.menu_items[self.current_index as usize].activate();
         }
         StateTransition::None
@@ -148,7 +152,7 @@ impl Menu {
                 );
             }
             // left edge
-            for j in 0..menu_height*2 {
+            for j in 0..menu_height * 2 {
                 draw_texture_ex(
                     tex,
                     self.pos.x,
@@ -163,7 +167,7 @@ impl Menu {
             }
 
             // right edge
-            for j in 0..menu_height*2 {
+            for j in 0..menu_height * 2 {
                 draw_texture_ex(
                     tex,
                     self.pos.x + menu_width as f32 * 16. + 16.,
@@ -245,7 +249,7 @@ impl MenuItem {
                 };
                 {
                     let res = RESOURCE_MANAGER.lock().unwrap();
-                    let tex :&Texture2D;
+                    let tex: &Texture2D;
                     if self.selectable {
                         tex = res.get_texture("font.png");
                     } else {
