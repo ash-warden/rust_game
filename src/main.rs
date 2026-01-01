@@ -4,7 +4,6 @@ use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
-//module for loading the level from the map
 mod controls;
 mod current_game;
 mod game_state;
@@ -33,8 +32,8 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "Game".to_owned(),
         fullscreen: false,
-        window_width: 680,
-        window_height: 520,
+        window_width: 1000,
+        window_height: 600,
         sample_count: 1,
         window_resizable: true,
         ..Default::default() // fill in the rest with defaults
