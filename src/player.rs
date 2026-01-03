@@ -1,3 +1,4 @@
+use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::level;
 use crate::player_functions::Direction;
 use crate::resources::RESOURCE_MANAGER;
@@ -14,7 +15,7 @@ pub struct Player {
     pub level: Arc<level::Room>,
     pub state: PlayerMovementState,
     pub facing_right: bool,
-    prev_on_ground: bool,
+    pub damage_timer: f32,
 }
 
 pub struct PlayerInitialInfo {
@@ -59,7 +60,7 @@ impl Player {
             level: level.clone(),
             state,
             facing_right: true,
-            prev_on_ground: false,
+            damage_timer: 0.,
         }
     }
 
@@ -143,15 +144,18 @@ impl Player {
             }
             _ => {} //don't do anything when in other states
         }
-        // check if just landed
-        if !self.on_ground {
-            self.prev_on_ground = false;
-        }
-        if !self.prev_on_ground && self.on_ground {
-            println!("land");
+        if self.on_ground {
             // check what type of tile landed on
-            println!("{:?}", self.touching_hazard(Direction::Below));
-            self.prev_on_ground = true;
+            // println!("{:?}", self.touching_hazard(Direction::Below));
+            if self.damage_timer <= 0. && self.touching_hazard(Direction::Below) {
+                let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+                cur_game.reduce_health(1);
+                println!("{:?}", cur_game.health);
+                self.damage_timer = 1.;
+            }
+            self.damage_timer -= delta_time;
+        } else {
+            self.damage_timer = 0.;
         }
         // println!("{:?}", self.state);
     }

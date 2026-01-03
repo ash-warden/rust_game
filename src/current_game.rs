@@ -2,15 +2,19 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 pub struct CurrentGame {
-    pub last_checkpoint: i32,
-    pub health: i32,
+    pub health: u32,
 }
 
 impl CurrentGame {
     pub fn new() -> Self {
-        Self {
-            last_checkpoint: 0,
-            health: 0,
+        Self { health: 10 }
+    }
+
+    pub fn reduce_health(&mut self, damage: u32) {
+        if self.health < damage {
+            self.health = 256;
+        } else {
+            self.health -= damage;
         }
     }
 }
