@@ -1,7 +1,8 @@
 use crate::controls::CONTROLS;
 use crate::game_state::StateTransition;
 use crate::resources::RESOURCE_MANAGER;
-use macroquad::color::{Color, WHITE, YELLOW};
+use crate::text::write_text;
+use macroquad::color::{BLUE, Color, WHITE, YELLOW};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
 use macroquad::texture::Texture2D;
@@ -233,52 +234,16 @@ impl MenuItem {
     }
 
     pub fn draw(&self, offset: Vec2, line: f32, selected: bool) {
-        let mut row = 0.;
-        let mut col = 0.;
-        for item in self.label_text.chars() {
-            let letter_ascii: i32 = item.to_ascii_lowercase() as i32;
-            //println!("{}", letter_ascii);
-
-            if letter_ascii == 10 {
-                row += 1.;
-                col = 0.;
-            } else {
-                let letter_pos = Vec2 {
-                    x: col * 16.,
-                    y: row * 32.,
-                };
-                {
-                    let res = RESOURCE_MANAGER.lock().unwrap();
-                    let tex: &Texture2D;
-                    if self.selectable {
-                        tex = res.get_texture("font.png");
-                    } else {
-                        tex = res.get_texture("font_non_selectable.png");
-                    }
-                    let mut color: Color = WHITE;
-                    if selected {
-                        color = YELLOW;
-                    }
-                    draw_texture_ex(
-                        tex,
-                        letter_pos.x + offset.x,
-                        letter_pos.y + line * 32. + offset.y,
-                        color,
-                        DrawTextureParams {
-                            dest_size: Some(vec2(16., 32.)),
-                            source: Some(Rect::new(
-                                16. * (letter_ascii % 32) as f32,
-                                32. * (letter_ascii / 32) as f32 - 32.,
-                                16.,
-                                32.,
-                            )),
-                            ..Default::default()
-                        },
-                    );
-                }
-                col += 1.;
-            }
+        let pos = vec2(offset.x, offset.y + line * 32.);
+        let color: Color;
+        if !self.selectable {
+            color = BLUE;
+        } else if selected {
+            color = YELLOW;
+        } else {
+            color = WHITE;
         }
+        write_text(&self.label_text, pos, color);
     }
 }
 
