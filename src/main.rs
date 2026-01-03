@@ -7,6 +7,7 @@ use macroquad::prelude::*;
 mod controls;
 mod current_game;
 mod game_state;
+mod hud;
 mod level;
 mod level_state;
 mod menu;
@@ -14,6 +15,7 @@ mod npc;
 mod player;
 mod player_functions;
 mod resources;
+mod text;
 
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
@@ -32,8 +34,8 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "Game".to_owned(),
         fullscreen: false,
-        window_width: 1000,
-        window_height: 600,
+        window_width: 640,
+        window_height: 480,
         sample_count: 1,
         window_resizable: true,
         ..Default::default() // fill in the rest with defaults
