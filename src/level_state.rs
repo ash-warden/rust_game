@@ -2,6 +2,7 @@ use crate::controls::CONTROLS;
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
+use crate::hud::Hud;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
@@ -291,6 +292,7 @@ impl GameState for LevelState {
                 },
             );
         }
+        //draw checkpoint
         if let Some(checkpoint) = &self.checkpoint {
             let res = RESOURCE_MANAGER.lock().unwrap();
             let tex = res.get_texture("checkpoint.png");
@@ -304,6 +306,8 @@ impl GameState for LevelState {
                 },
             );
         }
+        //draw the HUD
+        Hud::draw();
     }
 
     fn transparent(&self) -> bool {

@@ -10,7 +10,7 @@ pub fn write_text(text: &str, pos: Vec2, color: Color) {
     let mut row = 0.;
     let mut col = 0.;
     for item in text.chars() {
-        let letter_ascii: i32 = item.to_ascii_lowercase() as i32;
+        let letter_ascii = item as u8;
         //println!("{}", letter_ascii);
 
         if letter_ascii == 10 {
