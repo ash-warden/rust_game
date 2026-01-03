@@ -92,6 +92,7 @@ pub struct Room {
 pub struct TileInfo {
     pub solid: bool,
     pub ladder: bool,
+    pub hazard: bool,
 }
 
 impl Room {
@@ -142,12 +143,14 @@ impl Room {
             return TileInfo {
                 solid: false,
                 ladder: false,
+                hazard: false,
             };
         }
         if tile_coords.x > self.map_dimensions.x - 1 || tile_coords.y > self.map_dimensions.y - 1 {
             return TileInfo {
                 solid: false,
                 ladder: false,
+                hazard: false,
             };
         }
         let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
@@ -156,6 +159,7 @@ impl Room {
         let tile_properties = &tileset.tiles[tile as usize - 1].properties;
         let mut solid: bool = false;
         let mut ladder: bool = false;
+        let mut hazard: bool = false;
         for i in tile_properties {
             if i.name == "solid" && i.value {
                 solid = true;
@@ -163,7 +167,14 @@ impl Room {
             if i.name == "ladder" && i.value {
                 ladder = true;
             }
+            if i.name == "hazard" && i.value {
+                hazard = true;
+            }
         }
-        TileInfo { solid, ladder }
+        TileInfo {
+            solid,
+            ladder,
+            hazard,
+        }
     }
 }

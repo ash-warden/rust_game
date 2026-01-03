@@ -1,4 +1,5 @@
 use crate::level;
+use crate::player_functions::Direction;
 use crate::resources::RESOURCE_MANAGER;
 use macroquad::math::{IVec2, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
@@ -13,6 +14,7 @@ pub struct Player {
     pub level: Arc<level::Room>,
     pub state: PlayerMovementState,
     pub facing_right: bool,
+    prev_on_ground: bool,
 }
 
 pub struct PlayerInitialInfo {
@@ -57,6 +59,7 @@ impl Player {
             level: level.clone(),
             state,
             facing_right: true,
+            prev_on_ground: false,
         }
     }
 
@@ -140,7 +143,16 @@ impl Player {
             }
             _ => {} //don't do anything when in other states
         }
-
+        // check if just landed
+        if !self.on_ground {
+            self.prev_on_ground = false;
+        }
+        if !self.prev_on_ground && self.on_ground {
+            println!("land");
+            // check what type of tile landed on
+            println!("{:?}", self.touching_hazard(Direction::Below));
+            self.prev_on_ground = true;
+        }
         // println!("{:?}", self.state);
     }
 }

@@ -1,10 +1,16 @@
 use crate::controls::CONTROLS;
+use crate::level::TileInfo;
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
     PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_RUN,
     PLAYER_SPEED_WALK, Player,
 };
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
+
+pub enum Direction {
+    Above,
+    Below,
+}
 
 impl Player {
     pub fn calc_horizontal_velocity(&mut self, delta_time: f32) {
@@ -368,6 +374,33 @@ impl Player {
             }
         }
         false
+    }
+
+    pub fn touching_hazard(&self, direction: Direction) -> bool {
+        let mut left_corner = ivec2(0, 0);
+        let mut right_corner = ivec2(0, 0);
+
+        match direction {
+            Direction::Below => {
+                let offsets = [
+                    vec2(0., self.actual_size.y as f32),
+                    vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32),
+                ];
+                left_corner = ((self.position + offsets[0]).as_ivec2()) / 32;
+                right_corner = ((self.position + offsets[1]).as_ivec2()) / 32;
+            }
+            Direction::Above => {
+                let offsets = [vec2(0., 0.), vec2(self.actual_size.x as f32 - 1., 0.)];
+                left_corner = ((self.position + offsets[0]).as_ivec2()) / 32;
+                right_corner = ((self.position + offsets[1]).as_ivec2()) / 32;
+            }
+            _ => {}
+        }
+        let lh = self.level.get_tile_info(left_corner).hazard;
+        let rh = self.level.get_tile_info(right_corner).hazard;
+        let ls = self.level.get_tile_info(left_corner).solid;
+        let rs = self.level.get_tile_info(right_corner).solid;
+        (lh && rh) || (lh && !rs) || (rh && !ls)
     }
 
     // Return true if tile at (tx, ty) is solid.
