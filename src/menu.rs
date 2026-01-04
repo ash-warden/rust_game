@@ -243,7 +243,7 @@ impl MenuItem {
         } else {
             color = WHITE;
         }
-        write_text(&self.label_text, pos, color);
+        write_text(&self.label_text, pos, color, "font.png");
     }
 }
 

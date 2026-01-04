@@ -6,7 +6,7 @@ use macroquad::{
 
 use crate::resources::RESOURCE_MANAGER;
 
-pub fn write_text(text: &str, pos: Vec2, color: Color) {
+pub fn write_text(text: &str, pos: Vec2, color: Color, font: &str) {
     let mut row = 0.;
     let mut col = 0.;
     for item in text.chars() {
@@ -24,7 +24,7 @@ pub fn write_text(text: &str, pos: Vec2, color: Color) {
             {
                 let res = RESOURCE_MANAGER.lock().unwrap();
                 let tex: &Texture2D;
-                tex = res.get_texture("font.png");
+                tex = res.get_texture(font);
                 draw_texture_ex(
                     tex,
                     letter_pos.x + pos.x,
