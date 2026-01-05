@@ -311,7 +311,7 @@ impl GameState for LevelState {
             );
         }
         //draw the HUD
-        draw_hud(false, true, &self.map_pixels);
+        draw_hud(false, false, &self.map_pixels);
     }
 
     fn transparent(&self) -> bool {

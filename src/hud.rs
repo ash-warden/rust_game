@@ -1,7 +1,7 @@
 use std::cmp::min;
 
 use macroquad::{
-    color::{BLACK, BLUE, Color, WHITE},
+    color::Color,
     math::{Vec2, ivec2, vec2},
     shapes::{draw_rectangle, draw_rectangle_lines},
 };
@@ -79,10 +79,10 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
                         for j in 0..room.map_dimensions.x {
                             println!("{:?} {:?}", i, j);
                             let tile = room.get_tile_info(ivec2(j, i));
-                            if tile.solid {
-                                map_pixels.last_mut().unwrap().push(MapPixelType::Solid);
-                            } else if tile.ladder {
+                            if tile.ladder {
                                 map_pixels.last_mut().unwrap().push(MapPixelType::Ladder);
+                            } else if tile.solid {
+                                map_pixels.last_mut().unwrap().push(MapPixelType::Solid);
                             } else {
                                 map_pixels.last_mut().unwrap().push(MapPixelType::Air);
                             }
@@ -101,36 +101,66 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
     //return vec![MapPixelType::Solid]; // temporary
 }
 
-fn draw_hud_map(map_pixels: &Vec<Vec<MapPixelType>>) {
+fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>>) {
+    let map_scale = 4;
     let mut room_x = 0;
     let mut room_y = 0;
     for room in map_pixels {
         let mut tile_x = 0;
         let mut tile_y = 0;
         for tile in room {
-            let color: Color;
-            match tile {
-                MapPixelType::Solid => color = WHITE,
-                MapPixelType::Ladder => color = BLUE,
-                MapPixelType::Air => color = BLACK,
+            let mut color: Color;
+            // borders
+            if tile_x == 0 || tile_x == 19 || tile_y == 0 || tile_y == 14 {
+                if (tile_x % 2 == 0 || (room_y * 15 + tile_y) % 2 == 0)
+                    && !(tile_x % 2 == 0 && (room_y * 15 + tile_y) % 2 == 0)
+                {
+                    //checkerboard
+                    match tile {
+                        MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
+                        MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
+                        MapPixelType::Air => color = Color::new(1., 1., 1., transparency),
+                    }
+                } else {
+                    match tile {
+                        MapPixelType::Solid => color = Color::new(0., 0., 0., transparency),
+                        MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
+                        MapPixelType::Air => color = Color::new(0.8, 0.8, 0.8, transparency),
+                    }
+                }
+                // current room
+            } else if room_x == 1 && room_y == 1 {
+                match tile {
+                    MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
+                    MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
+                    MapPixelType::Air => color = Color::new(1., 1., 1., transparency),
+                }
+                // other rooms
+            } else {
+                match tile {
+                    MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
+                    MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
+                    MapPixelType::Air => color = Color::new(0.8, 0.8, 0.8, transparency),
+                }
             }
+
             draw_rectangle(
-                (room_x + tile_x) as f32,
-                (room_y + tile_y) as f32,
-                2.,
-                2.,
+                ((room_x * 20 + tile_x) * map_scale) as f32 + pos.x + (640 - 240 - 24 - 24) as f32,
+                ((room_y * 15 + tile_y) * map_scale) as f32 + pos.y,
+                map_scale as f32,
+                map_scale as f32,
                 color,
             );
-            tile_x += 2;
-            if tile_x >= 40 {
+            tile_x += 1;
+            if tile_x >= 20 {
                 tile_x = 0;
-                tile_y += 2;
+                tile_y += 1;
             }
         }
-        room_x += 40;
-        if room_x >= 120 {
+        room_x += 1;
+        if room_x >= 3 {
             room_x = 0;
-            room_y += 30;
+            room_y += 1;
         }
     }
 }
@@ -141,10 +171,10 @@ pub fn draw_hud(bottom: bool, solid: bool, map_pixels: &Vec<Vec<MapPixelType>>) 
     } else {
         vec2(24., 24.)
     };
-    let transparency = if solid { 1.0 } else { 0.3 };
+    let transparency = if solid { 1.0 } else { 0.7 };
     draw_health_bar(pos, transparency);
     if solid {
         draw_health_text(pos, transparency);
     }
-    draw_hud_map(map_pixels);
+    draw_hud_map(pos, transparency, map_pixels);
 }
