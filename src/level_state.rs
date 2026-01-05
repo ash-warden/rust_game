@@ -2,7 +2,7 @@ use crate::controls::CONTROLS;
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
-use crate::hud::Hud;
+use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
@@ -62,6 +62,7 @@ pub struct LevelState {
     pub player: Player,
     pub npcs: Vec<NpcInGame>,
     pub checkpoint: Option<Checkpoint>,
+    pub map_pixels: Vec<Vec<MapPixelType>>,
 }
 
 impl LevelState {
@@ -70,6 +71,8 @@ impl LevelState {
         player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let (area, room_name) = level.split_once('_').unwrap();
+
+        let map_pixels = get_map_pixels(area, room_name);
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
@@ -90,11 +93,12 @@ impl LevelState {
                 checkpoint = None;
             }
             Ok(LevelState {
-                area: level.split('_').collect::<Vec<&str>>()[0].to_string(),
+                area: area.to_string(),
                 room: room,
                 player,
                 npcs: npcs,
                 checkpoint,
+                map_pixels,
             })
         } else {
             Err("Level not found in resources".into())
@@ -307,7 +311,7 @@ impl GameState for LevelState {
             );
         }
         //draw the HUD
-        Hud::draw(true, true);
+        draw_hud(false, true, &self.map_pixels);
     }
 
     fn transparent(&self) -> bool {

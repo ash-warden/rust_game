@@ -42,7 +42,11 @@ impl Resources {
     }
 
     pub fn get_room(&self, key: &str) -> Option<Arc<Room>> {
-        self.rooms.get(key).cloned()
+        if self.rooms.contains_key(key) {
+            self.rooms.get(key).cloned()
+        } else {
+            None
+        }
     }
 
     pub fn get_room_object(&self, key: &str) -> Option<Arc<RoomObjects>> {
