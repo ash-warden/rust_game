@@ -150,7 +150,6 @@ impl Player {
             if self.damage_timer <= 0. && self.touching_hazard(Direction::Below) {
                 let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
                 cur_game.reduce_health(1);
-                println!("{:?}", cur_game.health);
                 self.damage_timer = 1.;
             }
             self.damage_timer -= delta_time;

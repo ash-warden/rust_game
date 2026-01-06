@@ -130,7 +130,7 @@ impl GameState for LevelState {
             pause_menu.add_item(quit_game);
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
-            if input.controls_enter() {
+            if input.controls_enter_release() {
                 return StateTransition::Push(Box::new(menu_state));
             }
         }
@@ -167,7 +167,7 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < npc.pos.y + npc.size.y
                     && player.position.y + player.actual_size.y as f32 > npc.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_tertirary() {
+                if overlapping_x && overlapping_y && input.controls_tertirary_release() {
                     return npc.interact();
                 }
             }
@@ -179,7 +179,7 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < checkpoint.pos.y + checkpoint.size.y
                     && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_tertirary() {
+                if overlapping_x && overlapping_y && input.controls_tertirary_release() {
                     return checkpoint.interact(self.area.clone());
                 }
             }

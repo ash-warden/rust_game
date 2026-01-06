@@ -31,7 +31,7 @@ fn draw_health_bar(pos: Vec2, transparency: f32) {
         pos.y,
         (MAX_HEALTH - min(health, MAX_HEALTH)) as f32 * 10.,
         thickness,
-        Color::new(1., 0.3, 0.3, transparency),
+        Color::new(0., 0., 0., transparency),
     );
     //meter
     draw_rectangle(
@@ -39,7 +39,7 @@ fn draw_health_bar(pos: Vec2, transparency: f32) {
         pos.y,
         10. * health as f32,
         thickness,
-        Color::new(0.3, 0.3, 1., transparency),
+        Color::new(1., 1., 1., transparency),
     );
 }
 
@@ -61,7 +61,6 @@ pub enum MapPixelType {
 }
 
 pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> {
-    println!("hud map area and room {} {}", cur_area, cur_room);
     let cur_room_ints = ivec2(
         cur_room.split_once("_").unwrap().0.parse::<i32>().unwrap(),
         cur_room.split_once("_").unwrap().1.parse::<i32>().unwrap(),
@@ -73,11 +72,9 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
             for x in (cur_room_ints.x - 1)..=(cur_room_ints.x + 1) {
                 map_pixels.push(vec![]);
                 let room_str = format!("{}_{}_{}", cur_area, x, y);
-                println!("{}", room_str);
                 if let Some(room) = res.get_room(&room_str) {
                     for i in 0..room.map_dimensions.y {
                         for j in 0..room.map_dimensions.x {
-                            println!("{:?} {:?}", i, j);
                             let tile = room.get_tile_info(ivec2(j, i));
                             if tile.ladder {
                                 map_pixels.last_mut().unwrap().push(MapPixelType::Ladder);
@@ -90,13 +87,12 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
                     }
                 } else {
                     for _ in 0..(20 * 15) {
-                        map_pixels.last_mut().unwrap().push(MapPixelType::Air);
+                        map_pixels.last_mut().unwrap().push(MapPixelType::Solid);
                     }
                 }
             }
         }
     }
-    println!("{:?}", map_pixels);
     return map_pixels;
     //return vec![MapPixelType::Solid]; // temporary
 }
@@ -109,38 +105,20 @@ fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>
         let mut tile_x = 0;
         let mut tile_y = 0;
         for tile in room {
-            let mut color: Color;
-            // borders
-            if tile_x == 0 || tile_x == 19 || tile_y == 0 || tile_y == 14 {
-                if (tile_x % 2 == 0 || (room_y * 15 + tile_y) % 2 == 0)
-                    && !(tile_x % 2 == 0 && (room_y * 15 + tile_y) % 2 == 0)
-                {
-                    //checkerboard
-                    match tile {
-                        MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
-                        MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
-                        MapPixelType::Air => color = Color::new(1., 1., 1., transparency),
-                    }
-                } else {
-                    match tile {
-                        MapPixelType::Solid => color = Color::new(0., 0., 0., transparency),
-                        MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
-                        MapPixelType::Air => color = Color::new(0.8, 0.8, 0.8, transparency),
-                    }
-                }
-                // current room
-            } else if room_x == 1 && room_y == 1 {
+            let color: Color;
+            // current room
+            if room_x == 1 && room_y == 1 {
                 match tile {
-                    MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
+                    MapPixelType::Solid => color = Color::new(0.2, 0.2, 0.2, transparency),
                     MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
                     MapPixelType::Air => color = Color::new(1., 1., 1., transparency),
                 }
                 // other rooms
             } else {
                 match tile {
-                    MapPixelType::Solid => color = Color::new(0.3, 0.3, 0.3, transparency),
+                    MapPixelType::Solid => color = Color::new(0., 0., 0., transparency),
                     MapPixelType::Ladder => color = Color::new(0.3, 0.7, 0.7, transparency),
-                    MapPixelType::Air => color = Color::new(0.8, 0.8, 0.8, transparency),
+                    MapPixelType::Air => color = Color::new(0.6, 0.6, 0.6, transparency),
                 }
             }
 

@@ -57,7 +57,7 @@ impl Menu {
                 }
             }
         }
-        if input.controls_enter() {
+        if input.controls_enter_release() {
             return self.menu_items[self.current_index as usize].activate();
         }
         StateTransition::None
