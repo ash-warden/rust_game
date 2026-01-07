@@ -1,4 +1,5 @@
 use crate::controls::CONTROLS;
+use crate::current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH};
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
@@ -26,6 +27,11 @@ impl Checkpoint {
     pub fn new(id: i32, pos: Vec2) -> Checkpoint {
         let size = vec2(32., 32.);
         Checkpoint { id, pos, size }
+    }
+
+    pub fn checkpoint_contact(&self) {
+        let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+        cur_game.health = MAX_HEALTH;
     }
 
     pub fn interact(&self, area: String) -> StateTransition {
@@ -179,8 +185,11 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < checkpoint.pos.y + checkpoint.size.y
                     && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_tertirary_release() {
-                    return checkpoint.interact(self.area.clone());
+                if overlapping_x && overlapping_y {
+                    checkpoint.checkpoint_contact();
+                    if input.controls_tertirary_release() {
+                        return checkpoint.interact(self.area.clone());
+                    }
                 }
             }
             return StateTransition::None;
