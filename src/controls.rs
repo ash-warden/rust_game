@@ -1,5 +1,5 @@
 use gamepads::{Button, Gamepads};
-use macroquad::input::{KeyCode, is_key_down, is_key_pressed};
+use macroquad::input::{KeyCode, get_keys_pressed, is_key_down, is_key_pressed};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
@@ -9,6 +9,7 @@ pub struct Controls {
     z_down: bool,
     x_down: bool,
     esc_down: bool,
+    last_used_controller: bool, // true if controler was used last, false if keyboard was used last
 }
 
 impl Controls {
@@ -19,6 +20,7 @@ impl Controls {
             z_down: false,
             x_down: false,
             esc_down: false,
+            last_used_controller: false,
         }
     }
 
@@ -28,6 +30,23 @@ impl Controls {
 
     fn check_pad_input(&mut self, button: Button) -> bool {
         self.poll();
+        // check whether keyboard or contoller used last
+        if self.pads.all().count() > 0 {
+            if self
+                .pads
+                .all()
+                .next()
+                .unwrap()
+                .all_currently_pressed()
+                .count()
+                > 0
+            {
+                self.last_used_controller = true;
+            }
+        }
+        if !get_keys_pressed().is_empty() {
+            self.last_used_controller = false;
+        }
         self.pads
             .all()
             .next()

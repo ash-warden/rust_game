@@ -69,6 +69,9 @@ pub struct LevelState {
     pub npcs: Vec<NpcInGame>,
     pub checkpoint: Option<Checkpoint>,
     pub map_pixels: Vec<Vec<MapPixelType>>,
+    pub full_hud: bool,
+    pub hud_init_timer: f32,
+    pub init_timer_done: bool,
 }
 
 impl LevelState {
@@ -105,6 +108,9 @@ impl LevelState {
                 npcs: npcs,
                 checkpoint,
                 map_pixels,
+                full_hud: true,
+                hud_init_timer: 2.,
+                init_timer_done: false,
             })
         } else {
             Err("Level not found in resources".into())
@@ -191,6 +197,16 @@ impl GameState for LevelState {
                         return checkpoint.interact(self.area.clone());
                     }
                 }
+            }
+            if !self.init_timer_done {
+                self.hud_init_timer -= frame_time;
+                if self.full_hud && self.hud_init_timer <= 0. {
+                    self.full_hud = false;
+                    self.init_timer_done = true;
+                }
+            }
+            if input.controls_esc_release() {
+                self.full_hud = !self.full_hud;
             }
             return StateTransition::None;
         }
@@ -320,10 +336,17 @@ impl GameState for LevelState {
             );
         }
         //draw the HUD
-        draw_hud(false, false, &self.map_pixels);
+        let player_near_top: bool;
+        if self.player.position.y < (240. - (self.player.actual_size.y as f32 / 2.)) {
+            player_near_top = true;
+        } else {
+            player_near_top = false;
+        }
+
+        draw_hud(player_near_top, self.full_hud, &self.map_pixels);
     }
 
     fn transparent(&self) -> bool {
-        false
+        return false;
     }
 }

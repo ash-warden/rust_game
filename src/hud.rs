@@ -48,7 +48,7 @@ fn draw_health_text(pos: Vec2, transparency: f32) {
     write_text(
         "HEALTH",
         vec2(pos.x, pos.y + 16.),
-        Color::new(1., 0.3, 0.3, transparency),
+        Color::new(0.3, 0.3, 0.3, transparency),
         "font_bold.png",
     );
 }
@@ -143,16 +143,21 @@ fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>
     }
 }
 
-pub fn draw_hud(bottom: bool, solid: bool, map_pixels: &Vec<Vec<MapPixelType>>) {
-    let pos = if bottom {
-        vec2(24., 324.) // change again once map done
+pub fn draw_hud(bottom: bool, full: bool, map_pixels: &Vec<Vec<MapPixelType>>) {
+    let health_pos = if bottom {
+        vec2(24., 408.) // change again once map done
     } else {
         vec2(24., 24.)
     };
-    let transparency = if solid { 1.0 } else { 0.7 };
-    draw_health_bar(pos, transparency);
-    if solid {
-        draw_health_text(pos, transparency);
+    let map_pos = if bottom {
+        vec2(24., 276.) // change again once map done
+    } else {
+        vec2(24., 24.)
+    };
+    let transparency = if full { 0.8 } else { 0.6 };
+    draw_health_bar(health_pos, transparency);
+    if full {
+        draw_health_text(health_pos, transparency);
+        draw_hud_map(map_pos, transparency, map_pixels);
     }
-    draw_hud_map(pos, transparency, map_pixels);
 }
