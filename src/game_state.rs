@@ -42,7 +42,7 @@ impl GameState for MenuState {
         true
     }
 }
-
+// this is just for testing. it does nothing.
 #[derive(Clone)]
 pub struct NothingState {}
 
@@ -88,7 +88,7 @@ impl GameState for LoadSaveState {
 
         let area;
         let checkpoint: i32;
-        let mut player_pos = vec2(100., 100.);
+        let mut player_pos = vec2(100., 100.); // value isn't actually used since it is replaced when the file is loaded
         let mut room = ivec2(0, 0);
 
         if let Some(path) = file {

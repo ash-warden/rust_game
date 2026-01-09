@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
+// all these serialize/deserialize ones are for representing the tiled map json files
 #[derive(Serialize, Deserialize)]
 struct TiledLayer {
     data: Vec<i32>,

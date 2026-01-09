@@ -1,3 +1,4 @@
+// IF DIMENSIONS OF ROOM OR SCREEN CHANGE A TON HERE NEEDS TO BE CHANGED!!!
 use std::cmp::min;
 
 use macroquad::{
@@ -15,21 +16,22 @@ use crate::{
 fn draw_health_bar(pos: Vec2, transparency: f32) {
     //health
     let thickness = 16.;
+    let width_single_section = 10.;
     let cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
     let health = cur_game.health;
     //meter background
     draw_rectangle_lines(
         pos.x - 1.,
         pos.y - 1.,
-        MAX_HEALTH as f32 * 10. + 2.,
+        MAX_HEALTH as f32 * width_single_section + 2.,
         thickness + 2.,
         2.,
         Color::new(0., 0., 0., transparency),
     );
     draw_rectangle(
-        pos.x + 10. * health as f32,
+        pos.x + width_single_section * health as f32,
         pos.y,
-        (MAX_HEALTH - min(health, MAX_HEALTH)) as f32 * 10.,
+        (MAX_HEALTH - min(health, MAX_HEALTH)) as f32 * width_single_section,
         thickness,
         Color::new(0., 0., 0., transparency),
     );
@@ -37,7 +39,7 @@ fn draw_health_bar(pos: Vec2, transparency: f32) {
     draw_rectangle(
         pos.x,
         pos.y,
-        10. * health as f32,
+        width_single_section * health as f32,
         thickness,
         Color::new(1., 1., 1., transparency),
     );

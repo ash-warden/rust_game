@@ -17,6 +17,8 @@ mod player_functions;
 mod resources;
 mod text;
 
+const SCREEN_SIZE: IVec2 = ivec2(640, 480);
+
 //convert an index to coordinates, e.g. for tile textures in a grid
 fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
     let x = (n - 1) % width;
@@ -34,8 +36,8 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "Game".to_owned(),
         fullscreen: false,
-        window_width: 640,
-        window_height: 480,
+        window_width: SCREEN_SIZE.x,
+        window_height: SCREEN_SIZE.y,
         sample_count: 1,
         window_resizable: true,
         ..Default::default() // fill in the rest with defaults
@@ -71,22 +73,19 @@ async fn main() {
 
     build_textures_atlas();
 
-    const BASE_W: f32 = 640.0;
-    const BASE_H: f32 = 480.0;
+    const BASE_W: f32 = SCREEN_SIZE.x as f32;
+    const BASE_H: f32 = SCREEN_SIZE.y as f32;
 
     let render_target = render_target(BASE_W as u32, BASE_H as u32);
     render_target.texture.set_filter(FilterMode::Nearest);
 
     loop {
         // prevent screen getting too small
-        let min_w = 640.0;
-        let min_h = 480.0;
-
         let w = screen_width();
         let h = screen_height();
 
-        if w < min_w || h < min_h {
-            set_window_size(min_w as u32, min_h as u32);
+        if w < BASE_W || h < BASE_H {
+            set_window_size(BASE_W as u32, BASE_H as u32);
         }
 
         set_camera(&Camera2D {

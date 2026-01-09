@@ -1,5 +1,5 @@
+// need to go through all this carefully again and remove rubbish
 use crate::controls::CONTROLS;
-use crate::level::TileInfo;
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
     PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_RUN,

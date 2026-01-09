@@ -1,5 +1,5 @@
 use gamepads::{Button, Gamepads};
-use macroquad::input::{KeyCode, get_keys_pressed, is_key_down, is_key_pressed};
+use macroquad::input::{KeyCode, get_keys_pressed, is_key_down};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 

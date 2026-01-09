@@ -1,7 +1,7 @@
 use crate::level::Room;
 use crate::level_state::Checkpoint;
 use crate::npc::NpcInGame;
-use macroquad::math::{Vec2, f32, i32, vec2};
+use macroquad::math::vec2;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};

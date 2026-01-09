@@ -1,3 +1,4 @@
+use crate::SCREEN_SIZE;
 use crate::controls::CONTROLS;
 use crate::game_state::StateTransition;
 use crate::resources::RESOURCE_MANAGER;
@@ -5,7 +6,6 @@ use crate::text::write_text;
 use macroquad::color::{BLUE, Color, WHITE, YELLOW};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
-use macroquad::texture::Texture2D;
 
 pub struct Menu {
     menu_items: Vec<MenuItem>,
@@ -72,6 +72,7 @@ impl Menu {
             }
         }
         {
+            //textures are in a 3 * 3 grid of 16 * 16 textures
             let res = RESOURCE_MANAGER.lock().unwrap();
             let tex = res.get_texture("background.png");
             //corners
@@ -248,7 +249,7 @@ impl MenuItem {
 }
 
 pub fn menu_centre_pos(char_w: i32, char_h: i32) -> Vec2 {
-    let centre_w = 640. / 2. - (char_w * 16 + 32) as f32 / 2.;
-    let centre_h = 480. / 2. - (char_h * 32 + 32) as f32 / 2.;
+    let centre_w = SCREEN_SIZE.x as f32 / 2. - (char_w * 16 + 32) as f32 / 2.;
+    let centre_h = SCREEN_SIZE.y as f32 / 2. - (char_h * 32 + 32) as f32 / 2.;
     vec2(centre_w, centre_h)
 }

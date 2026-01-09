@@ -14,7 +14,7 @@ impl CurrentGame {
 
     pub fn reduce_health(&mut self, damage: u32) {
         if self.health < damage {
-            self.health = 256;
+            self.health = MAX_HEALTH;
         } else {
             self.health -= damage;
         }
