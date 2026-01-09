@@ -16,26 +16,20 @@ use std::env::current_exe;
 use std::fs;
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
-pub struct Checkpoint {
-    pub id: i32,
-    pub pos: Vec2,
-    pub size: Vec2,
+#[derive(Clone)]
+pub struct SaveGameState {
+    checkpoint: Checkpoint,
+}
+impl SaveGameState {
+    pub fn new(checkpoint: &Checkpoint) -> Self {
+        SaveGameState {
+            checkpoint: checkpoint.clone(),
+        }
+    }
 }
 
-impl Checkpoint {
-    pub fn new(id: i32, pos: Vec2) -> Checkpoint {
-        let size = vec2(32., 32.);
-        Checkpoint { id, pos, size }
-    }
-
-    pub fn checkpoint_contact(&self) {
-        let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
-        cur_game.health = MAX_HEALTH;
-    }
-
-    pub fn interact(&self, area: String) -> StateTransition {
-        println!("{}", "interacting with checkpoint");
+impl GameState for SaveGameState {
+    fn update(&mut self) -> StateTransition {
         use rfd::FileDialog;
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
@@ -47,8 +41,8 @@ impl Checkpoint {
             .set_title("Choose file to save over")
             .pick_file();
         let new_save = SaveData {
-            area: area,
-            checkpoint: self.id,
+            area: self.checkpoint.area.clone(),
+            checkpoint: self.checkpoint.id,
         };
 
         if let Some(path) = file {
@@ -56,8 +50,55 @@ impl Checkpoint {
             println!("{}", path.display());
             fs::write(path, json_data);
         }
+        StateTransition::Pop(2)
+    }
+    fn draw(&self) {}
+    fn transparent(&self) -> bool {
+        true
+    }
+}
 
-        StateTransition::None
+#[derive(Debug, Clone)]
+pub struct Checkpoint {
+    pub id: i32,
+    pub area: String,
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
+impl Checkpoint {
+    pub fn new(id: i32, area: String, pos: Vec2) -> Checkpoint {
+        let size = vec2(32., 32.);
+        Checkpoint {
+            id,
+            area,
+            pos,
+            size,
+        }
+    }
+
+    pub fn checkpoint_contact(&self) {
+        let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+        cur_game.health = MAX_HEALTH;
+    }
+
+    pub fn interact(&self) -> StateTransition {
+        println!("{}", "interacting with checkpoint");
+        let save_game_state = SaveGameState::new(self);
+        let menu_pos = menu_centre_pos(15, 3);
+        let mut menu = Menu::new(menu_pos.x, menu_pos.y);
+        let title = MenuItem::new("Save game file?", || StateTransition::None, false);
+        menu.add_item(title);
+        let save_game = MenuItem::new(
+            "Continue",
+            move || StateTransition::Push(Box::new(save_game_state.clone())),
+            true,
+        );
+        menu.add_item(save_game);
+        let cancel = MenuItem::new("Cancel", move || StateTransition::Pop(1), true);
+        menu.add_item(cancel);
+        let menu_state = MenuState::new(menu);
+        StateTransition::Push(Box::new(menu_state))
     }
 }
 
@@ -194,7 +235,7 @@ impl GameState for LevelState {
                 if overlapping_x && overlapping_y {
                     checkpoint.checkpoint_contact();
                     if input.controls_tertirary_release() {
-                        return checkpoint.interact(self.area.clone());
+                        return checkpoint.interact();
                     }
                 }
             }

@@ -103,7 +103,7 @@ pub async fn load_all_assets() {
                     for i in objects.checkpoints {
                         let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
                         let cur_checkpoint: Checkpoint =
-                            Checkpoint::new(i.id, vec2(i.pos_x, i.pos_y));
+                            Checkpoint::new(i.id, area_name.to_string(), vec2(i.pos_x, i.pos_y));
                         checkpoints.insert(room, cur_checkpoint);
                     }
 
