@@ -123,7 +123,7 @@ impl Player {
                 let ladder = self.check_for_ladder();
                 if ladder != None {
                     //true is player is trying to get off ladder
-                    if self.handle_climb(ladder.unwrap().x) {
+                    if self.handle_climb_and_check_done(ladder.unwrap().x) {
                         self.state = PlayerMovementState::Standing;
                     }
                 }

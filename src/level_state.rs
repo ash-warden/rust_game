@@ -343,11 +343,9 @@ impl GameState for LevelState {
                 }
                 i += 1;
             }
-            x = 0; // go back to beginning of row
+            x = 0;
             y += 1;
         }
-        //draw player
-        self.player.draw();
         //draw npcs
         for npc in &self.npcs {
             let res = RESOURCE_MANAGER.lock().unwrap();
@@ -376,6 +374,8 @@ impl GameState for LevelState {
                 },
             );
         }
+        //draw player
+        self.player.draw();
         //draw the HUD
         let player_near_top: bool;
         if self.player.position.y < (240. - (self.player.actual_size.y as f32 / 2.)) {

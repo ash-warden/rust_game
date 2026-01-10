@@ -1,4 +1,3 @@
-// need to go through all this carefully again and remove rubbish
 use crate::controls::CONTROLS;
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
@@ -15,42 +14,36 @@ pub enum Direction {
 impl Player {
     pub fn calc_horizontal_velocity(&mut self, delta_time: f32) {
         let max_speed: f32;
-        let mut want_dir: f32 = 0.0;
+        let mut wanted_direction: f32 = 0.; // -1. for left and 1. for right
         let mut input = CONTROLS.lock().unwrap();
         if input.controls_left() {
             self.facing_right = false;
-            want_dir -= 1.0;
+            wanted_direction -= 1.;
         }
         if input.controls_right() {
             self.facing_right = true;
-            want_dir += 1.0;
+            wanted_direction += 1.;
         }
         if input.controls_secondary() {
             max_speed = PLAYER_SPEED_RUN;
         } else {
             max_speed = PLAYER_SPEED_WALK;
         }
+        let target_velocity = wanted_direction * max_speed;
+        let v_delta = target_velocity - self.velocity.x;
 
-        // Desired velocity based on input
-        let target_velocity = want_dir * max_speed;
-
-        // Difference between current and desired
-        let delta = target_velocity - self.velocity.x;
-
-        if delta.abs() > 0.0 {
-            // If we need to slow down (opposite direction or stopping), use friction
+        if v_delta.abs() > 0.0 {
             let rate = if target_velocity.signum() != self.velocity.x.signum() {
                 PLAYER_FRICTION
             } else {
                 PLAYER_ACCEL
             };
 
-            // Move velocity toward target
             let step = rate * delta_time;
-            if delta.abs() <= step {
+            if v_delta.abs() <= step {
                 self.velocity.x = target_velocity;
             } else {
-                self.velocity.x += delta.signum() * step;
+                self.velocity.x += v_delta.signum() * step;
             }
         }
     }
@@ -78,7 +71,6 @@ impl Player {
         let tile_size = self.level.tile_size;
         let move_x = self.velocity.x * delta_time;
         self.position.x += move_x;
-        // use prev_pos from before any sub-steps for horizontal resolution (keeps X resolution consistent)
         let prev_frame_pos = self.position;
         self.resolve_axis_collisions(
             true,
@@ -92,10 +84,8 @@ impl Player {
     pub fn vertical_movement(&mut self, delta_time: f32) {
         let tile_size = self.level.tile_size;
         let total_move_y = self.velocity.y * delta_time;
-        // maximum pixels per sub-step (tune down if bounce still happens)
         let max_step = 1.0_f32;
         let mut remaining = total_move_y;
-        // we will iterate sub-steps; prev_pos should be updated each sub-step for reliable "came_from_above" checks
         let mut step_prev_pos = self.position;
 
         while remaining.abs() > 0.0 {
@@ -105,7 +95,6 @@ impl Player {
                 remaining
             };
             self.position.y += step;
-            // reset on_ground before resolving this sub-step; it will be set true if this sub-step lands
             self.on_ground = false;
             self.resolve_axis_collisions(
                 false,
@@ -115,26 +104,18 @@ impl Player {
                 PLAYER_SNAP_THRESHOLD,
             );
 
-            // after resolution, if we landed, zero vertical velocity and clear remaining (we shouldn't continue moving down)
             if self.on_ground && self.velocity.y > 0.0 {
                 self.velocity.y = 0.0;
                 break;
             }
 
-            // subtract processed step and update prev for next sub-step
             remaining -= step;
             step_prev_pos = self.position;
-            // safety: break loop if something goes wrong
-            // (prevents infinite loop with NaNs)
-            if !remaining.is_finite() {
-                break;
-            }
         }
     }
 
     pub fn jump(&mut self) {
         if self.on_ground {
-            // println!("{}", self.velocity.x);
             self.velocity.y = -self.velocity.x.abs() / 3. - PLAYER_JUMP_MIN;
             self.on_ground = false;
         }
@@ -148,19 +129,19 @@ impl Player {
         epsilon: f32,
         snap_threshold: f32,
     ) {
-        let left = self.position.x;
-        let top = self.position.y;
-        let right = self.position.x + self.actual_size.x as f32;
-        let bottom = self.position.y + self.actual_size.y as f32;
+        let player_left = self.position.x;
+        let player_top = self.position.y;
+        let player_right = self.position.x + self.actual_size.x as f32;
+        let player_bottom = self.position.y + self.actual_size.y as f32;
 
-        let tile_left = (left / tile_size).floor() as i32;
-        let tile_right = ((right - epsilon) / tile_size).floor() as i32;
-        let tile_top = (top / tile_size).floor() as i32;
-        let tile_bottom = ((bottom - epsilon) / tile_size).floor() as i32;
+        let tile_left = (player_left / tile_size).floor() as i32;
+        let tile_right = ((player_right - epsilon) / tile_size).floor() as i32;
+        let tile_top = (player_top / tile_size).floor() as i32;
+        let tile_bottom = ((player_bottom - epsilon) / tile_size).floor() as i32;
 
         for ty in tile_top..=tile_bottom {
             for tx in tile_left..=tile_right {
-                if !self.is_tile_solid(tx, ty) {
+                if !self.level.get_tile_info(ivec2(tx, ty)).solid {
                     continue;
                 }
 
@@ -170,8 +151,8 @@ impl Player {
                 let tile_px_bottom = tile_px_top + tile_size;
 
                 if axis_x {
-                    let overlap_left = right - tile_px_left;
-                    let overlap_right = tile_px_right - left;
+                    let overlap_left = player_right - tile_px_left;
+                    let overlap_right = tile_px_right - player_left;
 
                     if overlap_left > 0.0 && overlap_right > 0.0 {
                         if overlap_left < overlap_right {
@@ -193,21 +174,17 @@ impl Player {
                         }
                     }
                 } else {
-                    // vertical resolution improved: use prev_pos to detect genuine landings / head-hits
                     let prev_bottom = prev_pos.y + self.actual_size.y as f32;
                     let prev_top = prev_pos.y;
 
-                    let overlap_top = bottom - tile_px_top; // positive if overlapping from above
-                    let overlap_bottom = tile_px_bottom - top; // positive if overlapping from below
+                    let overlap_top = player_bottom - tile_px_top;
+                    let overlap_bottom = tile_px_bottom - player_top;
 
                     if overlap_top > 0.0 && overlap_bottom > 0.0 {
-                        // Determine whether this collision should be treated as landing or head hit,
-                        // using previous position to see where we came from.
                         let came_from_above = prev_bottom <= tile_px_top + epsilon;
                         let came_from_below = prev_top >= tile_px_bottom - epsilon;
 
                         if came_from_above {
-                            // landing on tile
                             if overlap_top <= snap_threshold {
                                 self.position.y = tile_px_top - self.actual_size.y as f32;
                             } else {
@@ -216,31 +193,12 @@ impl Player {
                             self.velocity.y = 0.0;
                             self.on_ground = true;
                         } else if came_from_below {
-                            // hit head
                             if overlap_bottom <= snap_threshold {
                                 self.position.y = tile_px_bottom;
                             } else {
                                 self.position.y += overlap_bottom;
                             }
                             self.velocity.y = 0.0;
-                        } else {
-                            // ambiguous (we were already overlapping or a large tunnelling move); pick smallest
-                            if overlap_top < overlap_bottom {
-                                if overlap_top <= snap_threshold {
-                                    self.position.y = tile_px_top - self.actual_size.y as f32;
-                                } else {
-                                    self.position.y -= overlap_top;
-                                }
-                                self.velocity.y = 0.0;
-                                self.on_ground = true;
-                            } else {
-                                if overlap_bottom <= snap_threshold {
-                                    self.position.y = tile_px_bottom;
-                                } else {
-                                    self.position.y += overlap_bottom;
-                                }
-                                self.velocity.y = 0.0;
-                            }
                         }
                     }
                 }
@@ -249,48 +207,27 @@ impl Player {
     }
 
     pub fn check_for_ladder(&self) -> Option<IVec2> {
+        //middle of player
         let offsets1 = [
-            //vec2(0., 0.),
             vec2(0., self.actual_size.y as f32 / 2. + 1.),
-            //vec2(0., self.actual_size.y as f32 - 1.),
-            //vec2(self.actual_size.x as f32 - 1., 0.),
             vec2(
                 self.actual_size.x as f32 - 1.,
                 self.actual_size.y as f32 / 2. + 1.,
             ),
-            //vec2(self.actual_size.x as f32 - 1., self.actual_size.y as f32 - 1.),
         ];
+        //bottom of player
         let offsets2 = [
-            //vec2(0., 0.),
-            //vec2(0., self.actual_size.y as f32 / 2.),
             vec2(0., self.actual_size.y as f32 - 1.),
-            //vec2(self.actual_size.x as f32 - 1., 0.),
-            /*vec2(
-                self.actual_size.x as f32 - 1.,
-                self.actual_size.y as f32 / 2.,
-            ),*/
             vec2(
                 self.actual_size.x as f32 - 1.,
                 self.actual_size.y as f32 - 1.,
             ),
         ];
-        let offsets3 = [
-            vec2(0., 0.),
-            //vec2(0., self.actual_size.y as f32 / 2.),
-            //vec2(0., self.actual_size.y as f32 - 1.),
-            vec2(self.actual_size.x as f32 - 1., 0.),
-            /*vec2(
-                self.actual_size.x as f32 - 1.,
-                self.actual_size.y as f32 / 2.,
-            ),*/
-            /*vec2(
-                self.actual_size.x as f32 - 1.,
-                self.actual_size.y as f32 - 1.,
-            ),*/
-        ];
+        //top of player
+        let offsets3 = [vec2(0., 0.), vec2(self.actual_size.x as f32 - 1., 0.)];
+
         let mut coords: IVec2 = ivec2(0, 0);
         let on_ladder: bool;
-        // println!("{}", self.position.y);
         if self.position.y > 400. {
             on_ladder = offsets1.iter().any(|offset1| {
                 coords = ((self.position + *offset1).as_ivec2()) / 32;
@@ -346,7 +283,7 @@ impl Player {
             && !(input.controls_left() || input.controls_right())
     }
     //return true to get off ladder
-    pub fn handle_climb(&mut self, col: i32) -> bool {
+    pub fn handle_climb_and_check_done(&mut self, col: i32) -> bool {
         let ladder_pos_x = (col * self.level.tile_size + self.level.tile_size / 2) as f32;
         let player_centre = self.position.x + (self.actual_size.x / 2) as f32;
         if player_centre - ladder_pos_x > 5.1 {
@@ -377,8 +314,8 @@ impl Player {
     }
 
     pub fn touching_hazard(&self, direction: Direction) -> bool {
-        let mut left_corner = ivec2(0, 0);
-        let mut right_corner = ivec2(0, 0);
+        let left_corner: IVec2;
+        let right_corner: IVec2;
 
         match direction {
             Direction::Below => {
@@ -394,17 +331,11 @@ impl Player {
                 left_corner = ((self.position + offsets[0]).as_ivec2()) / 32;
                 right_corner = ((self.position + offsets[1]).as_ivec2()) / 32;
             }
-            _ => {}
         }
         let lh = self.level.get_tile_info(left_corner).hazard;
         let rh = self.level.get_tile_info(right_corner).hazard;
         let ls = self.level.get_tile_info(left_corner).solid;
         let rs = self.level.get_tile_info(right_corner).solid;
         (lh && rh) || (lh && !rs) || (rh && !ls)
-    }
-
-    // Return true if tile at (tx, ty) is solid.
-    fn is_tile_solid(&self, tx: i32, ty: i32) -> bool {
-        self.level.get_tile_info(ivec2(tx, ty)).solid
     }
 }

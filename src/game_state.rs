@@ -106,7 +106,7 @@ impl GameState for LoadSaveState {
 
             for i in objects.checkpoints {
                 if i.id == checkpoint {
-                    player_pos = vec2(i.pos_x, i.pos_y);
+                    player_pos = vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.);
                     room = ivec2(i.room_x, i.room_y);
                 }
             }

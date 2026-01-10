@@ -102,15 +102,21 @@ pub async fn load_all_assets() {
                     let mut checkpoints: HashMap<String, Checkpoint> = HashMap::new();
                     for i in objects.checkpoints {
                         let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
-                        let cur_checkpoint: Checkpoint =
-                            Checkpoint::new(i.id, area_name.to_string(), vec2(i.pos_x, i.pos_y));
+                        let cur_checkpoint: Checkpoint = Checkpoint::new(
+                            i.id,
+                            area_name.to_string(),
+                            vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
+                        );
                         checkpoints.insert(room, cur_checkpoint);
                     }
 
                     let mut npcs: HashMap<String, Vec<NpcInGame>> = HashMap::new();
                     for i in objects.npcs {
                         let room = format!("{}_{}", i.room_x, i.room_y);
-                        let cur_npc = NpcInGame::new(vec2(i.pos_x, i.pos_y), i.name);
+                        let cur_npc = NpcInGame::new(
+                            vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
+                            i.name,
+                        );
                         npcs.entry(room).or_insert_with(Vec::new).push(cur_npc);
                     }
                     println!("{:?}", checkpoints);
@@ -151,8 +157,8 @@ pub struct NpcFromFile {
     name: String,
     room_x: i32,
     room_y: i32,
-    pos_x: f32,
-    pos_y: f32,
+    pos_x: i32,
+    pos_y: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -160,6 +166,6 @@ pub struct CheckpointFromFile {
     pub id: i32,
     pub room_x: i32,
     pub room_y: i32,
-    pub pos_x: f32,
-    pub pos_y: f32,
+    pub pos_x: i32,
+    pub pos_y: i32,
 }

@@ -8,6 +8,7 @@ use macroquad::{
 };
 
 use crate::{
+    SCREEN_SIZE,
     current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH},
     resources::RESOURCE_MANAGER,
     text::write_text,
@@ -100,6 +101,8 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
 }
 
 fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>>) {
+    let map_dim = ivec2(20, 15);
+    let no_rooms_h = 3;
     let map_scale = 4;
     let mut room_x = 0;
     let mut room_y = 0;
@@ -125,20 +128,22 @@ fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>
             }
 
             draw_rectangle(
-                ((room_x * 20 + tile_x) * map_scale) as f32 + pos.x + (640 - 240 - 24 - 24) as f32,
-                ((room_y * 15 + tile_y) * map_scale) as f32 + pos.y,
+                ((room_x * map_dim.x + tile_x) * map_scale) as f32
+                    + pos.x
+                    + (SCREEN_SIZE.x - (map_dim.x * no_rooms_h * map_scale) - 24 - 24) as f32,
+                ((room_y * map_dim.y + tile_y) * map_scale) as f32 + pos.y,
                 map_scale as f32,
                 map_scale as f32,
                 color,
             );
             tile_x += 1;
-            if tile_x >= 20 {
+            if tile_x >= map_dim.x {
                 tile_x = 0;
                 tile_y += 1;
             }
         }
         room_x += 1;
-        if room_x >= 3 {
+        if room_x >= no_rooms_h {
             room_x = 0;
             room_y += 1;
         }
@@ -147,12 +152,12 @@ fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>
 
 pub fn draw_hud(bottom: bool, full: bool, map_pixels: &Vec<Vec<MapPixelType>>) {
     let health_pos = if bottom {
-        vec2(24., 408.) // change again once map done
+        vec2(24., 408.) // 480 − 24 − 32 − 16
     } else {
         vec2(24., 24.)
     };
     let map_pos = if bottom {
-        vec2(24., 276.) // change again once map done
+        vec2(24., 276.) // 480 − (4 × 45) − 24
     } else {
         vec2(24., 24.)
     };

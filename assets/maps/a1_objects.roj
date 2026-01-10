@@ -4,15 +4,15 @@
       "id": 0,
       "room_x": 0,
       "room_y": 0,
-      "pos_x": 300.0,
-      "pos_y": 400.0
+      "pos_x": 9,
+      "pos_y": 12
     },
     {
       "id": 1,
       "room_x": 1,
       "room_y": 0,
-      "pos_x": 300.0,
-      "pos_y": 400.0
+      "pos_x": 14,
+      "pos_y": 11
     }
   ],
   "npcs": [
@@ -21,8 +21,8 @@
       "name": "Test2",
       "room_x": 0,
       "room_y": 0,
-      "pos_x": 100.0,
-      "pos_y": 400.0
+      "pos_x": 3,
+      "pos_y": 11
     }
   ]
 }
