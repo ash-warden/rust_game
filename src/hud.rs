@@ -2,7 +2,7 @@
 use std::cmp::min;
 
 use macroquad::{
-    color::Color,
+    color::{Color, WHITE},
     math::{Vec2, ivec2, vec2},
     shapes::{draw_rectangle, draw_rectangle_lines},
 };
@@ -10,6 +10,8 @@ use macroquad::{
 use crate::{
     SCREEN_SIZE,
     current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH},
+    game_state::StateTransition,
+    menu::{Menu, MenuItem},
     resources::RESOURCE_MANAGER,
     text::write_text,
 };
@@ -150,21 +152,35 @@ fn draw_hud_map(pos: Vec2, transparency: f32, map_pixels: &Vec<Vec<MapPixelType>
     }
 }
 
-pub fn draw_hud(bottom: bool, full: bool, map_pixels: &Vec<Vec<MapPixelType>>) {
+fn draw_hint_box(pos: Vec2, text: &str) {
+    draw_rectangle(pos.x, pos.y, 200., 96., Color::new(0.1, 0.1, 0.1, 0.5));
+    write_text(text, vec2(pos.x + 6., pos.y), WHITE, "font.png");
+}
+
+pub fn draw_hud(bottom: bool, full: bool, map_pixels: &Vec<Vec<MapPixelType>>, hint_text: &str) {
     let health_pos = if bottom {
         vec2(24., 408.) // 480 − 24 − 32 − 16
     } else {
-        vec2(24., 24.)
+        vec2(24., 25.)
     };
     let map_pos = if bottom {
         vec2(24., 276.) // 480 − (4 × 45) − 24
     } else {
         vec2(24., 24.)
     };
+    let text_pos = if bottom {
+        vec2(152., 360.) // 480 − 96 − 24
+    } else {
+        vec2(152., 24.)
+    };
+
     let transparency = if full { 0.8 } else { 0.6 };
     draw_health_bar(health_pos, transparency);
     if full {
         draw_health_text(health_pos, transparency);
         draw_hud_map(map_pos, transparency, map_pixels);
+    }
+    if !hint_text.is_empty() {
+        draw_hint_box(text_pos, hint_text);
     }
 }

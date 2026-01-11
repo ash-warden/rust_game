@@ -98,6 +98,30 @@ impl Controls {
         self.esc_down = pressed;
         just_released
     }
+    pub fn key_string(&self, key: &str) -> String {
+        let key_string: String;
+        match self.last_used_controller {
+            true => match key {
+                "space" => key_string = String::from("A"),
+                "shift" => key_string = String::from("X"),
+                "z" => key_string = String::from("B"),
+                "x" => key_string = String::from("Y"),
+                "enter" => key_string = String::from("Start"),
+                "esc" => key_string = String::from("Select"),
+                _ => key_string = String::from("NO KEY"),
+            },
+            false => match key {
+                "space" => key_string = String::from("Space"),
+                "shift" => key_string = String::from("Shift"),
+                "z" => key_string = String::from("Z"),
+                "x" => key_string = String::from("X"),
+                "enter" => key_string = String::from("Enter"),
+                "esc" => key_string = String::from("Escape"),
+                _ => key_string = String::from("NO KEY"),
+            },
+        };
+        key_string
+    }
 }
 
 pub static CONTROLS: Lazy<Mutex<Controls>> = Lazy::new(|| Mutex::new(Controls::new()));

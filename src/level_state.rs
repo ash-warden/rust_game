@@ -90,12 +90,12 @@ impl Checkpoint {
         let title = MenuItem::new("Save game file?", || StateTransition::None, false);
         menu.add_item(title);
         let save_game = MenuItem::new(
-            "Continue",
+            "Yes",
             move || StateTransition::Push(Box::new(save_game_state.clone())),
             true,
         );
         menu.add_item(save_game);
-        let cancel = MenuItem::new("Cancel", move || StateTransition::Pop(1), true);
+        let cancel = MenuItem::new("No", move || StateTransition::Pop(1), true);
         menu.add_item(cancel);
         let menu_state = MenuState::new(menu);
         StateTransition::Push(Box::new(menu_state))
@@ -113,6 +113,7 @@ pub struct LevelState {
     pub full_hud: bool,
     pub hud_init_timer: f32,
     pub init_timer_done: bool,
+    pub hud_hint_text: String,
 }
 
 impl LevelState {
@@ -152,6 +153,7 @@ impl LevelState {
                 full_hud: true,
                 hud_init_timer: 2.,
                 init_timer_done: false,
+                hud_hint_text: String::from(""),
             })
         } else {
             Err("Level not found in resources".into())
@@ -171,6 +173,7 @@ enum DirectionToMove {
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         // println!("{}", self.area);
+        self.hud_hint_text = String::from("");
         //pausing
         {
             let pause_menu_pos = menu_centre_pos(6, 3);
@@ -220,8 +223,11 @@ impl GameState for LevelState {
                 let overlapping_y = player.position.y < npc.pos.y + npc.size.y
                     && player.position.y + player.actual_size.y as f32 > npc.pos.y;
 
-                if overlapping_x && overlapping_y && input.controls_tertirary_release() {
-                    return npc.interact();
+                if overlapping_x && overlapping_y {
+                    self.hud_hint_text = format!("Press {} to\ntalk", input.key_string("z"));
+                    if input.controls_tertirary_release() {
+                        return npc.interact();
+                    }
                 }
             }
             // check interact with checkpoint
@@ -233,6 +239,10 @@ impl GameState for LevelState {
                     && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
 
                 if overlapping_x && overlapping_y {
+                    self.hud_hint_text = format!(
+                        "Health rest-\nored. Press\n{} to save",
+                        input.key_string("z")
+                    );
                     checkpoint.checkpoint_contact();
                     if input.controls_tertirary_release() {
                         return checkpoint.interact();
@@ -384,7 +394,12 @@ impl GameState for LevelState {
             player_near_top = false;
         }
 
-        draw_hud(player_near_top, self.full_hud, &self.map_pixels);
+        draw_hud(
+            player_near_top,
+            self.full_hud,
+            &self.map_pixels,
+            &self.hud_hint_text,
+        );
     }
 
     fn transparent(&self) -> bool {
