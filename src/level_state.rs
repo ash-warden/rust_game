@@ -114,6 +114,8 @@ pub struct LevelState {
     pub hud_init_timer: f32,
     pub init_timer_done: bool,
     pub hud_hint_text: String,
+    pub current_frame: usize,
+    pub time_since_frame_change: f32,
 }
 
 impl LevelState {
@@ -122,7 +124,7 @@ impl LevelState {
         player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
         let (area, room_name) = level.split_once('_').unwrap();
-
+        // println!("{}", room_name);
         let map_pixels = get_map_pixels(area, room_name);
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(room) = res.get_room(level) {
@@ -154,6 +156,8 @@ impl LevelState {
                 hud_init_timer: 2.,
                 init_timer_done: false,
                 hud_hint_text: String::from(""),
+                current_frame: 0,
+                time_since_frame_change: 0.,
             })
         } else {
             Err("Level not found in resources".into())
@@ -174,6 +178,17 @@ impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         // println!("{}", self.area);
         self.hud_hint_text = String::from("");
+
+        //update the animation time
+        self.time_since_frame_change += get_frame_time();
+        if self.time_since_frame_change > 1. / 12. {
+            self.time_since_frame_change = 0.;
+            self.current_frame += 1;
+            if self.current_frame >= 12 {
+                self.current_frame = 0;
+            }
+        }
+
         //pausing
         {
             let pause_menu_pos = menu_centre_pos(6, 3);
@@ -338,8 +353,8 @@ impl GameState for LevelState {
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
-                            index_to_coords(level.tile_values[i], level.tileset_columns).0 * t_size,
-                            index_to_coords(level.tile_values[i], level.tileset_columns).1 * t_size,
+                            level.get_tile_texture(i, self.current_frame).x * t_size,
+                            level.get_tile_texture(i, self.current_frame).y * t_size,
                             t_size,
                             t_size,
                         )),

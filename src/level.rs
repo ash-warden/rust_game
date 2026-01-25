@@ -1,7 +1,7 @@
 // for level info, such as tiles etc. other stuff handled in level state (level_state.rs)
 
-use crate::coords_to_index;
-use macroquad::math::{IVec2, ivec2};
+use crate::{coords_to_index, index_to_coords};
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -46,17 +46,38 @@ struct TiledMap {
     width: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum BoolOrI32 {
+    Bool(bool),
+    I32(i32),
+}
+
 #[derive(Serialize, Deserialize)]
 struct TileProperties {
     name: String,
     r#type: String,
-    value: bool,
+    value: BoolOrI32,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TileAnimation {
+    duration: i32,
+    tileid: i32,
 }
 
 #[derive(Serialize, Deserialize)]
 struct TiledSetTiles {
     id: i32,
     properties: Vec<TileProperties>,
+    animation: Option<Vec<TileAnimation>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TileSetProperties {
+    name: String,
+    r#type: String,
+    value: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -67,6 +88,7 @@ pub struct TiledTileSet {
     imagewidth: i32,
     margin: i32,
     name: String,
+    properties: Vec<TileSetProperties>,
     spacing: i32,
     tilecount: i32,
     tiledversion: String,
@@ -94,6 +116,7 @@ pub struct TileInfo {
     pub solid: bool,
     pub ladder: bool,
     pub hazard: bool,
+    pub tex: i32,
 }
 
 impl Room {
@@ -126,6 +149,7 @@ impl Room {
         let tile_image_name = tileset.image.clone();
 
         let tileset_columns = tileset.columns;
+        println!("{:?}", values);
 
         Ok(Room {
             tile_image_name,
@@ -140,11 +164,13 @@ impl Room {
     }
 
     pub fn get_tile_info(&self, tile_coords: IVec2) -> TileInfo {
+        // println!("{:?}", self.tile_values);
         if tile_coords.x < 0 || tile_coords.y < 0 {
             return TileInfo {
                 solid: false,
                 ladder: false,
                 hazard: false,
+                tex: 0,
             };
         }
         if tile_coords.x > self.map_dimensions.x - 1 || tile_coords.y > self.map_dimensions.y - 1 {
@@ -152,6 +178,7 @@ impl Room {
                 solid: false,
                 ladder: false,
                 hazard: false,
+                tex: 0,
             };
         }
         let index = coords_to_index(tile_coords.x, tile_coords.y, self.map_dimensions.x);
@@ -161,21 +188,46 @@ impl Room {
         let mut solid: bool = false;
         let mut ladder: bool = false;
         let mut hazard: bool = false;
+        let mut tex: i32 = 0;
         for i in tile_properties {
-            if i.name == "solid" && i.value {
-                solid = true;
-            }
-            if i.name == "ladder" && i.value {
-                ladder = true;
-            }
-            if i.name == "hazard" && i.value {
-                hazard = true;
+            match i.value {
+                BoolOrI32::Bool(value) => {
+                    if i.name == "solid" && value {
+                        solid = true;
+                    }
+                    if i.name == "ladder" && value {
+                        ladder = true;
+                    }
+                    if i.name == "hazard" && value {
+                        hazard = true;
+                    }
+                }
+                BoolOrI32::I32(value) => {
+                    tex = value;
+                }
             }
         }
         TileInfo {
             solid,
             ladder,
             hazard,
+            tex,
         }
+    }
+
+    pub fn get_tile_texture(&self, index: usize, frame: usize) -> Vec2 {
+        let tex_index = if let Some(animation) = &self
+            .tileset
+            .tiles
+            .get(self.tile_values[index] as usize - 1)
+            .unwrap()
+            .animation
+        {
+            animation.get(frame).unwrap().tileid
+        } else {
+            self.get_tile_info(index_to_coords(index as i32, self.map_dimensions.x))
+                .tex
+        };
+        index_to_coords(tex_index, self.tileset_columns).as_vec2()
     }
 }

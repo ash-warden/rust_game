@@ -20,10 +20,10 @@ mod text;
 const SCREEN_SIZE: IVec2 = ivec2(640, 480);
 
 //convert an index to coordinates, e.g. for tile textures in a grid
-fn index_to_coords(n: i32, width: i32) -> (f32, f32) {
-    let x = (n - 1) % width;
-    let y = (n - 1) / width;
-    (x as f32, y as f32)
+fn index_to_coords(n: i32, width: i32) -> IVec2 {
+    let x = n % width;
+    let y = n / width;
+    ivec2(x, y)
 }
 
 fn coords_to_index(x: i32, y: i32, width: i32) -> i32 {

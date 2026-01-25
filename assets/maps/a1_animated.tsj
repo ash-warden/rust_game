@@ -1,14 +1,14 @@
 { "columns":4,
- "image":"a1_tiles.png",
+ "image":"a1_tiles_animate.png",
  "imageheight":128,
  "imagewidth":128,
  "margin":0,
- "name":"a1",
+ "name":"a1_animated",
  "properties":[
         {
          "name":"no_of_frames",
          "type":"int",
-         "value":0
+         "value":12
         }],
  "spacing":0,
  "tilecount":16,
@@ -237,7 +237,7 @@
                 {
                  "name":"hazard",
                  "type":"bool",
-                 "value":false
+                 "value":true
                 }, 
                 {
                  "name":"ladder",
@@ -247,7 +247,7 @@
                 {
                  "name":"solid",
                  "type":"bool",
-                 "value":false
+                 "value":true
                 }, 
                 {
                  "name":"tex",
@@ -256,12 +256,61 @@
                 }]
         }, 
         {
+         "animation":[
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":9
+                }, 
+                {
+                 "duration":100,
+                 "tileid":9
+                }, 
+                {
+                 "duration":100,
+                 "tileid":9
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }, 
+                {
+                 "duration":100,
+                 "tileid":8
+                }],
          "id":10,
          "properties":[
                 {
                  "name":"hazard",
                  "type":"bool",
-                 "value":false
+                 "value":true
                 }, 
                 {
                  "name":"ladder",
@@ -271,7 +320,7 @@
                 {
                  "name":"solid",
                  "type":"bool",
-                 "value":false
+                 "value":true
                 }, 
                 {
                  "name":"tex",
@@ -300,7 +349,7 @@
                 {
                  "name":"tex",
                  "type":"int",
-                 "value":11
+                 "value":0
                 }]
         }],
  "tilewidth":32,

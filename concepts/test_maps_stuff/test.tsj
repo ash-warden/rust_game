@@ -4,6 +4,12 @@
  "imagewidth":128,
  "margin":0,
  "name":"test_tiles",
+ "properties":[
+        {
+         "name":"no_of_frames",
+         "type":"int",
+         "value":0
+        }],
  "spacing":0,
  "tilecount":8,
  "tiledversion":"1.11.0",
