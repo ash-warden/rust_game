@@ -53,4 +53,18 @@ impl Obj for Checkpoint {
         let menu_state = MenuState::new(menu);
         StateTransition::Push(Box::new(menu_state))
     }
+    fn get_pos(&self) -> Vec2 {
+        self.pos
+    }
+
+    fn get_size(&self) -> Vec2 {
+        self.size
+    }
+    fn get_hud_text(&self) -> &str {
+        "Health rest-\nored. Press\nKEY to save"
+    }
+
+    fn get_tex(&self) -> &str {
+        "checkpoint.png"
+    }
 }

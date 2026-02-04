@@ -46,4 +46,19 @@ impl Obj for NpcInGame {
     fn contact(&self) -> StateTransition {
         StateTransition::None
     }
+
+    fn get_pos(&self) -> Vec2 {
+        self.pos
+    }
+    fn get_size(&self) -> Vec2 {
+        self.size
+    }
+
+    fn get_hud_text(&self) -> &str {
+        "Press KEY to\ntalk"
+    }
+
+    fn get_tex(&self) -> &str {
+        "npc.png"
+    }
 }

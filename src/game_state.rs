@@ -132,7 +132,7 @@ impl GameState for LoadSaveState {
             eprintln!("Failed to load level state: {err}");
             std::process::exit(1);
         });
-        StateTransition::Replace(Box::new(level_state.clone()))
+        StateTransition::Replace(Box::new(level_state))
     }
     fn draw(&self) {}
 

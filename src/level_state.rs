@@ -60,14 +60,11 @@ impl GameState for SaveGameState {
     }
 }
 
-#[derive(Clone)]
 pub struct LevelState {
     pub area: String,
     pub room: Arc<level::Room>,
     pub player: Player,
-    pub npcs: Vec<NpcInGame>,
-    pub doors: Vec<DoorInGame>,
-    pub checkpoint: Option<Checkpoint>,
+    pub objects: Vec<Arc<dyn Obj>>,
     pub map_pixels: Vec<Vec<MapPixelType>>,
     pub full_hud: bool,
     pub hud_init_timer: f32,
@@ -89,38 +86,17 @@ impl LevelState {
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
             let area_objects = res.get_room_object(area).unwrap();
-
-            let area_npcs: HashMap<String, Vec<NpcInGame>>;
-            area_npcs = area_objects.npcs.clone();
-            let npcs: Vec<NpcInGame>;
-            if area_npcs.contains_key(room_name) {
-                npcs = area_npcs.get(room_name).unwrap().clone();
+            let objects: Vec<Arc<dyn Obj>>;
+            if let Some(objects_from_res) = area_objects.objects.get(room_name) {
+                objects = objects_from_res.clone();
             } else {
-                npcs = vec![];
+                objects = vec![];
             }
 
-            let area_checkpoints = area_objects.checkpoints.clone();
-            let checkpoint: Option<Checkpoint>;
-            if area_checkpoints.contains_key(room_name) {
-                checkpoint = Some(area_checkpoints.get(room_name).unwrap().clone());
-            } else {
-                checkpoint = None;
-            }
-
-            let area_doors = area_objects.doors.clone();
-            let doors: Vec<DoorInGame>;
-            if area_doors.contains_key(room_name) {
-                doors = area_doors.get(room_name).unwrap().clone();
-            } else {
-                doors = vec![];
-            }
             Ok(LevelState {
                 area: area.to_string(),
                 room: room,
                 player,
-                npcs: npcs,
-                doors: doors,
-                checkpoint,
                 map_pixels,
                 full_hud: true,
                 hud_init_timer: 2.,
@@ -128,6 +104,7 @@ impl LevelState {
                 hud_hint_text: String::from(""),
                 current_frame: 0,
                 time_since_frame_change: 0.,
+                objects,
             })
         } else {
             Err("Level not found in resources".into())
@@ -198,59 +175,21 @@ impl GameState for LevelState {
         };
 
         if direction == DirectionToMove::None {
-            //check npc player interact
             let mut input = CONTROLS.lock().unwrap();
             let player = &self.player;
-            for npc in &self.npcs {
-                let overlapping_x = player.position.x < npc.pos.x + npc.size.x
-                    && player.position.x + player.actual_size.x as f32 > npc.pos.x;
+            for obj in &self.objects {
+                let overlapping_x = player.position.x < obj.get_pos().x + obj.get_size().x
+                    && player.position.x + player.actual_size.x as f32 > obj.get_pos().x;
 
-                let overlapping_y = player.position.y < npc.pos.y + npc.size.y
-                    && player.position.y + player.actual_size.y as f32 > npc.pos.y;
+                let overlapping_y = player.position.y < obj.get_pos().y + obj.get_size().y
+                    && player.position.y + player.actual_size.y as f32 > obj.get_pos().y;
 
                 if overlapping_x && overlapping_y {
-                    self.hud_hint_text = format!("Press {} to\ntalk", input.key_string("z"));
+                    let text = obj.get_hud_text();
+                    self.hud_hint_text = text.replace("KEY", input.key_string("z").as_str());
+                    obj.contact();
                     if input.controls_tertirary_release() {
-                        return npc.interact();
-                    }
-                }
-            }
-            // check interact with checkpoint
-            if let Some(checkpoint) = &self.checkpoint {
-                let overlapping_x = player.position.x < checkpoint.pos.x + checkpoint.size.x
-                    && player.position.x + player.actual_size.x as f32 > checkpoint.pos.x;
-
-                let overlapping_y = player.position.y < checkpoint.pos.y + checkpoint.size.y
-                    && player.position.y + player.actual_size.y as f32 > checkpoint.pos.y;
-
-                if overlapping_x && overlapping_y {
-                    self.hud_hint_text = format!(
-                        "Health rest-\nored. Press\n{} to save",
-                        input.key_string("z")
-                    );
-                    checkpoint.contact();
-                    if input.controls_tertirary_release() {
-                        return checkpoint.interact();
-                    }
-                }
-            }
-            //check door interact
-            for door in &self.doors {
-                let overlapping_x = player.position.x < door.pos.x + door.size.x
-                    && player.position.x + player.actual_size.x as f32 > door.pos.x;
-
-                let overlapping_y = player.position.y < door.pos.y + door.size.y
-                    && player.position.y + player.actual_size.y as f32 > door.pos.y;
-
-                if overlapping_x && overlapping_y {
-                    if door.need_interact {
-                        self.hud_hint_text = format!("Press {} to\nenter", input.key_string("z"));
-
-                        if input.controls_tertirary_release() {
-                            return door.interact();
-                        }
-                    } else {
-                        return door.interact();
+                        return obj.interact();
                     }
                 }
             }
@@ -362,28 +301,13 @@ impl GameState for LevelState {
             x = 0;
             y += 1;
         }
-        //draw npcs
-        for npc in &self.npcs {
+        for obj in &self.objects {
             let res = RESOURCE_MANAGER.lock().unwrap();
-            let tex = res.get_texture("npc.png");
+            let tex = res.get_texture(obj.get_tex());
             draw_texture_ex(
                 tex,
-                npc.pos.x,
-                npc.pos.y,
-                WHITE,
-                DrawTextureParams {
-                    ..Default::default()
-                },
-            );
-        }
-        //draw doors
-        for door in &self.doors {
-            let res = RESOURCE_MANAGER.lock().unwrap();
-            let tex = res.get_texture("door.png");
-            draw_texture_ex(
-                tex,
-                door.pos.x,
-                door.pos.y,
+                obj.get_pos().x,
+                obj.get_pos().y,
                 WHITE,
                 DrawTextureParams {
                     ..Default::default()
@@ -391,20 +315,6 @@ impl GameState for LevelState {
             );
         }
 
-        //draw checkpoint
-        if let Some(checkpoint) = &self.checkpoint {
-            let res = RESOURCE_MANAGER.lock().unwrap();
-            let tex = res.get_texture("checkpoint.png");
-            draw_texture_ex(
-                tex,
-                checkpoint.pos.x,
-                checkpoint.pos.y,
-                WHITE,
-                DrawTextureParams {
-                    ..Default::default()
-                },
-            );
-        }
         //draw player
         self.player.draw();
         //draw the HUD

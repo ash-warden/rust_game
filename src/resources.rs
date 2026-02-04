@@ -1,4 +1,5 @@
 use crate::level::Room;
+use crate::obj__trait::Obj;
 use crate::obj_checkpoint::Checkpoint;
 use crate::obj_door::{DoorDestination, DoorInGame};
 use crate::obj_npc::NpcInGame;
@@ -94,13 +95,15 @@ pub async fn load_all_assets() {
                     println!("{}", key);
                 }
                 "roj" => {
-                    //"room object json"
+                    //"room object json". One file per area
                     let objects_file = fs::read_to_string(path_str);
                     let objects: RoomObjectsFromFile =
                         serde_json::from_str(&objects_file.unwrap().as_str())
                             .expect("Error couldn't load objects");
                     let area_name = key.split('_').collect::<Vec<&str>>()[0];
-                    let mut checkpoints: HashMap<String, Checkpoint> = HashMap::new();
+
+                    let mut objects_map: HashMap<String, Vec<Arc<dyn Obj>>> = HashMap::new();
+
                     for i in objects.checkpoints {
                         let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
                         let cur_checkpoint: Checkpoint = Checkpoint::new(
@@ -108,19 +111,23 @@ pub async fn load_all_assets() {
                             area_name.to_string(),
                             vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
                         );
-                        checkpoints.insert(room, cur_checkpoint);
+                        objects_map
+                            .entry(room)
+                            .or_insert_with(Vec::new)
+                            .push(Arc::new(cur_checkpoint) as Arc<dyn Obj>)
                     }
 
-                    let mut npcs: HashMap<String, Vec<NpcInGame>> = HashMap::new();
                     for i in objects.npcs {
                         let room = format!("{}_{}", i.room_x, i.room_y);
                         let cur_npc = NpcInGame::new(
                             vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
                             i.name,
                         );
-                        npcs.entry(room).or_insert_with(Vec::new).push(cur_npc);
+                        objects_map
+                            .entry(room)
+                            .or_insert_with(Vec::new)
+                            .push(Arc::new(cur_npc) as Arc<dyn Obj>)
                     }
-                    let mut doors: HashMap<String, Vec<DoorInGame>> = HashMap::new();
                     for i in objects.doors {
                         let room = format!("{}_{}", i.location.room_x, i.location.room_y);
                         let cur_door = DoorInGame::new(
@@ -129,16 +136,14 @@ pub async fn load_all_assets() {
                             i.visible,
                             i.need_interact,
                         );
-                        doors.entry(room).or_insert_with(Vec::new).push(cur_door);
+                        objects_map
+                            .entry(room)
+                            .or_insert_with(Vec::new)
+                            .push(Arc::new(cur_door) as Arc<dyn Obj>)
                     }
-                    println!("{:?}", checkpoints);
-                    println!("{:?}", npcs);
-                    println!("{:?}", doors);
 
                     let room_objects = RoomObjects {
-                        checkpoints,
-                        npcs,
-                        doors,
+                        objects: objects_map,
                     };
 
                     res.insert_object(area_name.to_string(), Arc::new(room_objects));
@@ -156,11 +161,8 @@ pub async fn load_all_assets() {
     res.insert_texture("missing".to_string(), missing_texture);
 }
 
-#[derive(Clone, Debug)]
 pub struct RoomObjects {
-    pub checkpoints: HashMap<String, Checkpoint>,
-    pub npcs: HashMap<String, Vec<NpcInGame>>,
-    pub doors: HashMap<String, Vec<DoorInGame>>,
+    pub objects: HashMap<String, Vec<Arc<dyn Obj>>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
