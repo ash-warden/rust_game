@@ -36,10 +36,10 @@
       },
       "destination": {
         "area": "a1",
-        "room_x": 1,
+        "room_x": 2,
         "room_y": 0,
-        "pos_x": 12,
-        "pos_y": 13
+        "pos_x": 8,
+        "pos_y": 7
       },
       "visible": true,
       "need_interact": true
