@@ -1,16 +1,17 @@
 use crate::controls::CONTROLS;
-use crate::current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH};
-use crate::door::DoorInGame;
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
 use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
+use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::npc::NpcInGame;
+use crate::obj__trait::Obj;
+use crate::obj_checkpoint::Checkpoint;
+use crate::obj_door::DoorInGame;
+use crate::obj_npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
-use crate::{index_to_coords, level};
 use macroquad::color::WHITE;
-use macroquad::math::{IVec2, Rect, Vec2, vec2};
+use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::collections::HashMap;
 use std::env::current_exe;
@@ -56,50 +57,6 @@ impl GameState for SaveGameState {
     fn draw(&self) {}
     fn transparent(&self) -> bool {
         true
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Checkpoint {
-    pub id: i32,
-    pub area: String,
-    pub pos: Vec2,
-    pub size: Vec2,
-}
-
-impl Checkpoint {
-    pub fn new(id: i32, area: String, pos: Vec2) -> Checkpoint {
-        let size = vec2(32., 32.);
-        Checkpoint {
-            id,
-            area,
-            pos,
-            size,
-        }
-    }
-
-    pub fn checkpoint_contact(&self) {
-        let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
-        cur_game.health = MAX_HEALTH;
-    }
-
-    pub fn interact(&self) -> StateTransition {
-        println!("{}", "interacting with checkpoint");
-        let save_game_state = SaveGameState::new(self);
-        let menu_pos = menu_centre_pos(15, 3);
-        let mut menu = Menu::new(menu_pos.x, menu_pos.y);
-        let title = MenuItem::new("Save game file?", || StateTransition::None, false);
-        menu.add_item(title);
-        let save_game = MenuItem::new(
-            "Yes",
-            move || StateTransition::Push(Box::new(save_game_state.clone())),
-            true,
-        );
-        menu.add_item(save_game);
-        let cancel = MenuItem::new("No", move || StateTransition::Pop(1), true);
-        menu.add_item(cancel);
-        let menu_state = MenuState::new(menu);
-        StateTransition::Push(Box::new(menu_state))
     }
 }
 
@@ -271,7 +228,7 @@ impl GameState for LevelState {
                         "Health rest-\nored. Press\n{} to save",
                         input.key_string("z")
                     );
-                    checkpoint.checkpoint_contact();
+                    checkpoint.contact();
                     if input.controls_tertirary_release() {
                         return checkpoint.interact();
                     }

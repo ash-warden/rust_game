@@ -1,5 +1,6 @@
 use crate::game_state::{MenuState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
+use crate::obj__trait::Obj;
 use macroquad::math::{Vec2, vec2};
 
 fn simple_dialog(text: &str) -> StateTransition {
@@ -35,7 +36,14 @@ impl NpcInGame {
             npc_type,
         }
     }
-    pub fn interact(&self) -> StateTransition {
+}
+
+impl Obj for NpcInGame {
+    fn interact(&self) -> StateTransition {
         npc_function(&self.npc_type)
+    }
+
+    fn contact(&self) -> StateTransition {
+        StateTransition::None
     }
 }

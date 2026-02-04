@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     game_state::StateTransition,
     level_state::LevelState,
+    obj__trait::Obj,
     player::{PlayerInitialInfo, PlayerMovementState},
 };
 
@@ -39,7 +40,10 @@ impl DoorInGame {
             need_interact,
         }
     }
-    pub fn interact(&self) -> StateTransition {
+}
+
+impl Obj for DoorInGame {
+    fn interact(&self) -> StateTransition {
         println!(
             "entering door to {} {} {}",
             self.destination.area, self.destination.room_x, self.destination.room_y
@@ -63,5 +67,9 @@ impl DoorInGame {
                 std::process::exit(1);
             }
         }
+    }
+
+    fn contact(&self) -> StateTransition {
+        StateTransition::None
     }
 }

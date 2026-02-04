@@ -1,7 +1,7 @@
-use crate::door::{DoorDestination, DoorInGame};
 use crate::level::Room;
-use crate::level_state::Checkpoint;
-use crate::npc::NpcInGame;
+use crate::obj_checkpoint::Checkpoint;
+use crate::obj_door::{DoorDestination, DoorInGame};
+use crate::obj_npc::NpcInGame;
 use macroquad::math::vec2;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
