@@ -1,5 +1,6 @@
 use crate::controls::CONTROLS;
 use crate::current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH};
+use crate::door::DoorInGame;
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
@@ -108,6 +109,7 @@ pub struct LevelState {
     pub room: Arc<level::Room>,
     pub player: Player,
     pub npcs: Vec<NpcInGame>,
+    pub doors: Vec<DoorInGame>,
     pub checkpoint: Option<Checkpoint>,
     pub map_pixels: Vec<Vec<MapPixelType>>,
     pub full_hud: bool,
@@ -129,8 +131,9 @@ impl LevelState {
         let res = RESOURCE_MANAGER.lock()?;
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
-            let area_npcs: HashMap<String, Vec<NpcInGame>>;
             let area_objects = res.get_room_object(area).unwrap();
+
+            let area_npcs: HashMap<String, Vec<NpcInGame>>;
             area_npcs = area_objects.npcs.clone();
             let npcs: Vec<NpcInGame>;
             if area_npcs.contains_key(room_name) {
@@ -138,6 +141,7 @@ impl LevelState {
             } else {
                 npcs = vec![];
             }
+
             let area_checkpoints = area_objects.checkpoints.clone();
             let checkpoint: Option<Checkpoint>;
             if area_checkpoints.contains_key(room_name) {
@@ -145,11 +149,20 @@ impl LevelState {
             } else {
                 checkpoint = None;
             }
+
+            let area_doors = area_objects.doors.clone();
+            let doors: Vec<DoorInGame>;
+            if area_doors.contains_key(room_name) {
+                doors = area_doors.get(room_name).unwrap().clone();
+            } else {
+                doors = vec![];
+            }
             Ok(LevelState {
                 area: area.to_string(),
                 room: room,
                 player,
                 npcs: npcs,
+                doors: doors,
                 checkpoint,
                 map_pixels,
                 full_hud: true,
@@ -264,6 +277,27 @@ impl GameState for LevelState {
                     }
                 }
             }
+            //check door interact
+            for door in &self.doors {
+                let overlapping_x = player.position.x < door.pos.x + door.size.x
+                    && player.position.x + player.actual_size.x as f32 > door.pos.x;
+
+                let overlapping_y = player.position.y < door.pos.y + door.size.y
+                    && player.position.y + player.actual_size.y as f32 > door.pos.y;
+
+                if overlapping_x && overlapping_y {
+                    if door.need_interact {
+                        self.hud_hint_text = format!("Press {} to\nenter", input.key_string("z"));
+
+                        if input.controls_tertirary_release() {
+                            return door.interact();
+                        }
+                    } else {
+                        return door.interact();
+                    }
+                }
+            }
+
             if !self.init_timer_done {
                 self.hud_init_timer -= frame_time;
                 if self.full_hud && self.hud_init_timer <= 0. {
@@ -385,6 +419,21 @@ impl GameState for LevelState {
                 },
             );
         }
+        //draw doors
+        for door in &self.doors {
+            let res = RESOURCE_MANAGER.lock().unwrap();
+            let tex = res.get_texture("door.png");
+            draw_texture_ex(
+                tex,
+                door.pos.x,
+                door.pos.y,
+                WHITE,
+                DrawTextureParams {
+                    ..Default::default()
+                },
+            );
+        }
+
         //draw checkpoint
         if let Some(checkpoint) = &self.checkpoint {
             let res = RESOURCE_MANAGER.lock().unwrap();

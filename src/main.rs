@@ -6,6 +6,7 @@ use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
 mod controls;
 mod current_game;
+mod door;
 mod game_state;
 mod hud;
 mod level;

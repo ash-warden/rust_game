@@ -149,7 +149,7 @@ impl Room {
         let tile_image_name = tileset.image.clone();
 
         let tileset_columns = tileset.columns;
-        println!("{:?}", values);
+        // println!("{:?}", values);
 
         Ok(Room {
             tile_image_name,

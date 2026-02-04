@@ -24,5 +24,25 @@
       "pos_x": 3,
       "pos_y": 11
     }
+  ],
+  "doors": [
+    {
+      "id": 0,
+      "location": {
+        "room_x": 1,
+        "room_y": 0,
+        "pos_x": 10,
+        "pos_y": 12
+      },
+      "destination": {
+        "area": "a1",
+        "room_x": 1,
+        "room_y": 0,
+        "pos_x": 12,
+        "pos_y": 13
+      },
+      "visible": true,
+      "need_interact": true
+    }
   ]
 }

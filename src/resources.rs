@@ -1,3 +1,4 @@
+use crate::door::{DoorDestination, DoorInGame};
 use crate::level::Room;
 use crate::level_state::Checkpoint;
 use crate::npc::NpcInGame;
@@ -119,10 +120,26 @@ pub async fn load_all_assets() {
                         );
                         npcs.entry(room).or_insert_with(Vec::new).push(cur_npc);
                     }
+                    let mut doors: HashMap<String, Vec<DoorInGame>> = HashMap::new();
+                    for i in objects.doors {
+                        let room = format!("{}_{}", i.location.room_x, i.location.room_y);
+                        let cur_door = DoorInGame::new(
+                            vec2(i.location.pos_x as f32 * 32., i.location.pos_y as f32 * 32.),
+                            i.destination.clone(),
+                            i.visible,
+                            i.need_interact,
+                        );
+                        doors.entry(room).or_insert_with(Vec::new).push(cur_door);
+                    }
                     println!("{:?}", checkpoints);
                     println!("{:?}", npcs);
+                    println!("{:?}", doors);
 
-                    let room_objects = RoomObjects { checkpoints, npcs };
+                    let room_objects = RoomObjects {
+                        checkpoints,
+                        npcs,
+                        doors,
+                    };
 
                     res.insert_object(area_name.to_string(), Arc::new(room_objects));
                 }
@@ -143,12 +160,31 @@ pub async fn load_all_assets() {
 pub struct RoomObjects {
     pub checkpoints: HashMap<String, Checkpoint>,
     pub npcs: HashMap<String, Vec<NpcInGame>>,
+    pub doors: HashMap<String, Vec<DoorInGame>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RoomObjectsFromFile {
     pub checkpoints: Vec<CheckpointFromFile>,
     pub npcs: Vec<NpcFromFile>,
+    pub doors: Vec<DoorFromFile>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct DoorLocation {
+    room_x: i32,
+    room_y: i32,
+    pos_x: i32,
+    pos_y: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DoorFromFile {
+    id: i32,
+    location: DoorLocation,
+    destination: DoorDestination,
+    visible: bool,
+    need_interact: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
