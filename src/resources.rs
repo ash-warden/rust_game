@@ -3,7 +3,7 @@ use crate::obj__trait::Obj;
 use crate::obj_checkpoint::Checkpoint;
 use crate::obj_door::{DoorDestination, DoorInGame};
 use crate::obj_npc::NpcInGame;
-use macroquad::math::vec2;
+use macroquad::math::{IVec2, ivec2, vec2};
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -104,43 +104,22 @@ pub async fn load_all_assets() {
 
                     let mut objects_map: HashMap<String, Vec<Arc<dyn Obj>>> = HashMap::new();
 
-                    for i in objects.checkpoints {
-                        let room = i.room_x.to_string() + "_" + &i.room_y.to_string();
-                        let cur_checkpoint: Checkpoint = Checkpoint::new(
-                            i.id,
-                            area_name.to_string(),
-                            vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
-                        );
-                        objects_map
-                            .entry(room)
-                            .or_insert_with(Vec::new)
-                            .push(Arc::new(cur_checkpoint) as Arc<dyn Obj>)
+                    fn insert_from_list<T: FileToInGame>(
+                        list: Vec<T>,
+                        area_name: &str,
+                        map: &mut HashMap<String, Vec<Arc<dyn Obj>>>,
+                    ) {
+                        for item in list {
+                            let coords = item.room_coords();
+                            let room = format!("{}_{}", coords.x, coords.y);
+                            map.entry(room)
+                                .or_insert_with(Vec::new)
+                                .push(item.to_obj(area_name));
+                        }
                     }
-
-                    for i in objects.npcs {
-                        let room = format!("{}_{}", i.room_x, i.room_y);
-                        let cur_npc = NpcInGame::new(
-                            vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.),
-                            i.name,
-                        );
-                        objects_map
-                            .entry(room)
-                            .or_insert_with(Vec::new)
-                            .push(Arc::new(cur_npc) as Arc<dyn Obj>)
-                    }
-                    for i in objects.doors {
-                        let room = format!("{}_{}", i.location.room_x, i.location.room_y);
-                        let cur_door = DoorInGame::new(
-                            vec2(i.location.pos_x as f32 * 32., i.location.pos_y as f32 * 32.),
-                            i.destination.clone(),
-                            i.visible,
-                            i.need_interact,
-                        );
-                        objects_map
-                            .entry(room)
-                            .or_insert_with(Vec::new)
-                            .push(Arc::new(cur_door) as Arc<dyn Obj>)
-                    }
+                    insert_from_list(objects.checkpoints, area_name, &mut objects_map);
+                    insert_from_list(objects.npcs, area_name, &mut objects_map);
+                    insert_from_list(objects.doors, area_name, &mut objects_map);
 
                     let room_objects = RoomObjects {
                         objects: objects_map,
@@ -172,6 +151,11 @@ pub struct RoomObjectsFromFile {
     pub doors: Vec<DoorFromFile>,
 }
 
+pub trait FileToInGame {
+    fn room_coords(&self) -> IVec2;
+    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj>;
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct DoorLocation {
     room_x: i32,
@@ -189,6 +173,24 @@ pub struct DoorFromFile {
     need_interact: bool,
 }
 
+impl FileToInGame for DoorFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.location.room_x, self.location.room_y)
+    }
+
+    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(DoorInGame::new(
+            vec2(
+                self.location.pos_x as f32 * 32.,
+                self.location.pos_y as f32 * 32.,
+            ),
+            self.destination.clone(),
+            self.visible,
+            self.need_interact,
+        ))
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NpcFromFile {
     id: i32,
@@ -199,6 +201,19 @@ pub struct NpcFromFile {
     pos_y: i32,
 }
 
+impl FileToInGame for NpcFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.room_x, self.room_y)
+    }
+
+    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(NpcInGame::new(
+            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
+            self.name.clone(),
+        ))
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CheckpointFromFile {
     pub id: i32,
@@ -206,4 +221,18 @@ pub struct CheckpointFromFile {
     pub room_y: i32,
     pub pos_x: i32,
     pub pos_y: i32,
+}
+
+impl FileToInGame for CheckpointFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.room_x, self.room_y)
+    }
+
+    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(Checkpoint::new(
+            self.id,
+            area_name.to_string(),
+            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
+        ))
+    }
 }
