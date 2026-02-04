@@ -5,7 +5,7 @@ use crate::game_state::{
 use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::obj__trait::Obj;
+use crate::obj__traits::Obj;
 use crate::obj_checkpoint::Checkpoint;
 use crate::obj_door::DoorInGame;
 use crate::obj_npc::NpcInGame;

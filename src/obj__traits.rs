@@ -1,6 +1,13 @@
-use macroquad::math::Vec2;
+use std::sync::Arc;
+
+use macroquad::math::{IVec2, Vec2};
 
 use crate::game_state::StateTransition;
+
+pub trait FileToInGame {
+    fn room_coords(&self) -> IVec2;
+    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj>;
+}
 
 pub trait Obj: Send + Sync {
     fn get_pos(&self) -> Vec2;

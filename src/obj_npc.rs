@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use crate::game_state::{MenuState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::obj__trait::Obj;
-use macroquad::math::{Vec2, vec2};
+use crate::obj__traits::{FileToInGame, Obj};
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
+use serde::{Deserialize, Serialize};
 
 fn simple_dialog(text: &str) -> StateTransition {
     let dialog_menu_pos = menu_centre_pos(36, 1000); //h not used
@@ -60,5 +63,28 @@ impl Obj for NpcInGame {
 
     fn get_tex(&self) -> &str {
         "npc.png"
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NpcFromFile {
+    id: i32,
+    name: String,
+    room_x: i32,
+    room_y: i32,
+    pos_x: i32,
+    pos_y: i32,
+}
+
+impl FileToInGame for NpcFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.room_x, self.room_y)
+    }
+
+    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(NpcInGame::new(
+            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
+            self.name.clone(),
+        ))
     }
 }

@@ -1,10 +1,12 @@
-use macroquad::math::{Vec2, vec2};
+use std::sync::Arc;
+
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     game_state::StateTransition,
     level_state::LevelState,
-    obj__trait::Obj,
+    obj__traits::{FileToInGame, Obj},
     player::{PlayerInitialInfo, PlayerMovementState},
 };
 
@@ -88,5 +90,40 @@ impl Obj for DoorInGame {
 
     fn get_tex(&self) -> &str {
         "door.png"
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct DoorLocation {
+    room_x: i32,
+    room_y: i32,
+    pos_x: i32,
+    pos_y: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DoorFromFile {
+    id: i32,
+    location: DoorLocation,
+    destination: DoorDestination,
+    visible: bool,
+    need_interact: bool,
+}
+
+impl FileToInGame for DoorFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.location.room_x, self.location.room_y)
+    }
+
+    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(DoorInGame::new(
+            vec2(
+                self.location.pos_x as f32 * 32.,
+                self.location.pos_y as f32 * 32.,
+            ),
+            self.destination.clone(),
+            self.visible,
+            self.need_interact,
+        ))
     }
 }

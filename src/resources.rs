@@ -1,9 +1,9 @@
 use crate::level::Room;
-use crate::obj__trait::Obj;
-use crate::obj_checkpoint::Checkpoint;
-use crate::obj_door::{DoorDestination, DoorInGame};
-use crate::obj_npc::NpcInGame;
-use macroquad::math::{IVec2, ivec2, vec2};
+use crate::obj__traits::FileToInGame;
+use crate::obj__traits::Obj;
+use crate::obj_checkpoint::CheckpointFromFile;
+use crate::obj_door::DoorFromFile;
+use crate::obj_npc::NpcFromFile;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -149,90 +149,4 @@ pub struct RoomObjectsFromFile {
     pub checkpoints: Vec<CheckpointFromFile>,
     pub npcs: Vec<NpcFromFile>,
     pub doors: Vec<DoorFromFile>,
-}
-
-pub trait FileToInGame {
-    fn room_coords(&self) -> IVec2;
-    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj>;
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct DoorLocation {
-    room_x: i32,
-    room_y: i32,
-    pos_x: i32,
-    pos_y: i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DoorFromFile {
-    id: i32,
-    location: DoorLocation,
-    destination: DoorDestination,
-    visible: bool,
-    need_interact: bool,
-}
-
-impl FileToInGame for DoorFromFile {
-    fn room_coords(&self) -> IVec2 {
-        ivec2(self.location.room_x, self.location.room_y)
-    }
-
-    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
-        Arc::new(DoorInGame::new(
-            vec2(
-                self.location.pos_x as f32 * 32.,
-                self.location.pos_y as f32 * 32.,
-            ),
-            self.destination.clone(),
-            self.visible,
-            self.need_interact,
-        ))
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NpcFromFile {
-    id: i32,
-    name: String,
-    room_x: i32,
-    room_y: i32,
-    pos_x: i32,
-    pos_y: i32,
-}
-
-impl FileToInGame for NpcFromFile {
-    fn room_coords(&self) -> IVec2 {
-        ivec2(self.room_x, self.room_y)
-    }
-
-    fn to_obj(&self, _area_name: &str) -> Arc<dyn Obj> {
-        Arc::new(NpcInGame::new(
-            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
-            self.name.clone(),
-        ))
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CheckpointFromFile {
-    pub id: i32,
-    pub room_x: i32,
-    pub room_y: i32,
-    pub pos_x: i32,
-    pub pos_y: i32,
-}
-
-impl FileToInGame for CheckpointFromFile {
-    fn room_coords(&self) -> IVec2 {
-        ivec2(self.room_x, self.room_y)
-    }
-
-    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj> {
-        Arc::new(Checkpoint::new(
-            self.id,
-            area_name.to_string(),
-            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
-        ))
-    }
 }

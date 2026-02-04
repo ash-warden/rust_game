@@ -11,7 +11,7 @@ mod hud;
 mod level;
 mod level_state;
 mod menu;
-mod obj__trait;
+mod obj__traits;
 mod obj_checkpoint;
 mod obj_door;
 mod obj_npc;

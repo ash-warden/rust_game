@@ -1,11 +1,14 @@
-use macroquad::math::{Vec2, vec2};
+use std::sync::Arc;
+
+use macroquad::math::{IVec2, Vec2, ivec2, vec2};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH},
     game_state::{MenuState, StateTransition},
     level_state::SaveGameState,
     menu::{Menu, MenuItem, menu_centre_pos},
-    obj__trait::Obj,
+    obj__traits::{FileToInGame, Obj},
 };
 
 #[derive(Debug, Clone)]
@@ -66,5 +69,28 @@ impl Obj for Checkpoint {
 
     fn get_tex(&self) -> &str {
         "checkpoint.png"
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CheckpointFromFile {
+    pub id: i32,
+    pub room_x: i32,
+    pub room_y: i32,
+    pub pos_x: i32,
+    pub pos_y: i32,
+}
+
+impl FileToInGame for CheckpointFromFile {
+    fn room_coords(&self) -> IVec2 {
+        ivec2(self.room_x, self.room_y)
+    }
+
+    fn to_obj(&self, area_name: &str) -> Arc<dyn Obj> {
+        Arc::new(Checkpoint::new(
+            self.id,
+            area_name.to_string(),
+            vec2(self.pos_x as f32 * 32., self.pos_y as f32 * 32.),
+        ))
     }
 }
