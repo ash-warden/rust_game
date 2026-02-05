@@ -1,3 +1,8 @@
+// name in json, name of struct
+// @start_room_object_info
+// doors,DoorFromFile
+// @end_room_object_info
+
 use std::sync::Arc;
 
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
@@ -6,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     game_state::StateTransition,
     level_state::LevelState,
-    obj__traits::{FileToInGame, Obj},
     player::{PlayerInitialInfo, PlayerMovementState},
+    traits_for_obj::{FileToInGame, Obj},
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

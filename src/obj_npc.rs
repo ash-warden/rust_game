@@ -1,8 +1,13 @@
+// name in json, name of struct
+// @start_room_object_info
+// npcs,NpcFromFile
+// @end_room_object_info
+
 use std::sync::Arc;
 
 use crate::game_state::{MenuState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::obj__traits::{FileToInGame, Obj};
+use crate::traits_for_obj::{FileToInGame, Obj};
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use serde::{Deserialize, Serialize};
 

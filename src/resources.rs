@@ -1,12 +1,8 @@
 use crate::level::Room;
-use crate::obj__traits::FileToInGame;
-use crate::obj__traits::Obj;
-use crate::obj_checkpoint::CheckpointFromFile;
-use crate::obj_door::DoorFromFile;
-use crate::obj_npc::NpcFromFile;
+use crate::room_obj_from_file::RoomObjectsFromFile;
+use crate::traits_for_obj::Obj;
 use macroquad::prelude::Texture2D;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::sync::{Arc, Mutex};
@@ -104,22 +100,7 @@ pub async fn load_all_assets() {
 
                     let mut objects_map: HashMap<String, Vec<Arc<dyn Obj>>> = HashMap::new();
 
-                    fn insert_from_list<T: FileToInGame>(
-                        list: Vec<T>,
-                        area_name: &str,
-                        map: &mut HashMap<String, Vec<Arc<dyn Obj>>>,
-                    ) {
-                        for item in list {
-                            let coords = item.room_coords();
-                            let room = format!("{}_{}", coords.x, coords.y);
-                            map.entry(room)
-                                .or_insert_with(Vec::new)
-                                .push(item.to_obj(area_name));
-                        }
-                    }
-                    insert_from_list(objects.checkpoints, area_name, &mut objects_map);
-                    insert_from_list(objects.npcs, area_name, &mut objects_map);
-                    insert_from_list(objects.doors, area_name, &mut objects_map);
+                    objects.insert_all(area_name, &mut objects_map);
 
                     let room_objects = RoomObjects {
                         objects: objects_map,
@@ -142,11 +123,4 @@ pub async fn load_all_assets() {
 
 pub struct RoomObjects {
     pub objects: HashMap<String, Vec<Arc<dyn Obj>>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RoomObjectsFromFile {
-    pub checkpoints: Vec<CheckpointFromFile>,
-    pub npcs: Vec<NpcFromFile>,
-    pub doors: Vec<DoorFromFile>,
 }

@@ -1,3 +1,8 @@
+// name in json, name of struct
+// @start_room_object_info
+// checkpoints,CheckpointFromFile
+// @end_room_object_info
+
 use std::sync::Arc;
 
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
@@ -8,7 +13,7 @@ use crate::{
     game_state::{MenuState, StateTransition},
     level_state::SaveGameState,
     menu::{Menu, MenuItem, menu_centre_pos},
-    obj__traits::{FileToInGame, Obj},
+    traits_for_obj::{FileToInGame, Obj},
 };
 
 #[derive(Debug, Clone)]

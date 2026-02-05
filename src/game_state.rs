@@ -2,7 +2,8 @@ use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::resources::{RESOURCE_MANAGER, RoomObjectsFromFile};
+use crate::resources::RESOURCE_MANAGER;
+use crate::room_obj_from_file::RoomObjectsFromFile;
 use macroquad::math::{i32, ivec2, vec2};
 use serde::{Deserialize, Serialize};
 use std::env::current_exe;
@@ -104,10 +105,12 @@ impl GameState for LoadSaveState {
             let objects: RoomObjectsFromFile =
                 serde_json::from_str(&objects_file.unwrap().as_str()).expect("Error 2");
 
-            for i in objects.checkpoints {
-                if i.id == checkpoint {
-                    player_pos = vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.);
-                    room = ivec2(i.room_x, i.room_y);
+            if let Some(checkpoints) = objects.checkpoints {
+                for i in checkpoints {
+                    if i.id == checkpoint {
+                        player_pos = vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.);
+                        room = ivec2(i.room_x, i.room_y);
+                    }
                 }
             }
         } else {

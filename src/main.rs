@@ -11,14 +11,15 @@ mod hud;
 mod level;
 mod level_state;
 mod menu;
-mod obj__traits;
 mod obj_checkpoint;
 mod obj_door;
 mod obj_npc;
 mod player;
 mod player_functions;
 mod resources;
+mod room_obj_from_file;
 mod text;
+mod traits_for_obj;
 
 const SCREEN_SIZE: IVec2 = ivec2(640, 480);
 
