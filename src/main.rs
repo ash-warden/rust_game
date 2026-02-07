@@ -14,6 +14,7 @@ mod menu;
 mod obj_checkpoint;
 mod obj_door;
 mod obj_npc;
+mod obj_star;
 mod player;
 mod player_functions;
 mod resources;

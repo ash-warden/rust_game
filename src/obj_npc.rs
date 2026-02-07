@@ -69,6 +69,10 @@ impl Obj for NpcInGame {
     fn get_tex(&self) -> &str {
         "npc.png"
     }
+
+    fn is_visible(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -10,8 +10,6 @@ use macroquad::{
 use crate::{
     SCREEN_SIZE,
     current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH},
-    game_state::StateTransition,
-    menu::{Menu, MenuItem},
     resources::RESOURCE_MANAGER,
     text::write_text,
 };

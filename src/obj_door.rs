@@ -96,6 +96,10 @@ impl Obj for DoorInGame {
     fn get_tex(&self) -> &str {
         "door.png"
     }
+
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

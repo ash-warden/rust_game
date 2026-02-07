@@ -75,6 +75,10 @@ impl Obj for Checkpoint {
     fn get_tex(&self) -> &str {
         "checkpoint.png"
     }
+
+    fn is_visible(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

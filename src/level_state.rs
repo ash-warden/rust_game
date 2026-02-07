@@ -5,11 +5,11 @@ use crate::game_state::{
 use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::traits_for_obj::Obj;
 use crate::obj_checkpoint::Checkpoint;
 use crate::obj_door::DoorInGame;
 use crate::obj_npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
+use crate::traits_for_obj::Obj;
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
@@ -302,17 +302,19 @@ impl GameState for LevelState {
             y += 1;
         }
         for obj in &self.objects {
-            let res = RESOURCE_MANAGER.lock().unwrap();
-            let tex = res.get_texture(obj.get_tex());
-            draw_texture_ex(
-                tex,
-                obj.get_pos().x,
-                obj.get_pos().y,
-                WHITE,
-                DrawTextureParams {
-                    ..Default::default()
-                },
-            );
+            if obj.is_visible() {
+                let res = RESOURCE_MANAGER.lock().unwrap();
+                let tex = res.get_texture(obj.get_tex());
+                draw_texture_ex(
+                    tex,
+                    obj.get_pos().x,
+                    obj.get_pos().y,
+                    WHITE,
+                    DrawTextureParams {
+                        ..Default::default()
+                    },
+                );
+            }
         }
 
         //draw player

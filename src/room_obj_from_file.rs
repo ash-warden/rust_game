@@ -8,12 +8,14 @@ use crate::{
     obj_checkpoint::CheckpointFromFile,
     obj_door::DoorFromFile,
     obj_npc::NpcFromFile,
+    obj_star::StarFromFile,
     traits_for_obj::{FileToInGame, Obj},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RoomObjectsFromFile {
     pub checkpoints: Option<Vec<CheckpointFromFile>>,
+    pub stars: Option<Vec<StarFromFile>>,
     pub npcs: Option<Vec<NpcFromFile>>,
     pub doors: Option<Vec<DoorFromFile>>,
 }
@@ -36,6 +38,7 @@ impl RoomObjectsFromFile {
             }
         }
         insert_from_list(self.checkpoints, area_name, map);
+        insert_from_list(self.stars, area_name, map);
         insert_from_list(self.npcs, area_name, map);
         insert_from_list(self.doors, area_name, map);
     }

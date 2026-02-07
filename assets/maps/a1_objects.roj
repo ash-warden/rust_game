@@ -44,5 +44,14 @@
       "visible": true,
       "need_interact": true
     }
+  ],
+  "stars": [
+    {
+      "id": 0,
+      "room_x": 1,
+      "room_y": 0,
+      "pos_x": 7,
+      "pos_y": 6
+    }
   ]
 }
