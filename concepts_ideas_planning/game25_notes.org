@@ -1,0 +1,71 @@
+NEXT THING TO DO:
+ - animation (tiles done, need to do objects/player)
+ - things to collect
+
+THINGS TO COLLECT/OBJECTIVE
+ -
+
+AUDIO
+ - simple-synth works ok?
+ - currently it's like a keyboard thing. need it to be able to read a file, but keep the ability to modify the playback
+
+LEVELS ETC
+"Level": tiles collision etc for single room
+"LevelState": Contains "Level" and player. Handles functions: pausing, moving between rooms/levels
+ - should handle loading objects too. should these be in resources???
+"LoadSaveState": dialog box for loading a save file and then setting up and starting a LevelState
+ - just needs to process enough for the LS to then start
+
+* Tasks
+ - player
+   - animation
+ - menus/pause
+   - movement between the items
+     - more complex layout/movement settings etc.
+ - more levels - need to design more!
+ - moving platforms
+ - puzzles
+ - bosses
+
+* Technical
+ - use state stack
+   - trait for state
+ - load all resources at beginning
+   - use a resources module
+   - make it so the way the resources works can be changes without having to change anything else
+ - work out what to do for audio
+ - switching screen:
+   - game state has level and player, can get player position
+   - keep same state or make new state with player in new position?
+     - new might be easier.
+     - process:
+       - get player x and y. find the one that has gone over
+       - determine next map to show
+       - replace levelstate with new levelstate with next map and new player position
+
+* Ideas
+** Setting
+ - areas have simple monochrome graphics
+   - characters? also monochrome? contrasting color?
+   - graphics are simple flat style. could some things use a "prerendered" style? maybe bosses?
+ - abstract/fantasy strange areas
+ - not much story, but some dialogue etc talking a bit about the setting
+ - the game is surrounded by a border.
+   - this border is generally not acknowledged, but there are a couple small fourth wall breaks. the final boss could maybe use the area in the border.
+** Gameplay
+ - platforming game
+ - single screen shown at a time - somewhat small player character
+ - focus on it being fun to move around, variety of jumps (long, double, wall etc. jetpack with limited time/fuel?)
+ - some puzzles, player must find/carry items around. doors etc
+ - no leveling up/stats, just new items over time
+ - npcs/signs to read. no store/currency
+ - fighting/hazards etc
+   - do not really want it
+   - maybe just have hazards, not enemies. could have occasional bosses still?
+   - how handle damage/health?
+     - want to somehow reward keeping it at 100%, maybe extra ability? (mario, zelda does this)
+     - how many levels? would prefer higher to avoid the game being frustrating. maybe about 10 levels?
+ - one of the objects that can be encountered is a remote controlled thing. when using it the view is sent to it's position, and can switch between it and the player control/view
+ - map - have a small version always on screen. can view larger/detailed one from the pause menu
+ - various event occur at certain times in the story
+ - vehicles? one for digging

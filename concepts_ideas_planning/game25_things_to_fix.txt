@@ -1,0 +1,6 @@
+GRAPHICS
+generally change colors totally? DONE
+brick line up better & edges
+fix grass, ladder
+make all roofs flat
+set up cave tiles
