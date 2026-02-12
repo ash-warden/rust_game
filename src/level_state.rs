@@ -1,4 +1,5 @@
 use crate::controls::CONTROLS;
+use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::game_state::{
     GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
 };
@@ -6,14 +7,13 @@ use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
-use crate::obj_door::DoorInGame;
-use crate::obj_npc::NpcInGame;
 use crate::resources::RESOURCE_MANAGER;
 use crate::traits_for_obj::Obj;
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
-use std::collections::HashMap;
+use rfd::FileDialog;
+use std::collections::HashSet;
 use std::env::current_exe;
 use std::fs;
 use std::sync::Arc;
@@ -32,7 +32,13 @@ impl SaveGameState {
 
 impl GameState for SaveGameState {
     fn update(&mut self) -> StateTransition {
-        use rfd::FileDialog;
+        //get stars
+        let cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+        let stars_file = cur_game.get_stars();
+        let mut stars: HashSet<(String, i32)> = HashSet::new();
+
+        stars.extend(stars_file.iter().cloned());
+
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
         let saves_path = exe_path.join("../../saves"); //temporary for when working on game? may need to change
@@ -45,6 +51,7 @@ impl GameState for SaveGameState {
         let new_save = SaveData {
             area: self.checkpoint.area.clone(),
             checkpoint: self.checkpoint.id,
+            stars_collected: stars,
         };
 
         if let Some(path) = file {

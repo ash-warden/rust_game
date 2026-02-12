@@ -6,6 +6,7 @@ use crate::resources::RESOURCE_MANAGER;
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use macroquad::math::{i32, ivec2, vec2};
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::env::current_exe;
 use std::fs;
 
@@ -144,6 +145,40 @@ impl GameState for LoadSaveState {
     }
 }
 
+#[derive(Clone)]
+pub struct NewGameState {}
+
+impl NewGameState {
+    pub fn new() -> Self {
+        NewGameState {}
+    }
+}
+
+impl GameState for NewGameState {
+    fn update(&mut self) -> StateTransition {
+        let player_pos = vec2(100., 100.); // value isn't actually used since it is replaced when the file is loaded
+
+        let player_info = PlayerInitialInfo {
+            pos: player_pos,
+            velocity: vec2(0., 0.),
+            state: PlayerMovementState::Standing,
+        };
+
+        let level = format!("{}_{}_{}", "a1", 0, 0);
+
+        let level_state = LevelState::build(&level, player_info).unwrap_or_else(|err| {
+            eprintln!("Failed to load level state: {err}");
+            std::process::exit(1);
+        });
+        StateTransition::Replace(Box::new(level_state))
+    }
+    fn draw(&self) {}
+
+    fn transparent(&self) -> bool {
+        true
+    }
+}
+
 pub struct GameStateStack {
     pub states: Vec<Box<dyn GameState>>,
 }
@@ -205,4 +240,5 @@ impl GameStateStack {
 pub struct SaveData {
     pub area: String,
     pub checkpoint: i32,
+    pub stars_collected: HashSet<(String, i32)>,
 }

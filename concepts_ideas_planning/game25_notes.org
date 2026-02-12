@@ -1,13 +1,13 @@
 NEXT THING TO DO:
  - animation (tiles done, need to do objects/player)
- - things to collect
+ - things to collect (add to save file)
+ - cutscenes/more complex npc
+ - "events/stages" - kinda just for beginning/intro of game.
 
-THINGS TO COLLECT/OBJECTIVE
+
  -
 
 AUDIO
- - simple-synth works ok?
- - currently it's like a keyboard thing. need it to be able to read a file, but keep the ability to modify the playback
 
 LEVELS ETC
 "Level": tiles collision etc for single room

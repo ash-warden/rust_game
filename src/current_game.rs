@@ -32,6 +32,10 @@ impl CurrentGame {
         let star_to_find = (area.to_owned(), id);
         self.stars_collected.contains(&star_to_find)
     }
+
+    pub fn get_stars(&self) -> &HashSet<(String, i32)> {
+        &self.stars_collected
+    }
 }
 
 pub static CURRENT_GAME_MANAGER: Lazy<Mutex<CurrentGame>> =

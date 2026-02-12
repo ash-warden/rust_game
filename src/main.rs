@@ -1,4 +1,4 @@
-use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NothingState, StateTransition};
+use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NewGameState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
 use macroquad::math::vec2;
@@ -52,26 +52,24 @@ fn window_conf() -> Conf {
 #[macroquad::main(window_conf)]
 async fn main() {
     load_all_assets().await;
-
-    //todo get rid of the sillystate some time
-    let silly_state = NothingState::new();
     let load_state = LoadSaveState::new();
-    let menu_pos = menu_centre_pos(24, 3);
+    let new_game_state = NewGameState::new();
+    let menu_pos = menu_centre_pos(11, 3);
     let mut menu = Menu::new(menu_pos.x, menu_pos.y);
     let title = MenuItem::new("game_25", || StateTransition::None, false);
     menu.add_item(title);
-    let start_game = MenuItem::new(
-        "Load file and start game",
+    let start_game_new = MenuItem::new(
+        "New game",
+        move || StateTransition::Push(Box::new(new_game_state.clone())),
+        true,
+    );
+    menu.add_item(start_game_new);
+    let start_game_load = MenuItem::new(
+        "Load file",
         move || StateTransition::Push(Box::new(load_state.clone())),
         true,
     );
-    menu.add_item(start_game);
-    let test_item2 = MenuItem::new(
-        "Test Item 1",
-        move || StateTransition::Push(Box::new(silly_state.clone())),
-        true,
-    );
-    menu.add_item(test_item2);
+    menu.add_item(start_game_load);
     let menu_state = MenuState::new(menu);
 
     let mut game_state_stack = GameStateStack::new(Box::new(menu_state));
