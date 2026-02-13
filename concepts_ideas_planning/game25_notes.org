@@ -1,11 +1,18 @@
 NEXT THING TO DO:
+ - load text from a file
  - animation (tiles done, need to do objects/player)
- - things to collect (add to save file)
  - cutscenes/more complex npc
  - "events/stages" - kinda just for beginning/intro of game.
 
+CUTSCENES:
+ - still images
+ - a line of text that goes with the image
+ - time to stay on screen
 
- -
+ - Two classes/structs:
+   - Cutscene state
+     - 
+   - Cutscene slide
 
 AUDIO
 

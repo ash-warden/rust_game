@@ -37,7 +37,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"a1.tsj"
+         "source":"a1_animated.tsj"
         }],
  "tilewidth":32,
  "type":"map",
