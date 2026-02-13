@@ -76,6 +76,11 @@ impl LoadSaveState {
 
 impl GameState for LoadSaveState {
     fn update(&mut self) -> StateTransition {
+        let dialog_text = {
+            let mut res = RESOURCE_MANAGER.lock().unwrap();
+            res.get_text("load_dialog")
+        };
+
         use rfd::FileDialog;
 
         let mut exe_path = current_exe().unwrap();
@@ -85,7 +90,7 @@ impl GameState for LoadSaveState {
         let file = FileDialog::new()
             .add_filter("game_25 save", &["save"])
             .set_directory(saves_path)
-            .set_title("Load save file")
+            .set_title(dialog_text)
             .pick_file();
 
         let area;

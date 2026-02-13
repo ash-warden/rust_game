@@ -55,18 +55,28 @@ async fn main() {
     load_all_assets().await;
     let load_state = LoadSaveState::new();
     let new_game_state = NewGameState::new();
+
+    let new_game_text = {
+        let mut res = RESOURCE_MANAGER.lock().unwrap();
+        res.get_text("new_game")
+    };
+    let load_game_text = {
+        let mut res = RESOURCE_MANAGER.lock().unwrap();
+        res.get_text("load_file")
+    };
+
     let menu_pos = menu_centre_pos(11, 3);
     let mut menu = Menu::new(menu_pos.x, menu_pos.y);
     let title = MenuItem::new("game_25", || StateTransition::None, false);
     menu.add_item(title);
     let start_game_new = MenuItem::new(
-        "New game",
+        &new_game_text,
         move || StateTransition::Push(Box::new(new_game_state.clone())),
         true,
     );
     menu.add_item(start_game_new);
     let start_game_load = MenuItem::new(
-        "Load file",
+        &load_game_text,
         move || StateTransition::Push(Box::new(load_state.clone())),
         true,
     );

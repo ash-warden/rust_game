@@ -8,10 +8,13 @@ use std::fs;
 use std::sync::{Arc, Mutex};
 use walkdir::WalkDir;
 
+const ERROR_TEXT: &str = "ERROR, STRING NOT FOUND";
+
 pub struct Resources {
     pub rooms: HashMap<String, Arc<Room>>,
     pub room_objects: HashMap<String, Arc<RoomObjects>>,
     pub textures: HashMap<String, Texture2D>,
+    pub text_strings: HashMap<String, String>,
     pub scale: f32,
     pub background_texture: Option<String>,
 }
@@ -24,6 +27,7 @@ impl Resources {
             textures: HashMap::new(),
             scale: 1.,
             background_texture: None,
+            text_strings: HashMap::new(),
         }
     }
 
@@ -62,6 +66,18 @@ impl Resources {
     pub fn insert_object(&mut self, key: String, object: Arc<RoomObjects>) {
         self.room_objects.insert(key, object);
     }
+
+    pub fn insert_text(&mut self, key: String, text: String) {
+        self.text_strings.insert(key, text);
+    }
+
+    pub fn get_text(&mut self, key: &str) -> String {
+        if let Some(text) = self.text_strings.get(key) {
+            text.to_string()
+        } else {
+            ERROR_TEXT.to_string()
+        }
+    }
 }
 
 pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Resources::new()));
@@ -86,6 +102,7 @@ pub async fn load_all_assets() {
                     res.insert_texture(key.to_string() + ".png", texture);
                 }
                 "tmj" => {
+                    //tile map json
                     let level = Room::build(path_str).await.unwrap();
                     res.insert_room(key.to_string(), Arc::new(level));
                     println!("{}", key);
@@ -107,6 +124,15 @@ pub async fn load_all_assets() {
                     };
 
                     res.insert_object(area_name.to_string(), Arc::new(room_objects));
+                }
+                "gtj" => {
+                    //game text json
+                    let text_file = fs::read_to_string(path_str).unwrap();
+                    let map: HashMap<String, String> = serde_json::from_str(&text_file).unwrap();
+                    for (key, value) in map {
+                        res.insert_text(key, value);
+                    }
+                    println!("{:?}", res.text_strings);
                 }
                 _ => {
                     println!("Skipping unsupported file: {}", path_str);

@@ -1,0 +1,13 @@
+{
+  "title": "game_25",
+  "new_game": "New game",
+  "load_file": "Load file",
+  "load_dialog": "Load save file",
+  "pause": "Pause",
+  "resume": "Resume",
+  "quit": "Quit",
+  "save_game": "Save game file?",
+  "yes": "yes",
+  "no": "no",
+  "save_dialog": "Choose file to save over"
+}

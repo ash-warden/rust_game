@@ -13,6 +13,7 @@ use crate::{
     game_state::{MenuState, StateTransition},
     level_state::SaveGameState,
     menu::{Menu, MenuItem, menu_centre_pos},
+    resources::RESOURCE_MANAGER,
     traits_for_obj::{FileToInGame, Obj},
 };
 
@@ -44,19 +45,32 @@ impl Obj for Checkpoint {
     }
 
     fn interact(&self) -> StateTransition {
+        let save_game_text = {
+            let mut res = RESOURCE_MANAGER.lock().unwrap();
+            res.get_text("save_game")
+        };
+        let yes_text = {
+            let mut res = RESOURCE_MANAGER.lock().unwrap();
+            res.get_text("yes")
+        };
+        let no_text = {
+            let mut res = RESOURCE_MANAGER.lock().unwrap();
+            res.get_text("no")
+        };
+
         println!("{}", "interacting with checkpoint");
         let save_game_state = SaveGameState::new(self);
         let menu_pos = menu_centre_pos(15, 3);
         let mut menu = Menu::new(menu_pos.x, menu_pos.y);
-        let title = MenuItem::new("Save game file?", || StateTransition::None, false);
+        let title = MenuItem::new(&save_game_text, || StateTransition::None, false);
         menu.add_item(title);
         let save_game = MenuItem::new(
-            "Yes",
+            &yes_text,
             move || StateTransition::Push(Box::new(save_game_state.clone())),
             true,
         );
         menu.add_item(save_game);
-        let cancel = MenuItem::new("No", move || StateTransition::Pop(1), true);
+        let cancel = MenuItem::new(&no_text, move || StateTransition::Pop(1), true);
         menu.add_item(cancel);
         let menu_state = MenuState::new(menu);
         StateTransition::Push(Box::new(menu_state))

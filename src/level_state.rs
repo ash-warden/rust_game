@@ -39,6 +39,11 @@ impl GameState for SaveGameState {
 
         stars.extend(stars_file.iter().cloned());
 
+        let dialog_text = {
+            let mut res = RESOURCE_MANAGER.lock().unwrap();
+            res.get_text("save_dialog")
+        };
+
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
         let saves_path = exe_path.join("../../saves"); //temporary for when working on game? may need to change
@@ -46,7 +51,7 @@ impl GameState for SaveGameState {
         let file = FileDialog::new()
             .add_filter("game_25 save", &["save"])
             .set_directory(saves_path)
-            .set_title("Choose file to save over")
+            .set_title(dialog_text)
             .pick_file();
         let new_save = SaveData {
             area: self.checkpoint.area.clone(),
@@ -145,13 +150,26 @@ impl GameState for LevelState {
 
         //pausing
         {
+            let pause_text = {
+                let mut res = RESOURCE_MANAGER.lock().unwrap();
+                res.get_text("pause")
+            };
+            let resume_text = {
+                let mut res = RESOURCE_MANAGER.lock().unwrap();
+                res.get_text("resume")
+            };
+            let quit_text = {
+                let mut res = RESOURCE_MANAGER.lock().unwrap();
+                res.get_text("quit")
+            };
+
             let pause_menu_pos = menu_centre_pos(6, 3);
             let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
-            let title = MenuItem::new("pause", || StateTransition::None, false);
+            let title = MenuItem::new(&pause_text, || StateTransition::None, false);
             pause_menu.add_item(title);
-            let resume_game = MenuItem::new("Resume", move || StateTransition::Pop(1), true);
+            let resume_game = MenuItem::new(&resume_text, move || StateTransition::Pop(1), true);
             pause_menu.add_item(resume_game);
-            let quit_game = MenuItem::new("Quit", move || StateTransition::Pop(2), true);
+            let quit_game = MenuItem::new(&quit_text, move || StateTransition::Pop(2), true);
             pause_menu.add_item(quit_game);
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();

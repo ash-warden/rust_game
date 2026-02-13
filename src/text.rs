@@ -12,7 +12,6 @@ pub fn write_text(text: &str, pos: Vec2, color: Color, font: &str) {
     let mut col = 0.;
     for item in text.chars() {
         let letter_ascii = item as u8;
-        //println!("{}", letter_ascii);
         //this is a \n line break
         if letter_ascii == 10 {
             row += 1.;
