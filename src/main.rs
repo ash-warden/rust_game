@@ -1,3 +1,4 @@
+use crate::cutscene::CutsceneState;
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NewGameState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::resources::{RESOURCE_MANAGER, load_all_assets};
@@ -81,6 +82,13 @@ async fn main() {
         true,
     );
     menu.add_item(start_game_load);
+    let test_cutscene = MenuItem::new(
+        "Cutscene test",
+        move || StateTransition::Push(Box::new(CutsceneState::new("intro"))),
+        true,
+    );
+    menu.add_item(test_cutscene);
+
     let menu_state = MenuState::new(menu);
 
     let mut game_state_stack = GameStateStack::new(Box::new(menu_state));

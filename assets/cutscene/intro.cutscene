@@ -1,0 +1,15 @@
+{
+  "slides": [
+    {
+      "image_name": "cut_test1.png",
+      "text": "test text 1",
+      "time": 5
+    },
+	{
+      "image_name": "cut_test2.png",
+      "text": "test text 2",
+      "time": 3
+    }
+
+  ]
+}

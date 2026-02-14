@@ -1,3 +1,4 @@
+use crate::cutscene::Cutscene;
 use crate::level::Room;
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use crate::traits_for_obj::Obj;
@@ -15,6 +16,7 @@ pub struct Resources {
     pub room_objects: HashMap<String, Arc<RoomObjects>>,
     pub textures: HashMap<String, Texture2D>,
     pub text_strings: HashMap<String, String>,
+    pub cutscenes: HashMap<String, Arc<Cutscene>>,
     pub scale: f32,
     pub background_texture: Option<String>,
 }
@@ -28,6 +30,7 @@ impl Resources {
             scale: 1.,
             background_texture: None,
             text_strings: HashMap::new(),
+            cutscenes: HashMap::new(),
         }
     }
 
@@ -76,6 +79,18 @@ impl Resources {
             text.to_string()
         } else {
             ERROR_TEXT.to_string()
+        }
+    }
+
+    pub fn insert_cutscene(&mut self, key: String, cutscene: Arc<Cutscene>) {
+        self.cutscenes.insert(key, cutscene);
+    }
+
+    pub fn get_cutscene(&self, key: &str) -> Option<Arc<Cutscene>> {
+        if self.cutscenes.contains_key(key) {
+            self.cutscenes.get(key).cloned()
+        } else {
+            None
         }
     }
 }
@@ -133,6 +148,11 @@ pub async fn load_all_assets() {
                         res.insert_text(key, value);
                     }
                     println!("{:?}", res.text_strings);
+                }
+                "cutscene" => {
+                    let file = fs::read_to_string(path_str).unwrap();
+                    let cutscene: Cutscene = serde_json::from_str(&file).unwrap();
+                    res.insert_cutscene(key.to_string(), cutscene.into());
                 }
                 _ => {
                     println!("Skipping unsupported file: {}", path_str);
