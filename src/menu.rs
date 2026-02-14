@@ -33,7 +33,7 @@ impl Menu {
             self.current_index += 1;
         }
         let mut input = CONTROLS.lock().unwrap();
-        if input.controls_down() {
+        if input.controls_down_release() {
             if self.current_index < self.menu_items.len() as u32 - 1 {
                 self.current_index += 1;
                 if !self.menu_items[self.current_index as usize].selectable {
@@ -45,7 +45,7 @@ impl Menu {
                 }
             }
         }
-        if input.controls_up() {
+        if input.controls_up_release() {
             if self.current_index > 0 {
                 self.current_index -= 1;
                 if !self.menu_items[self.current_index as usize].selectable {

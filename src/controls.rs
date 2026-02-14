@@ -8,6 +8,8 @@ pub struct Controls {
     enter_down: bool,
     z_down: bool,
     x_down: bool,
+    up_down: bool,
+    down_down: bool,
     esc_down: bool,
     last_used_controller: bool, // true if controler was used last, false if keyboard was used last
 }
@@ -19,6 +21,8 @@ impl Controls {
             enter_down: false,
             z_down: false,
             x_down: false,
+            up_down: false,
+            down_down: false,
             esc_down: false,
             last_used_controller: false,
         }
@@ -66,6 +70,19 @@ impl Controls {
     pub fn controls_down(&mut self) -> bool {
         self.check_pad_input(Button::DPadDown) || is_key_down(KeyCode::Down)
     }
+    pub fn controls_up_release(&mut self) -> bool {
+        let pressed = self.check_pad_input(Button::DPadUp) || is_key_down(KeyCode::Up);
+        let just_released = self.up_down && !pressed;
+        self.up_down = pressed;
+        just_released
+    }
+    pub fn controls_down_release(&mut self) -> bool {
+        let pressed = self.check_pad_input(Button::DPadDown) || is_key_down(KeyCode::Down);
+        let just_released = self.down_down && !pressed;
+        self.down_down = pressed;
+        just_released
+    }
+
     pub fn controls_primary(&mut self) -> bool {
         self.check_pad_input(Button::ActionDown) || is_key_down(KeyCode::Space)
     }
