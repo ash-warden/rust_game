@@ -7,7 +7,7 @@ use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::{RESOURCE_MANAGER, get_text};
 use crate::traits_for_obj::Obj;
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
@@ -39,10 +39,7 @@ impl GameState for SaveGameState {
 
         stars.extend(stars_file.iter().cloned());
 
-        let dialog_text = {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.get_text("save_dialog")
-        };
+        let dialog_text = get_text("save_dialog");
 
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
@@ -150,18 +147,9 @@ impl GameState for LevelState {
 
         //pausing
         {
-            let pause_text = {
-                let mut res = RESOURCE_MANAGER.lock().unwrap();
-                res.get_text("pause")
-            };
-            let resume_text = {
-                let mut res = RESOURCE_MANAGER.lock().unwrap();
-                res.get_text("resume")
-            };
-            let quit_text = {
-                let mut res = RESOURCE_MANAGER.lock().unwrap();
-                res.get_text("quit")
-            };
+            let pause_text = get_text("pause");
+            let resume_text = get_text("resume");
+            let quit_text = get_text("quit");
 
             let pause_menu_pos = menu_centre_pos(6, 3);
             let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);

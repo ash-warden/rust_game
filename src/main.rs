@@ -1,7 +1,7 @@
 use crate::cutscene::CutsceneState;
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NewGameState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::resources::{RESOURCE_MANAGER, load_all_assets};
+use crate::resources::{RESOURCE_MANAGER, get_text, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
@@ -57,14 +57,8 @@ async fn main() {
     let load_state = LoadSaveState::new();
     let new_game_state = NewGameState::new();
 
-    let new_game_text = {
-        let mut res = RESOURCE_MANAGER.lock().unwrap();
-        res.get_text("new_game")
-    };
-    let load_game_text = {
-        let mut res = RESOURCE_MANAGER.lock().unwrap();
-        res.get_text("load_file")
-    };
+    let new_game_text = get_text("new_game");
+    let load_game_text = get_text("load_file");
 
     let menu_pos = menu_centre_pos(11, 3);
     let mut menu = Menu::new(menu_pos.x, menu_pos.y);

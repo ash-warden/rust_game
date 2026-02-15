@@ -13,7 +13,7 @@ use crate::{
     game_state::{MenuState, StateTransition},
     level_state::SaveGameState,
     menu::{Menu, MenuItem, menu_centre_pos},
-    resources::RESOURCE_MANAGER,
+    resources::{RESOURCE_MANAGER, get_text},
     traits_for_obj::{FileToInGame, Obj},
 };
 
@@ -45,18 +45,9 @@ impl Obj for Checkpoint {
     }
 
     fn interact(&self) -> StateTransition {
-        let save_game_text = {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.get_text("save_game")
-        };
-        let yes_text = {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.get_text("yes")
-        };
-        let no_text = {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.get_text("no")
-        };
+        let save_game_text = get_text("save_game");
+        let yes_text = get_text("yes");
+        let no_text = get_text("no");
 
         println!("{}", "interacting with checkpoint");
         let save_game_state = SaveGameState::new(self);

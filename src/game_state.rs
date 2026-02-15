@@ -2,7 +2,7 @@ use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::{RESOURCE_MANAGER, get_text};
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use macroquad::math::{i32, ivec2, vec2};
 use serde::{Deserialize, Serialize};
@@ -76,10 +76,7 @@ impl LoadSaveState {
 
 impl GameState for LoadSaveState {
     fn update(&mut self) -> StateTransition {
-        let dialog_text = {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.get_text("load_dialog")
-        };
+        let dialog_text = get_text("load_dialog");
 
         use rfd::FileDialog;
 

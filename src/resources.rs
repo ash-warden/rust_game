@@ -74,7 +74,7 @@ impl Resources {
         self.text_strings.insert(key, text);
     }
 
-    pub fn get_text(&mut self, key: &str) -> String {
+    fn get_text(&mut self, key: &str) -> String {
         if let Some(text) = self.text_strings.get(key) {
             text.to_string()
         } else {
@@ -165,6 +165,14 @@ pub async fn load_all_assets() {
         .unwrap();
     missing_texture.set_filter(macroquad::texture::FilterMode::Nearest);
     res.insert_texture("missing".to_string(), missing_texture);
+}
+
+pub fn get_text(key: &str) -> String {
+    let dialog_text = {
+        let mut res = RESOURCE_MANAGER.lock().unwrap();
+        res.get_text(key)
+    };
+    dialog_text
 }
 
 pub struct RoomObjects {
