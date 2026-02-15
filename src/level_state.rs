@@ -59,7 +59,7 @@ impl GameState for SaveGameState {
         if let Some(path) = file {
             let json_data = serde_json::to_string_pretty(&new_save).unwrap();
             println!("{}", path.display());
-            fs::write(path, json_data);
+            let _ = fs::write(path, json_data);
         }
         StateTransition::Pop(2)
     }
@@ -246,7 +246,7 @@ impl GameState for LevelState {
             DirectionToMove::None => unreachable!(),
         };
 
-        let new_level = format!(
+        let new_room = format!(
             "{}_{}_{}",
             self.area,
             self.room.x_coord + offset.x,
@@ -260,10 +260,10 @@ impl GameState for LevelState {
         };
 
         // Load new LevelState
-        match LevelState::build(&new_level, player_info) {
+        match LevelState::build(&new_room, player_info) {
             Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
             Err(err) => {
-                eprintln!("Failed to load level state \"{}\": {err}", &new_level);
+                eprintln!("Failed to load level state \"{}\": {err}", &new_room);
                 std::process::exit(1);
             }
         }
@@ -275,19 +275,19 @@ impl GameState for LevelState {
         let mut x = 0; //x coord
         let mut y = 0; //y coord
 
-        let level = &self.room;
+        let room = &self.room;
 
-        let map_width = level.map_dimensions.x;
-        let map_height = level.map_dimensions.y;
+        let map_width = room.map_dimensions.x;
+        let map_height = room.map_dimensions.y;
 
-        let t_size = level.tile_size as f32;
+        let t_size = room.tile_size as f32;
 
         while y < map_height {
             //column
             while x < map_width {
                 //row
                 let res = RESOURCE_MANAGER.lock().unwrap();
-                let tex = res.get_texture(&level.tile_image_name);
+                let tex = res.get_texture(&room.tile_image_name);
                 draw_texture_ex(
                     tex,
                     x as f32 * t_size,
@@ -296,8 +296,8 @@ impl GameState for LevelState {
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
-                            level.get_tile_texture(i, self.current_frame).x * t_size,
-                            level.get_tile_texture(i, self.current_frame).y * t_size,
+                            room.get_tile_texture(i, self.current_frame).x * t_size,
+                            room.get_tile_texture(i, self.current_frame).y * t_size,
                             t_size,
                             t_size,
                         )),
@@ -305,7 +305,7 @@ impl GameState for LevelState {
                     },
                 );
                 x += 1;
-                if i >= level.tile_values.len() {
+                if i >= room.tile_values.len() {
                     println!("too many tiles to draw!");
                     break;
                 }

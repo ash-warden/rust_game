@@ -44,26 +44,6 @@ impl GameState for MenuState {
         true
     }
 }
-// this is just for testing. it does nothing.
-#[derive(Clone)]
-pub struct NothingState {}
-
-impl NothingState {
-    pub fn new() -> Self {
-        NothingState {}
-    }
-}
-
-impl GameState for NothingState {
-    fn update(&mut self) -> StateTransition {
-        println!("nonsense!");
-        StateTransition::Pop(1)
-    }
-    fn draw(&self) {}
-    fn transparent(&self) -> bool {
-        true
-    }
-}
 
 #[derive(Clone)]
 pub struct LoadSaveState {}

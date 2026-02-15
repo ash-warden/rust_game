@@ -1,7 +1,7 @@
 // for level info, such as tiles etc. other stuff handled in level state (level_state.rs)
 
 use crate::{coords_to_index, index_to_coords};
-use macroquad::math::{IVec2, Vec2, ivec2, vec2};
+use macroquad::math::{IVec2, Vec2, ivec2};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;

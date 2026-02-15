@@ -122,7 +122,7 @@ pub async fn load_all_assets() {
                     res.insert_room(key.to_string(), Arc::new(level));
                     println!("{}", key);
                 }
-                "roj" => {
+                "roomobj" => {
                     //"room object json". One file per area
                     let objects_file = fs::read_to_string(path_str);
                     let objects: RoomObjectsFromFile =
@@ -140,7 +140,7 @@ pub async fn load_all_assets() {
 
                     res.insert_object(area_name.to_string(), Arc::new(room_objects));
                 }
-                "gtj" => {
+                "gametext" => {
                     //game text json
                     let text_file = fs::read_to_string(path_str).unwrap();
                     let map: HashMap<String, String> = serde_json::from_str(&text_file).unwrap();

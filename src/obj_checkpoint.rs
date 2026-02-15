@@ -13,7 +13,7 @@ use crate::{
     game_state::{MenuState, StateTransition},
     level_state::SaveGameState,
     menu::{Menu, MenuItem, menu_centre_pos},
-    resources::{RESOURCE_MANAGER, get_text},
+    resources::get_text,
     traits_for_obj::{FileToInGame, Obj},
 };
 
