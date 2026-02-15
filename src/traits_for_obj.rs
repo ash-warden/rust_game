@@ -12,7 +12,7 @@ pub trait FileToInGame {
 pub trait Obj: Send + Sync {
     fn get_pos(&self) -> Vec2;
     fn get_size(&self) -> Vec2;
-    fn get_hud_text(&self) -> &str;
+    fn get_hud_text(&self) -> String;
     fn get_tex(&self) -> &str;
     fn is_visible(&self) -> bool;
     fn contact(&self) -> StateTransition;

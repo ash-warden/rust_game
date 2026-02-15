@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     current_game::CURRENT_GAME_MANAGER,
     game_state::StateTransition,
+    resources::get_text,
     traits_for_obj::{FileToInGame, Obj},
 };
 
@@ -55,10 +56,10 @@ impl Obj for StarInGame {
         self.size
     }
 
-    fn get_hud_text(&self) -> &str {
+    fn get_hud_text(&self) -> String {
         match self.is_collected() {
-            true => "",
-            false => "Star collected!",
+            true => "".to_string(),
+            false => get_text("obj_star_collected"),
         }
     }
 

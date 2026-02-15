@@ -12,6 +12,7 @@ use crate::{
     game_state::StateTransition,
     level_state::LevelState,
     player::{PlayerInitialInfo, PlayerMovementState},
+    resources::get_text,
     traits_for_obj::{FileToInGame, Obj},
 };
 
@@ -89,8 +90,8 @@ impl Obj for DoorInGame {
     fn get_size(&self) -> Vec2 {
         self.size
     }
-    fn get_hud_text(&self) -> &str {
-        "Press KEY to\nenter"
+    fn get_hud_text(&self) -> String {
+        get_text("obj_door_hud")
     }
 
     fn get_tex(&self) -> &str {

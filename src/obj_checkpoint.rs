@@ -73,8 +73,8 @@ impl Obj for Checkpoint {
     fn get_size(&self) -> Vec2 {
         self.size
     }
-    fn get_hud_text(&self) -> &str {
-        "Health rest-\nored. Press\nKEY to save"
+    fn get_hud_text(&self) -> String {
+        get_text("obj_check_hud")
     }
 
     fn get_tex(&self) -> &str {

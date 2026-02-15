@@ -168,11 +168,11 @@ pub async fn load_all_assets() {
 }
 
 pub fn get_text(key: &str) -> String {
-    let dialog_text = {
+    let text = {
         let mut res = RESOURCE_MANAGER.lock().unwrap();
         res.get_text(key)
     };
-    dialog_text
+    text
 }
 
 pub struct RoomObjects {

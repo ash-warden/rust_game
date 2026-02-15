@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use crate::game_state::{MenuState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
+use crate::resources::get_text;
 use crate::traits_for_obj::{FileToInGame, Obj};
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 use serde::{Deserialize, Serialize};
@@ -62,8 +63,8 @@ impl Obj for NpcInGame {
         self.size
     }
 
-    fn get_hud_text(&self) -> &str {
-        "Press KEY to\ntalk"
+    fn get_hud_text(&self) -> String {
+        get_text("obj_npc_hud")
     }
 
     fn get_tex(&self) -> &str {
