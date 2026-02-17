@@ -51,7 +51,7 @@ fn draw_health_text(pos: Vec2, transparency: f32) {
     write_text(
         "HEALTH",
         vec2(pos.x, pos.y + 16.),
-        Color::new(0.3, 0.3, 0.3, transparency),
+        Color::new(1., 1., 1., transparency),
         "font_bold.png",
     );
 }
@@ -172,7 +172,7 @@ pub fn draw_hud(bottom: bool, full: bool, map_pixels: &Vec<Vec<MapPixelType>>, h
         vec2(152., 24.)
     };
 
-    let transparency = if full { 0.8 } else { 0.6 };
+    let transparency = if full { 1. } else { 0.6 };
     draw_health_bar(health_pos, transparency);
     if full {
         draw_health_text(health_pos, transparency);

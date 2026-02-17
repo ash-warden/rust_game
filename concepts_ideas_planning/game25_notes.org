@@ -2,18 +2,22 @@ NEXT THING TO DO:
  - animation (tiles done, need to do objects/player)
  - cutscenes/more complex npc
  - "events/stages" - kinda just for beginning/intro of game.
- - new style graphics/tiles
+ - show area a door leads to above it
 
-CUTSCENES:
- - still images
- - a line of text that goes with the image
- - time to stay on screen
+OBJ/PLAYER ANIMATIONS:
+ - copy from level_state?
+ - level state can give cur frame to the obj!!!
+ - player/obj says what row to show
+ - how to store frames?
+   - player needs diff animations for running/jumping etc
+   - make "grid" of frames?
+     - column is player's state, row is frames of animation
+   - do this for objects too. even if it ends up being used
+      rarely at least make it possible
 
- - Two classes/structs:
-   - Cutscene state
-     - 
-   - Cutscene slide
-let test_cut = Box::new(CutsceneState::new("intro"));
+PUZZLES/MOVING/CHANGING THINGS IN AREAS:
+ - store in current game. reset each time travelling through
+   a door
 
 AUDIO
 

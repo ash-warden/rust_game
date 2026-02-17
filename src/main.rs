@@ -53,7 +53,6 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    clear_background(BLACK);
     load_all_assets().await;
     let load_state = LoadSaveState::new();
     let new_game_state = NewGameState::new();
@@ -112,14 +111,12 @@ async fn main() {
             ..Default::default()
         });
 
-        clear_background(YELLOW);
+        clear_background(GRAY);
 
         game_state_stack.update();
         game_state_stack.draw();
 
         set_default_camera();
-
-        clear_background(MAGENTA);
 
         //draw background tiles
         {
