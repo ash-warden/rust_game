@@ -7,7 +7,7 @@ use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
-use crate::resources::{RESOURCE_MANAGER, get_text};
+use crate::resources::{Resources, get_text};
 use crate::traits_for_obj::Obj;
 use macroquad::color::WHITE;
 use macroquad::math::{IVec2, Rect, vec2};
@@ -91,7 +91,7 @@ impl LevelState {
         let (area, room_name) = level.split_once('_').unwrap();
         // println!("{}", room_name);
         let map_pixels = get_map_pixels(area, room_name);
-        let res = RESOURCE_MANAGER.lock()?;
+        let res = Resources::global();
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
             let area_objects = res.get_room_object(area).unwrap();
@@ -286,7 +286,7 @@ impl GameState for LevelState {
             //column
             while x < map_width {
                 //row
-                let res = RESOURCE_MANAGER.lock().unwrap();
+                let res = Resources::global();
                 let tex = res.get_texture(&room.tile_image_name);
                 draw_texture_ex(
                     tex,
@@ -316,7 +316,7 @@ impl GameState for LevelState {
         }
         for obj in &self.objects {
             if obj.is_visible() {
-                let res = RESOURCE_MANAGER.lock().unwrap();
+                let res = Resources::global();
                 let tex = res.get_texture(obj.get_tex());
                 draw_texture_ex(
                     tex,

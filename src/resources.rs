@@ -17,7 +17,6 @@ pub struct Resources {
     pub textures: HashMap<String, Texture2D>,
     pub text_strings: HashMap<String, String>,
     pub cutscenes: HashMap<String, Arc<Cutscene>>,
-    pub scale: f32,
     pub background_texture: Option<String>,
 }
 
@@ -29,7 +28,6 @@ impl Resources {
             rooms: HashMap::new(),
             room_objects: HashMap::new(),
             textures: HashMap::new(),
-            scale: 1.,
             background_texture: None,
             text_strings: HashMap::new(),
             cutscenes: HashMap::new(),
@@ -161,7 +159,7 @@ pub async fn load_all_assets() {
         .unwrap();
     missing_texture.set_filter(macroquad::texture::FilterMode::Nearest);
     res.insert_texture("missing".to_string(), missing_texture);
-    RESOURCE_MANAGER.set(res);
+    let _ = RESOURCE_MANAGER.set(res);
 }
 
 pub fn get_text(key: &str) -> &str {

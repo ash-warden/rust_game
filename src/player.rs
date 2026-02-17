@@ -1,7 +1,7 @@
 use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::level;
 use crate::player_functions::Direction;
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::Resources;
 use macroquad::math::{IVec2, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
@@ -74,7 +74,7 @@ impl Player {
     }
 
     pub fn draw(&self) {
-        let res = RESOURCE_MANAGER.lock().unwrap();
+        let res = Resources::global();
         let tex = res.get_texture("player.png");
         draw_texture_ex(
             tex,

@@ -10,7 +10,7 @@ use macroquad::{
 use crate::{
     SCREEN_SIZE,
     current_game::{CURRENT_GAME_MANAGER, MAX_HEALTH},
-    resources::RESOURCE_MANAGER,
+    resources::Resources,
     text::write_text,
 };
 
@@ -70,7 +70,7 @@ pub fn get_map_pixels(cur_area: &str, cur_room: &str) -> Vec<Vec<MapPixelType>> 
     );
     let mut map_pixels: Vec<Vec<MapPixelType>> = vec![];
     {
-        let res = RESOURCE_MANAGER.lock().unwrap();
+        let res = Resources::global();
         for y in ((cur_room_ints.y - 1)..=(cur_room_ints.y + 1)).rev() {
             for x in (cur_room_ints.x - 1)..=(cur_room_ints.x + 1) {
                 map_pixels.push(vec![]);

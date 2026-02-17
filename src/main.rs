@@ -1,7 +1,7 @@
 use crate::cutscene::CutsceneState;
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NewGameState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
-use crate::resources::{RESOURCE_MANAGER, get_text, load_all_assets};
+use crate::resources::{Resources, get_text, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
@@ -124,7 +124,7 @@ async fn main() {
         {
             let cols = (screen_width() / 32.).ceil() as i32;
             let rows = (screen_height() / 32.).ceil() as i32;
-            let res = RESOURCE_MANAGER.lock().unwrap();
+            let res = Resources::global();
             let tex = res.get_texture("s_back_test.png");
             for y in 0..rows {
                 for x in 0..cols {

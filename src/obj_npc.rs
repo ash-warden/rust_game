@@ -63,7 +63,7 @@ impl Obj for NpcInGame {
         self.size
     }
 
-    fn get_hud_text(&self) -> String {
+    fn get_hud_text(&self) -> &str {
         get_text("obj_npc_hud")
     }
 

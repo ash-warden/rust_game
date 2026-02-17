@@ -4,7 +4,7 @@ use macroquad::{
     texture::{DrawTextureParams, Texture2D, draw_texture_ex},
 };
 
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::Resources;
 
 pub fn write_text(text: &str, pos: Vec2, color: Color, font: &str) {
     let letter_size = vec2(16., 32.);
@@ -22,7 +22,7 @@ pub fn write_text(text: &str, pos: Vec2, color: Color, font: &str) {
                 y: row * letter_size.y,
             };
             {
-                let res = RESOURCE_MANAGER.lock().unwrap();
+                let res = Resources::global();
                 let tex: &Texture2D;
                 tex = res.get_texture(font);
                 let no_letters_in_row = 32;

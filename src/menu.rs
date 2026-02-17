@@ -1,7 +1,7 @@
 use crate::SCREEN_SIZE;
 use crate::controls::CONTROLS;
 use crate::game_state::StateTransition;
-use crate::resources::RESOURCE_MANAGER;
+use crate::resources::Resources;
 use crate::text::write_text;
 use macroquad::color::{BLUE, Color, WHITE, YELLOW};
 use macroquad::math::{Rect, Vec2, vec2};
@@ -73,7 +73,7 @@ impl Menu {
         }
         {
             //textures are in a 3 * 3 grid of 16 * 16 textures
-            let res = RESOURCE_MANAGER.lock().unwrap();
+            let res = Resources::global();
             let tex = res.get_texture("background.png");
             //corners
             //top left

@@ -2,7 +2,7 @@ use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
-use crate::resources::{RESOURCE_MANAGER, get_text};
+use crate::resources::get_text;
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use macroquad::math::{i32, ivec2, vec2};
 use serde::{Deserialize, Serialize};
@@ -102,8 +102,8 @@ impl GameState for LoadSaveState {
         }
 
         {
-            let mut res = RESOURCE_MANAGER.lock().unwrap();
-            res.scale = 1.;
+            // let mut res = Resources::global();
+            // res.scale = 1.;
         }
 
         let player_info = PlayerInitialInfo {

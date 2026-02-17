@@ -73,7 +73,7 @@ impl Obj for Checkpoint {
     fn get_size(&self) -> Vec2 {
         self.size
     }
-    fn get_hud_text(&self) -> String {
+    fn get_hud_text(&self) -> &str {
         get_text("obj_check_hud")
     }
 

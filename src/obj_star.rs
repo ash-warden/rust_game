@@ -56,9 +56,9 @@ impl Obj for StarInGame {
         self.size
     }
 
-    fn get_hud_text(&self) -> String {
+    fn get_hud_text(&self) -> &str {
         match self.is_collected() {
-            true => "".to_string(),
+            true => "",
             false => get_text("obj_star_collected"),
         }
     }

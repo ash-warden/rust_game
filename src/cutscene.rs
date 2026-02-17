@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     game_state::{GameState, StateTransition},
-    resources::RESOURCE_MANAGER,
+    resources::Resources,
     text::write_text,
 };
 
@@ -34,7 +34,7 @@ pub struct CutsceneState {
 
 impl CutsceneState {
     pub fn new(cutscene_name: &str) -> Self {
-        let res = RESOURCE_MANAGER.lock().unwrap();
+        let res = Resources::global();
         let cutscene = res.get_cutscene(cutscene_name).unwrap().clone();
         CutsceneState {
             cutscene,
@@ -60,7 +60,7 @@ impl GameState for CutsceneState {
 
     fn draw(&self) {
         {
-            let res = RESOURCE_MANAGER.lock().unwrap();
+            let res = Resources::global();
             let tex = res.get_texture(&self.cutscene.slides[self.cur_slide_no as usize].image_name);
             draw_texture_ex(
                 tex,
