@@ -9,7 +9,7 @@ use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
 use crate::resources::{Resources, get_text};
 use crate::traits_for_obj::Obj;
-use macroquad::color::WHITE;
+use macroquad::color::{BLUE, Color, WHITE, YELLOW};
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use rfd::FileDialog;
@@ -119,6 +119,12 @@ impl LevelState {
             Err("Level not found in resources".into())
         }
     }
+    fn area_colour(&self) -> Color {
+        match self.area.as_str() {
+            "a1" => Color::from_hex(0x5398eb),
+            _ => WHITE,
+        }
+    }
 }
 
 #[derive(PartialEq)]
@@ -135,7 +141,7 @@ impl GameState for LevelState {
         // println!("{}", self.area);
         self.hud_hint_text = String::from("");
 
-        //update the animation time
+        //update the animation time ASSUMES THERE ARE 12 FRAMES
         self.time_since_frame_change += get_frame_time();
         if self.time_since_frame_change > 1. / 12. {
             self.time_since_frame_change = 0.;
@@ -292,7 +298,7 @@ impl GameState for LevelState {
                     tex,
                     x as f32 * t_size,
                     y as f32 * t_size,
-                    WHITE,
+                    self.area_colour(),
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(

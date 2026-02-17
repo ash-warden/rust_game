@@ -1,8 +1,8 @@
 NEXT THING TO DO:
- - load text from a file - finish replacing + make it more efficient
  - animation (tiles done, need to do objects/player)
  - cutscenes/more complex npc
  - "events/stages" - kinda just for beginning/intro of game.
+ - new style graphics/tiles
 
 CUTSCENES:
  - still images

@@ -53,6 +53,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    clear_background(BLACK);
     load_all_assets().await;
     let load_state = LoadSaveState::new();
     let new_game_state = NewGameState::new();
