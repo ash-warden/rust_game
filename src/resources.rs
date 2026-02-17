@@ -3,10 +3,10 @@ use crate::level::Room;
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use crate::traits_for_obj::Obj;
 use macroquad::prelude::Texture2D;
-use once_cell::sync::Lazy;
+use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::fs;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use walkdir::WalkDir;
 
 const ERROR_TEXT: &str = "ERROR, STRING NOT FOUND";
@@ -21,6 +21,8 @@ pub struct Resources {
     pub background_texture: Option<String>,
 }
 
+pub static RESOURCE_MANAGER: OnceCell<Resources> = OnceCell::new();
+
 impl Resources {
     pub fn new() -> Self {
         Self {
@@ -32,6 +34,10 @@ impl Resources {
             text_strings: HashMap::new(),
             cutscenes: HashMap::new(),
         }
+    }
+
+    pub fn global() -> &'static Resources {
+        RESOURCE_MANAGER.get().expect("resources not initialised")
     }
 
     pub fn get_texture(&self, key: &str) -> &Texture2D {
@@ -47,11 +53,7 @@ impl Resources {
     }
 
     pub fn get_room(&self, key: &str) -> Option<Arc<Room>> {
-        if self.rooms.contains_key(key) {
-            self.rooms.get(key).cloned()
-        } else {
-            None
-        }
+        self.rooms.get(key).cloned()
     }
 
     pub fn get_room_object(&self, key: &str) -> Option<Arc<RoomObjects>> {
@@ -74,11 +76,11 @@ impl Resources {
         self.text_strings.insert(key, text);
     }
 
-    fn get_text(&mut self, key: &str) -> String {
+    fn get_text(&self, key: &str) -> &str {
         if let Some(text) = self.text_strings.get(key) {
-            text.to_string()
+            text
         } else {
-            ERROR_TEXT.to_string()
+            ERROR_TEXT
         }
     }
 
@@ -87,18 +89,12 @@ impl Resources {
     }
 
     pub fn get_cutscene(&self, key: &str) -> Option<Arc<Cutscene>> {
-        if self.cutscenes.contains_key(key) {
-            self.cutscenes.get(key).cloned()
-        } else {
-            None
-        }
+        self.cutscenes.get(key).cloned()
     }
 }
 
-pub static RESOURCE_MANAGER: Lazy<Mutex<Resources>> = Lazy::new(|| Mutex::new(Resources::new()));
-
 pub async fn load_all_assets() {
-    let mut res = RESOURCE_MANAGER.lock().unwrap();
+    let mut res = Resources::new();
 
     for entry in WalkDir::new("assets") {
         let entry = entry.unwrap();
@@ -165,11 +161,12 @@ pub async fn load_all_assets() {
         .unwrap();
     missing_texture.set_filter(macroquad::texture::FilterMode::Nearest);
     res.insert_texture("missing".to_string(), missing_texture);
+    RESOURCE_MANAGER.set(res);
 }
 
-pub fn get_text(key: &str) -> String {
+pub fn get_text(key: &str) -> &str {
     let text = {
-        let mut res = RESOURCE_MANAGER.lock().unwrap();
+        let res = Resources::global();
         res.get_text(key)
     };
     text
