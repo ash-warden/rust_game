@@ -1,3 +1,4 @@
+use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
@@ -83,7 +84,7 @@ impl GameState for LoadSaveState {
             area = save.area;
             checkpoint = save.checkpoint;
 
-            let objects_path = format!("assets/maps/{}_objects.roj", area);
+            let objects_path = format!("assets/maps/{}_objects.roomobj", area);
             let objects_file = fs::read_to_string(objects_path);
             let objects: RoomObjectsFromFile =
                 serde_json::from_str(&objects_file.unwrap().as_str()).expect("Error 2");
@@ -132,6 +133,8 @@ pub struct NewGameState {}
 
 impl NewGameState {
     pub fn new() -> Self {
+        let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+        cur_game.reset();
         NewGameState {}
     }
 }

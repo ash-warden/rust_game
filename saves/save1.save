@@ -1,5 +1,10 @@
 {
   "area": "a1",
   "checkpoint": 1,
-  "stars_collected": []
+  "stars_collected": [
+    [
+      "a1",
+      0
+    ]
+  ]
 }

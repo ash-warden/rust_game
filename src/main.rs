@@ -55,7 +55,7 @@ fn window_conf() -> Conf {
 async fn main() {
     load_all_assets().await;
     let load_state = LoadSaveState::new();
-    let new_game_state = NewGameState::new();
+    // let new_game_state = NewGameState::new();
 
     let new_game_text = get_text("new_game");
     let load_game_text = get_text("load_file");
@@ -66,7 +66,7 @@ async fn main() {
     menu.add_item(title);
     let start_game_new = MenuItem::new(
         &new_game_text,
-        move || StateTransition::Push(Box::new(new_game_state.clone())),
+        move || StateTransition::Push(Box::new(NewGameState::new().clone())),
         true,
     );
     menu.add_item(start_game_new);

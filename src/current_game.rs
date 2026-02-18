@@ -16,6 +16,11 @@ impl CurrentGame {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.health = MAX_HEALTH;
+        self.stars_collected.clear();
+    }
+
     pub fn reduce_health(&mut self, damage: u32) {
         if self.health < damage {
             self.health = MAX_HEALTH;
