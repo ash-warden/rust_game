@@ -330,6 +330,12 @@ impl GameState for LevelState {
                     obj.get_pos().y,
                     WHITE,
                     DrawTextureParams {
+                        source: Some(Rect::new(
+                            self.current_frame as f32 * obj.get_size().x,
+                            0.,
+                            obj.get_size().x,
+                            obj.get_size().y,
+                        )),
                         ..Default::default()
                     },
                 );
