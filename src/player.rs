@@ -2,7 +2,7 @@ use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::level;
 use crate::player_functions::Direction;
 use crate::resources::Resources;
-use macroquad::math::{IVec2, Vec2, vec2};
+use macroquad::math::{IVec2, Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, WHITE, draw_texture_ex};
 use std::sync::Arc;
 
@@ -73,9 +73,20 @@ impl Player {
         )
     }
 
-    pub fn draw(&self) {
+    fn get_anim_for_state(&self) -> i32 {
+        match self.state {
+            PlayerMovementState::Standing => 0,
+            PlayerMovementState::Walking => 0,
+            PlayerMovementState::Running => 0,
+            PlayerMovementState::Jumping => 1,
+            PlayerMovementState::Falling => 2,
+            PlayerMovementState::Climbing => 0,
+        }
+    }
+
+    pub fn draw(&self, frame: i32) {
         let res = Resources::global();
-        let tex = res.get_texture("player.png");
+        let tex = res.get_texture("player_a.png");
         draw_texture_ex(
             tex,
             self.position.x,
@@ -84,6 +95,13 @@ impl Player {
             DrawTextureParams {
                 flip_x: !self.facing_right,
                 dest_size: Some(vec2(self.actual_size.x as f32, self.actual_size.y as f32)),
+                source: Some(Rect::new(
+                    (frame * self.actual_size.x) as f32,
+                    (self.get_anim_for_state() * self.actual_size.y) as f32,
+                    self.actual_size.x as f32,
+                    self.actual_size.y as f32,
+                )),
+
                 ..Default::default()
             },
         );

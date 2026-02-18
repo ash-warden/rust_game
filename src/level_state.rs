@@ -337,7 +337,7 @@ impl GameState for LevelState {
         }
 
         //draw player
-        self.player.draw();
+        self.player.draw(self.current_frame as i32);
         //draw the HUD
         let player_near_top: bool;
         if self.player.position.y < (240. - (self.player.actual_size.y as f32 / 2.)) {
