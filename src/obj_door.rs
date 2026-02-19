@@ -5,14 +5,19 @@
 
 use std::sync::Arc;
 
-use macroquad::math::{IVec2, Vec2, ivec2, vec2};
+use macroquad::{
+    color::Color,
+    math::{IVec2, Rect, Vec2, ivec2, vec2},
+    texture::{DrawTextureParams, draw_texture_ex},
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     game_state::StateTransition,
-    level_state::LevelState,
+    level_state::{LevelState, area_colour},
     player::{PlayerInitialInfo, PlayerMovementState},
-    resources::get_text,
+    resources::{Resources, get_text},
+    text::write_text,
     traits_for_obj::{FileToInGame, Obj},
 };
 
@@ -100,6 +105,35 @@ impl Obj for DoorInGame {
 
     fn is_visible(&self) -> bool {
         self.visible
+    }
+
+    fn draw(&self, current_frame: f32) {
+        if self.is_visible() {
+            let dest_color = Color::from_vec(area_colour(&self.destination.area).to_vec() * 1.7);
+            let res = Resources::global();
+            let tex = res.get_texture(self.get_tex());
+            draw_texture_ex(
+                tex,
+                self.get_pos().x,
+                self.get_pos().y,
+                dest_color,
+                DrawTextureParams {
+                    source: Some(Rect::new(
+                        current_frame * self.get_size().x,
+                        0.,
+                        self.get_size().x,
+                        self.get_size().y,
+                    )),
+                    ..Default::default()
+                },
+            );
+            write_text(
+                &self.destination.area,
+                self.get_pos() - vec2(0., 32.),
+                dest_color,
+                "font.png",
+            );
+        }
     }
 }
 

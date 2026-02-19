@@ -9,7 +9,7 @@ use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
 use crate::resources::{Resources, get_text};
 use crate::traits_for_obj::Obj;
-use macroquad::color::{BLUE, Color, WHITE, YELLOW};
+use macroquad::color::{Color, WHITE};
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use rfd::FileDialog;
@@ -119,11 +119,12 @@ impl LevelState {
             Err("Level not found in resources".into())
         }
     }
-    fn area_colour(&self) -> Color {
-        match self.area.as_str() {
-            "a1" => Color::from_hex(0x5398eb),
-            _ => WHITE,
-        }
+}
+
+pub fn area_colour(area: &str) -> Color {
+    match area {
+        "a1" => Color::from_hex(0x5398eb),
+        _ => WHITE,
     }
 }
 
@@ -292,7 +293,7 @@ impl GameState for LevelState {
                     tex,
                     x as f32 * t_size,
                     y as f32 * t_size,
-                    self.area_colour(),
+                    area_colour(&self.area),
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
@@ -314,26 +315,10 @@ impl GameState for LevelState {
             x = 0;
             y += 1;
         }
+
+        let current_frame_f = self.current_frame as f32;
         for obj in &self.objects {
-            if obj.is_visible() {
-                let res = Resources::global();
-                let tex = res.get_texture(obj.get_tex());
-                draw_texture_ex(
-                    tex,
-                    obj.get_pos().x,
-                    obj.get_pos().y,
-                    WHITE,
-                    DrawTextureParams {
-                        source: Some(Rect::new(
-                            self.current_frame as f32 * obj.get_size().x,
-                            0.,
-                            obj.get_size().x,
-                            obj.get_size().y,
-                        )),
-                        ..Default::default()
-                    },
-                );
-            }
+            obj.draw(current_frame_f);
         }
 
         //draw player

@@ -1,9 +1,6 @@
 NEXT THING TO DO:
- - animation (tiles done, need to do objects/player)
  - cutscenes/more complex npc
  - "events/stages" - kinda just for beginning/intro of game.
- - show area a door leads to above it
-- fix new game to reset stars etc
 
 OBJ/PLAYER ANIMATIONS:
  - copy from level_state?
