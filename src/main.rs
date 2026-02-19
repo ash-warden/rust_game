@@ -25,19 +25,8 @@ mod text;
 mod traits_for_obj;
 
 const SCREEN_SIZE: IVec2 = ivec2(640, 480);
-
-//convert an index to coordinates, e.g. for tile textures in a grid
-fn index_to_coords(n: i32, width: i32) -> IVec2 {
-    let x = n % width;
-    let y = n / width;
-    ivec2(x, y)
-}
-
-fn coords_to_index(x: i32, y: i32, width: i32) -> i32 {
-    let xi = x;
-    let yi = y;
-    yi * width + xi
-}
+const SCREEN_SIZE_F: Vec2 = vec2(SCREEN_SIZE.x as f32, SCREEN_SIZE.y as f32);
+const SCREEN_SIZE_U: UVec2 = uvec2(SCREEN_SIZE.x as u32, SCREEN_SIZE.y as u32);
 
 fn window_conf() -> Conf {
     Conf {
@@ -54,8 +43,6 @@ fn window_conf() -> Conf {
 #[macroquad::main(window_conf)]
 async fn main() {
     load_all_assets().await;
-    let load_state = LoadSaveState::new();
-    // let new_game_state = NewGameState::new();
 
     let new_game_text = get_text("new_game");
     let load_game_text = get_text("load_file");
@@ -72,7 +59,7 @@ async fn main() {
     menu.add_item(start_game_new);
     let start_game_load = MenuItem::new(
         &load_game_text,
-        move || StateTransition::Push(Box::new(load_state.clone())),
+        move || StateTransition::Push(Box::new(LoadSaveState::new().clone())),
         true,
     );
     menu.add_item(start_game_load);
@@ -89,10 +76,7 @@ async fn main() {
 
     build_textures_atlas();
 
-    const BASE_W: f32 = SCREEN_SIZE.x as f32;
-    const BASE_H: f32 = SCREEN_SIZE.y as f32;
-
-    let render_target = render_target(BASE_W as u32, BASE_H as u32);
+    let render_target = render_target(SCREEN_SIZE_U.x, SCREEN_SIZE_U.y);
     render_target.texture.set_filter(FilterMode::Nearest);
 
     loop {
@@ -100,14 +84,14 @@ async fn main() {
         let w = screen_width();
         let h = screen_height();
 
-        if w < BASE_W || h < BASE_H {
-            set_window_size(BASE_W as u32, BASE_H as u32);
+        if w < SCREEN_SIZE_F.x || h < SCREEN_SIZE_F.y {
+            set_window_size(SCREEN_SIZE_U.x, SCREEN_SIZE_U.y);
         }
 
         set_camera(&Camera2D {
             render_target: Some(render_target.clone()),
-            zoom: vec2(2.0 / BASE_W, 2.0 / BASE_H),
-            target: vec2(BASE_W / 2.0, BASE_H / 2.0),
+            zoom: vec2(2.0 / SCREEN_SIZE_F.x, 2.0 / SCREEN_SIZE_F.y),
+            target: vec2(SCREEN_SIZE_F.x / 2.0, SCREEN_SIZE_F.y / 2.0),
             ..Default::default()
         });
 
@@ -142,10 +126,13 @@ async fn main() {
         let w = screen_width();
         let h = screen_height();
 
-        let scale = ((w / BASE_W).floor().min((h / BASE_H).floor()) as i32).max(1) as f32;
+        let scale = ((w / SCREEN_SIZE_F.x)
+            .floor()
+            .min((h / SCREEN_SIZE_F.y).floor()) as i32)
+            .max(1) as f32;
 
-        let dest_w = (BASE_W * scale).round();
-        let dest_h = (BASE_H * scale).round();
+        let dest_w = (SCREEN_SIZE_F.x * scale).round();
+        let dest_h = (SCREEN_SIZE_F.y * scale).round();
 
         let x = ((w - dest_w) / 2.0).round();
         let y = ((h - dest_h) / 2.0).round();
@@ -160,7 +147,6 @@ async fn main() {
                 ..Default::default()
             },
         );
-        //println!("frame time: {}", get_frame_time());
         next_frame().await;
     }
 }

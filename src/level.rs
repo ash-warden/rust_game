@@ -1,10 +1,22 @@
 // for level info, such as tiles etc. other stuff handled in level state (level_state.rs)
 
-use crate::{coords_to_index, index_to_coords};
 use macroquad::math::{IVec2, Vec2, ivec2};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+
+//convert an index to coordinates, e.g. for tile textures in a grid
+fn index_to_coords(n: i32, width: i32) -> IVec2 {
+    let x = n % width;
+    let y = n / width;
+    ivec2(x, y)
+}
+
+fn coords_to_index(x: i32, y: i32, width: i32) -> i32 {
+    let xi = x;
+    let yi = y;
+    yi * width + xi
+}
 
 // all these serialize/deserialize ones are for representing the tiled map json files
 #[derive(Serialize, Deserialize)]

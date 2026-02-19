@@ -178,16 +178,16 @@ impl GameState for LevelState {
         let map_width = (self.room.map_dimensions.x * self.room.tile_size) as f32;
         let map_height = (self.room.map_dimensions.y * self.room.tile_size) as f32;
 
-        let p_size_x = self.player.actual_size.x;
-        let p_size_y = self.player.actual_size.y;
+        let p_size_x = self.player.actual_size.x as f32;
+        let p_size_y = self.player.actual_size.y as f32;
 
-        let direction = if self.player.position.x < -p_size_x as f32 / 2. {
+        let direction = if self.player.position.x < -p_size_x / 2. {
             DirectionToMove::Left
-        } else if self.player.position.x > map_width - p_size_x as f32 / 2. {
+        } else if self.player.position.x > map_width - p_size_x / 2. {
             DirectionToMove::Right
-        } else if self.player.position.y < -p_size_y as f32 / 2. {
+        } else if self.player.position.y < -p_size_y / 2. {
             DirectionToMove::Up
-        } else if self.player.position.y > map_height - p_size_y as f32 / 2. {
+        } else if self.player.position.y > map_height - p_size_y / 2. {
             DirectionToMove::Down
         } else {
             DirectionToMove::None
@@ -228,25 +228,19 @@ impl GameState for LevelState {
 
         let (new_player_pos, offset) = match direction {
             DirectionToMove::Left => (
-                vec2(
-                    map_width - p_size_x as f32 / 2. - 1.,
-                    self.player.position.y,
-                ),
+                vec2(map_width - p_size_x / 2. - 1., self.player.position.y),
                 IVec2::new(-1, 0),
             ),
             DirectionToMove::Right => (
-                vec2(-p_size_x as f32 / 2. + 1., self.player.position.y - 1.),
+                vec2(-p_size_x / 2. + 1., self.player.position.y - 1.),
                 IVec2::new(1, 0),
             ),
             DirectionToMove::Up => (
-                vec2(
-                    self.player.position.x,
-                    map_height - p_size_y as f32 / 2. - 1.,
-                ),
+                vec2(self.player.position.x, map_height - p_size_y / 2. - 1.),
                 IVec2::new(0, 1),
             ),
             DirectionToMove::Down => (
-                vec2(self.player.position.x, -p_size_y as f32 / 2. + 1.),
+                vec2(self.player.position.x, -p_size_y / 2. + 1.),
                 IVec2::new(0, -1),
             ),
             DirectionToMove::None => unreachable!(),
