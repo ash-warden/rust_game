@@ -18,11 +18,11 @@
   "npcs": [
     {
       "id": 0,
-      "name": "Test2",
+      "name": "Test1",
       "room_x": 0,
       "room_y": 0,
       "pos_x": 3,
-      "pos_y": 11
+      "pos_y": 3
     }
   ],
   "doors": [

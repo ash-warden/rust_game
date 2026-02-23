@@ -3,6 +3,11 @@ use std::{collections::HashSet, sync::Mutex};
 
 pub const MAX_HEALTH: u32 = 10;
 
+pub enum GameStages {
+    Day1,
+    Evening,
+    Normal1,
+}
 pub struct CurrentGame {
     pub health: u32,
     pub stars_collected: HashSet<(String, i32)>,

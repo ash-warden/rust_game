@@ -16,6 +16,7 @@ pub struct Resources {
     pub room_objects: HashMap<String, Arc<RoomObjects>>,
     pub textures: HashMap<String, Texture2D>,
     pub text_strings: HashMap<String, String>,
+    pub npc_dialog: HashMap<String, Vec<String>>,
     pub cutscenes: HashMap<String, Arc<Cutscene>>,
     pub background_texture: Option<String>,
 }
@@ -30,6 +31,7 @@ impl Resources {
             textures: HashMap::new(),
             background_texture: None,
             text_strings: HashMap::new(),
+            npc_dialog: HashMap::new(),
             cutscenes: HashMap::new(),
         }
     }
@@ -80,6 +82,14 @@ impl Resources {
         } else {
             ERROR_TEXT
         }
+    }
+
+    pub fn insert_npc_dialog(&mut self, key: String, dialog: Vec<String>) {
+        self.npc_dialog.insert(key, dialog);
+    }
+
+    pub fn get_npc_dialog(&self, key: &str) -> Option<Vec<String>> {
+        self.npc_dialog.get(key).cloned()
     }
 
     pub fn insert_cutscene(&mut self, key: String, cutscene: Arc<Cutscene>) {
@@ -142,6 +152,16 @@ pub async fn load_all_assets() {
                         res.insert_text(key, value);
                     }
                     println!("{:?}", res.text_strings);
+                }
+                "npctext" => {
+                    //npc text json
+                    let text_file = fs::read_to_string(path_str).unwrap();
+                    let map: HashMap<String, Vec<String>> =
+                        serde_json::from_str(&text_file).unwrap();
+                    for (key, value) in map {
+                        res.insert_npc_dialog(key, value);
+                    }
+                    println!("{:?}", res.npc_dialog);
                 }
                 "cutscene" => {
                     let file = fs::read_to_string(path_str).unwrap();

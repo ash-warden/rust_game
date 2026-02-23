@@ -1,6 +1,16 @@
 NEXT THING TO DO:
- - cutscenes/more complex npc
- - "events/stages" - kinda just for beginning/intro of game.
+ - cutscenes/more complex npc FINISH THIS!!!
+
+CUTSCENE:
+ - menu is too simple
+ - needs to allow:
+   - multiple lines of dialogue
+   - any function to be called in the middle of conversation
+   - need a new state called dialogue state
+     - one function to call is probably sufficient?
+     - can have a list of lines to go through. inc a item saying to
+       do the function
+     - keep track of current line, and go forward when key pressed
 
 OBJ/PLAYER ANIMATIONS:
  - copy from level_state?
