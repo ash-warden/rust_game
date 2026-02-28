@@ -1,7 +1,7 @@
 NEXT THING TO DO:
  - cutscenes/more complex npc FINISH THIS!!!
 
-CUTSCENE:
+NPC:
  - menu is too simple
  - needs to allow:
    - multiple lines of dialogue
@@ -11,6 +11,8 @@ CUTSCENE:
      - can have a list of lines to go through. inc a item saying to
        do the function
      - keep track of current line, and go forward when key pressed
+   - change the sprite for the npc as well!
+   - allow different sizes, load this from file
 
 OBJ/PLAYER ANIMATIONS:
  - copy from level_state?

@@ -1,8 +1,10 @@
 #!/bin/zsh
 
 SESSIONNAME="game25"
-TARGET_DIR="/mnt/ext4-files/rust_projects/game_25/"  # Change this to your desired directory
-PROGRAM="hx"                # Change this to the program you want to run in the right pane
+TARGET_DIR="/mnt/ext4-files/rust_projects/game_25/"
+PROGRAM="hx"
+
+echo "\x1b]2;tmux game_25\x07"
 
 # Check if the session already exists
 tmux has-session -t $SESSIONNAME &> /dev/null

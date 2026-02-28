@@ -19,10 +19,24 @@
     {
       "id": 0,
       "name": "Test1",
+      "image": "npc.png",
       "room_x": 0,
       "room_y": 0,
       "pos_x": 3,
-      "pos_y": 3
+      "pos_y": 4,
+      "size_x": 32,
+      "size_y": 64
+    },
+    {
+      "id": 1,
+      "name": "Test2",
+      "image": "player_a.png",
+      "room_x": 0,
+      "room_y": 0,
+      "pos_x": 5,
+      "pos_y": 4,
+      "size_x": 64,
+      "size_y": 32
     }
   ],
   "doors": [
