@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use macroquad::{
-    color::{BLACK, WHITE},
+    color::{Color, WHITE},
     math::vec2,
+    shapes::draw_rectangle,
     texture::{DrawTextureParams, draw_texture_ex},
     time::get_frame_time,
 };
@@ -19,6 +20,7 @@ pub struct CutsceneSlide {
     pub image_name: String,
     pub text: String,
     pub time: f32,
+    pub lines: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -59,9 +61,10 @@ impl GameState for CutsceneState {
     }
 
     fn draw(&self) {
+        let current_slide = &self.cutscene.slides[self.cur_slide_no as usize];
         {
             let res = Resources::global();
-            let tex = res.get_texture(&self.cutscene.slides[self.cur_slide_no as usize].image_name);
+            let tex = res.get_texture(&current_slide.image_name);
             draw_texture_ex(
                 tex,
                 0.,
@@ -72,10 +75,18 @@ impl GameState for CutsceneState {
                 },
             );
         }
+        let space_needed = (480 - current_slide.lines * 32) as f32;
+        draw_rectangle(
+            0.,
+            space_needed,
+            640.,
+            480. - space_needed,
+            Color::new(0.1, 0.1, 0.1, 0.3),
+        );
         write_text(
-            &self.cutscene.slides[self.cur_slide_no as usize].text,
-            vec2(0., 0.),
-            BLACK,
+            &current_slide.text,
+            vec2(0., space_needed),
+            WHITE,
             "font.png",
         );
     }

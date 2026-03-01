@@ -1,15 +1,28 @@
 {
   "slides": [
     {
-      "image_name": "cut_test1.png",
-      "text": "test text 1",
-      "time": 5
+      "image_name": "intro_1.png",
+      "text": "A few years ago, ______ started building\na teleportation machine. However, only a\ncouple months later, there was an\nenourmous explosion at the construction\nsite.",
+      "time": 5,
+      "lines": 5
     },
-	{
-      "image_name": "cut_test2.png",
-      "text": "test text 2",
-      "time": 3
+    {
+      "image_name": "intro_2.png",
+      "text": "It was such a large explosion, that the\nentire planet began to drift from the\nstar that it orbits. As the temperatures\nstarted to drop, it became clear that\nthe planet was soon going to be\nuninhabitable.",
+      "time": 5,
+      "lines": 6
+    },
+    {
+      "image_name": "intro_3.png",
+      "text": "Many plans were considered, but the most\npromising was to create a fleet of ships\nlarge enough for the entire population,\nand search for another planet to live\non.",
+      "time": 5,
+      "lines": 5
+    },
+    {
+      "image_name": "intro_4.png",
+      "text": "It is now a year later, and so far, they\nhave had no luck finding another planet.",
+      "time": 5,
+      "lines": 2
     }
-
   ]
 }

@@ -3,9 +3,8 @@
 company accidently makes explosion big enough to make the planet start moving
 planet starts freezing due to it drifting from the star
 company creates a big ship for everyone to live on while they travel away
-this ship then malfunctions (due to similar cost saving measures that caused the explosion)
+this ship then malfunctions
 send out message for help, but no replies. estimated it could take a long time
-company blames it on an attack from someone else or something
 
 # SCRIPT ETC
 
@@ -19,7 +18,7 @@ construciton site.
 
 *Show the planet drifitng*
 
-Fortunately, the teleportation machine was being built on a remote island, thousands of kilometres
+Fortunately, the teleportation machine was being built in a remote area, thousands of kilometres
 from any towns or cities.
 
 It was such a large explosion, that the entire planet began to drift from the star that it orbits.
@@ -29,7 +28,7 @@ uninhabitable.
 
 *Show the ship*
 
-Many plans were considered, but the most promising was to create a ship large enough for the entire
+Many plans were considered, but the most promising was to create a fleet of ships large enough for the entire
 population, and search for another planet to live on.
 
 It is now a year later, and people have begun to get used to living on the (name of ship).
@@ -87,7 +86,7 @@ all the energy clumps back in..."
 *Another person runs in*
 
 SCIENTIST 2: "A message explaining the issue has been sent out into space at maximum power."
-SCIENTIST 1: "To who? There's no one else around for billions of kilomitres."
+SCIENTIST 1: "To who? The other ships are now millions of kilometres away."
 SCIENTIST 2: "What else can we do? Go and catch energy clumps? By now they'll all be hidden. It will be
 impossible to find enough of them"
 SCIENTIST 1: "We should at least try doing that."

@@ -165,6 +165,7 @@ pub async fn load_all_assets() {
                 }
                 "cutscene" => {
                     let file = fs::read_to_string(path_str).unwrap();
+                    println!("{:?}", file);
                     let cutscene: Cutscene = serde_json::from_str(&file).unwrap();
                     res.insert_cutscene(key.to_string(), cutscene.into());
                 }
