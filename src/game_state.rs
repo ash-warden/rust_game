@@ -1,4 +1,5 @@
 use crate::current_game::CURRENT_GAME_MANAGER;
+use crate::cutscene::CutsceneState;
 use crate::level_state::LevelState;
 use crate::menu::Menu;
 use crate::player::PlayerMovementState;
@@ -102,11 +103,6 @@ impl GameState for LoadSaveState {
             return StateTransition::Pop(1);
         }
 
-        {
-            // let mut res = Resources::global();
-            // res.scale = 1.;
-        }
-
         let player_info = PlayerInitialInfo {
             pos: player_pos,
             velocity: vec2(0., 0.),
@@ -129,33 +125,42 @@ impl GameState for LoadSaveState {
 }
 
 #[derive(Clone)]
-pub struct NewGameState {}
+pub struct NewGameState {
+    pub cutscene_done: bool,
+}
 
 impl NewGameState {
     pub fn new() -> Self {
         let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
         cur_game.reset();
-        NewGameState {}
+        NewGameState {
+            cutscene_done: false,
+        }
     }
 }
 
 impl GameState for NewGameState {
     fn update(&mut self) -> StateTransition {
-        let player_pos = vec2(100., 100.); // value isn't actually used since it is replaced when the file is loaded
+        if !self.cutscene_done {
+            self.cutscene_done = true;
+            StateTransition::Push(Box::new(CutsceneState::new("intro")))
+        } else {
+            let player_pos = vec2(100., 100.); // value isn't actually used since it is replaced when the file is loaded
 
-        let player_info = PlayerInitialInfo {
-            pos: player_pos,
-            velocity: vec2(0., 0.),
-            state: PlayerMovementState::Standing,
-        };
+            let player_info = PlayerInitialInfo {
+                pos: player_pos,
+                velocity: vec2(0., 0.),
+                state: PlayerMovementState::Standing,
+            };
 
-        let level = format!("{}_{}_{}", "a1", 0, 0);
+            let level = format!("{}_{}_{}", "a1", 0, 0);
 
-        let level_state = LevelState::build(&level, player_info).unwrap_or_else(|err| {
-            eprintln!("Failed to load level state: {err}");
-            std::process::exit(1);
-        });
-        StateTransition::Replace(Box::new(level_state))
+            let level_state = LevelState::build(&level, player_info).unwrap_or_else(|err| {
+                eprintln!("Failed to load level state: {err}");
+                std::process::exit(1);
+            });
+            StateTransition::Replace(Box::new(level_state))
+        }
     }
     fn draw(&self) {}
 

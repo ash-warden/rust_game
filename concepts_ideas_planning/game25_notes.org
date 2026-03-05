@@ -1,5 +1,25 @@
 NEXT THING TO DO:
- - cutscenes/more complex npc FINISH THIS!!!
+ - show cutscene when starting new game DONE
+ - show the character speaking in the dialogue
+ - more areas
+ - puzzle stuff
+   - keys/doors. objects that can be moved.
+   - reset when moving to a different area
+ - events etc triggered by talking to npc - this is part of existing function thing
+
+"PUZZLE" OBJECTS:
+ - each "levelstate" (one per room), has a vec of objects
+ - want to keep the state the same for the whole area, so it doesn't reset when moving between rooms
+ - need to store it somewhere else
+ - could store it in curent game?
+   - use the "ID" for each object
+     - these are in the file, but are not actually used. need to add to the structs
+     - also, these are only unique for the type of object. could make a sort of combined ID from the object type and it's ID
+   - when the object is encountered, "register" it in current game
+   - remove all the objects when a new area is entered
+   - what kind of data to store for each object?
+     - would be nice if it could be different for different objects...
+     - would just an i32 be sufficient?
 
 NPC:
  - menu is too simple
