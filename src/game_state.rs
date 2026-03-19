@@ -1,3 +1,4 @@
+use crate::area::AreaState;
 use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::cutscene::CutsceneState;
 use crate::level_state::LevelState;
@@ -111,11 +112,11 @@ impl GameState for LoadSaveState {
 
         let level = format!("{}_{}_{}", area, room.x, room.y);
 
-        let level_state = LevelState::build(&level, player_info).unwrap_or_else(|err| {
+        let area_state = AreaState::build(&level, player_info).unwrap_or_else(|err| {
             eprintln!("Failed to load level state: {err}");
             std::process::exit(1);
         });
-        StateTransition::Replace(Box::new(level_state))
+        StateTransition::Replace(Box::new(area_state))
     }
     fn draw(&self) {}
 
@@ -155,11 +156,11 @@ impl GameState for NewGameState {
 
             let level = format!("{}_{}_{}", "a1", 0, 0);
 
-            let level_state = LevelState::build(&level, player_info).unwrap_or_else(|err| {
+            let area_state = AreaState::build(&level, player_info).unwrap_or_else(|err| {
                 eprintln!("Failed to load level state: {err}");
                 std::process::exit(1);
             });
-            StateTransition::Replace(Box::new(level_state))
+            StateTransition::Replace(Box::new(area_state))
         }
     }
     fn draw(&self) {}

@@ -56,6 +56,7 @@ impl Resources {
         self.rooms.get(key).cloned()
     }
 
+    // gives the room objects for a whole area
     pub fn get_room_object(&self, key: &str) -> Option<Arc<RoomObjects>> {
         self.room_objects.get(key).cloned()
     }
@@ -151,7 +152,7 @@ pub async fn load_all_assets() {
                     for (key, value) in map {
                         res.insert_text(key, value);
                     }
-                    println!("{:?}", res.text_strings);
+                    // println!("{:?}", res.text_strings);
                 }
                 "npctext" => {
                     //npc text json
@@ -161,11 +162,11 @@ pub async fn load_all_assets() {
                     for (key, value) in map {
                         res.insert_npc_dialog(key, value);
                     }
-                    println!("{:?}", res.npc_dialog);
+                    // println!("{:?}", res.npc_dialog);
                 }
                 "cutscene" => {
                     let file = fs::read_to_string(path_str).unwrap();
-                    println!("{:?}", file);
+                    // println!("{:?}", file);
                     let cutscene: Cutscene = serde_json::from_str(&file).unwrap();
                     res.insert_cutscene(key.to_string(), cutscene.into());
                 }

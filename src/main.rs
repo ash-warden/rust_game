@@ -5,6 +5,7 @@ use crate::resources::{Resources, get_text, load_all_assets};
 use macroquad::math::vec2;
 use macroquad::miniquad::window::set_window_size;
 use macroquad::prelude::*;
+mod area;
 mod controls;
 mod current_game;
 mod cutscene;

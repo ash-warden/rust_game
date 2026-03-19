@@ -1,3 +1,5 @@
+NEED TO FIX DOORS
+
 NEXT THING TO DO:
  - show cutscene when starting new game DONE
  - show the character speaking in the dialogue
@@ -19,7 +21,16 @@ NEXT THING TO DO:
    - remove all the objects when a new area is entered
    - what kind of data to store for each object?
      - would be nice if it could be different for different objects...
-     - would just an i32 be sufficient?
+     - would just an i32 be sufficient? no...
+ - could make a new "area"
+   - this stays consistent for whole time the player is in the area. also, make the game obj be stored by this.
+   - when creating a new level state then just get the relevant objects and display them
+   - this state then stores the actual objects, not the levelstate
+   - the issue is now how to access the "area" from in the ls
+     - make this another state??? can a previous state be accessed from the current one?
+       - don't make this possible generally. it should work by giving a reference of itself when creating the levelstates
+    
+  
 
 NPC:
  - menu is too simple

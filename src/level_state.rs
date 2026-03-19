@@ -1,16 +1,12 @@
-use crate::controls::CONTROLS;
 use crate::current_game::CURRENT_GAME_MANAGER;
-use crate::game_state::{
-    GameState, MenuState, Player, PlayerInitialInfo, SaveData, StateTransition,
-};
+use crate::game_state::{GameState, Player, PlayerInitialInfo, SaveData, StateTransition};
 use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
-use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
 use crate::resources::{Resources, get_text};
 use crate::traits_for_obj::Obj;
 use macroquad::color::{Color, WHITE};
-use macroquad::math::{IVec2, Rect, vec2};
+use macroquad::math::{Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -69,8 +65,9 @@ impl GameState for SaveGameState {
     }
 }
 
+#[derive(Clone)]
 pub struct LevelState {
-    pub area: String,
+    pub area_name: String,
     pub room: Arc<level::Room>,
     pub player: Player,
     pub objects: Vec<Arc<dyn Obj>>,
@@ -103,7 +100,7 @@ impl LevelState {
             }
 
             Ok(LevelState {
-                area: area.to_string(),
+                area_name: area.to_string(),
                 room: room,
                 player,
                 map_pixels,
@@ -128,15 +125,6 @@ pub fn area_colour(area: &str) -> Color {
     }
 }
 
-#[derive(PartialEq)]
-enum DirectionToMove {
-    Left,
-    Right,
-    Up,
-    Down,
-    None,
-}
-
 impl GameState for LevelState {
     fn update(&mut self) -> StateTransition {
         // println!("{}", self.area);
@@ -152,122 +140,10 @@ impl GameState for LevelState {
             }
         }
 
-        //pausing
-        {
-            let pause_text = get_text("pause");
-            let resume_text = get_text("resume");
-            let quit_text = get_text("quit");
-
-            let pause_menu_pos = menu_centre_pos(6, 3);
-            let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
-            let title = MenuItem::new(&pause_text, || StateTransition::None, false);
-            pause_menu.add_item(title);
-            let resume_game = MenuItem::new(&resume_text, move || StateTransition::Pop(1), true);
-            pause_menu.add_item(resume_game);
-            let quit_game = MenuItem::new(&quit_text, move || StateTransition::Pop(2), true);
-            pause_menu.add_item(quit_game);
-            let menu_state = MenuState::new(pause_menu);
-            let mut input = CONTROLS.lock().unwrap();
-            if input.controls_enter_release() {
-                return StateTransition::Push(Box::new(menu_state));
-            }
-        }
-
         let frame_time = get_frame_time();
         self.player.update(frame_time);
 
-        let map_width = (self.room.map_dimensions.x * self.room.tile_size) as f32;
-        let map_height = (self.room.map_dimensions.y * self.room.tile_size) as f32;
-
-        let p_size_x = self.player.actual_size.x as f32;
-        let p_size_y = self.player.actual_size.y as f32;
-
-        let direction = if self.player.position.x < -p_size_x / 2. {
-            DirectionToMove::Left
-        } else if self.player.position.x > map_width - p_size_x / 2. {
-            DirectionToMove::Right
-        } else if self.player.position.y < -p_size_y / 2. {
-            DirectionToMove::Up
-        } else if self.player.position.y > map_height - p_size_y / 2. {
-            DirectionToMove::Down
-        } else {
-            DirectionToMove::None
-        };
-
-        if direction == DirectionToMove::None {
-            let mut input = CONTROLS.lock().unwrap();
-            let player = &self.player;
-            for obj in &self.objects {
-                let overlapping_x = player.position.x < obj.get_pos().x + obj.get_size().x
-                    && player.position.x + player.actual_size.x as f32 > obj.get_pos().x;
-
-                let overlapping_y = player.position.y < obj.get_pos().y + obj.get_size().y
-                    && player.position.y + player.actual_size.y as f32 > obj.get_pos().y;
-
-                if overlapping_x && overlapping_y {
-                    let text = obj.get_hud_text();
-                    self.hud_hint_text = text.replace("KEY", input.key_string("z").as_str());
-                    obj.contact();
-                    if input.controls_tertirary_release() {
-                        return obj.interact();
-                    }
-                }
-            }
-
-            if !self.init_timer_done {
-                self.hud_init_timer -= frame_time;
-                if self.full_hud && self.hud_init_timer <= 0. {
-                    self.full_hud = false;
-                    self.init_timer_done = true;
-                }
-            }
-            if input.controls_esc_release() {
-                self.full_hud = !self.full_hud;
-            }
-            return StateTransition::None;
-        }
-
-        let (new_player_pos, offset) = match direction {
-            DirectionToMove::Left => (
-                vec2(map_width - p_size_x / 2. - 1., self.player.position.y),
-                IVec2::new(-1, 0),
-            ),
-            DirectionToMove::Right => (
-                vec2(-p_size_x / 2. + 1., self.player.position.y - 1.),
-                IVec2::new(1, 0),
-            ),
-            DirectionToMove::Up => (
-                vec2(self.player.position.x, map_height - p_size_y / 2. - 1.),
-                IVec2::new(0, 1),
-            ),
-            DirectionToMove::Down => (
-                vec2(self.player.position.x, -p_size_y / 2. + 1.),
-                IVec2::new(0, -1),
-            ),
-            DirectionToMove::None => unreachable!(),
-        };
-
-        let new_room = format!(
-            "{}_{}_{}",
-            self.area,
-            self.room.x_coord + offset.x,
-            self.room.y_coord + offset.y
-        );
-
-        let player_info = PlayerInitialInfo {
-            pos: new_player_pos,
-            velocity: self.player.velocity,
-            state: self.player.state.clone(),
-        };
-
-        // Load new LevelState
-        match LevelState::build(&new_room, player_info) {
-            Ok(new_level_state) => StateTransition::Replace(Box::new(new_level_state)),
-            Err(err) => {
-                eprintln!("Failed to load level state \"{}\": {err}", &new_room);
-                std::process::exit(1);
-            }
-        }
+        StateTransition::None
     }
 
     fn draw(&self) {
@@ -293,7 +169,7 @@ impl GameState for LevelState {
                     tex,
                     x as f32 * t_size,
                     y as f32 * t_size,
-                    area_colour(&self.area),
+                    area_colour(&self.area_name),
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
