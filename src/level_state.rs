@@ -1,3 +1,4 @@
+use crate::area::Area;
 use crate::controls::CONTROLS;
 use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::game_state::{
@@ -7,7 +8,7 @@ use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
-use crate::resources::{Resources, get_text};
+use crate::resources::{Resources, RoomObjects, get_text};
 use crate::traits_for_obj::Obj;
 use macroquad::color::{Color, WHITE};
 use macroquad::math::{IVec2, Rect, vec2};
@@ -70,10 +71,10 @@ impl GameState for SaveGameState {
 }
 
 pub struct LevelState {
-    pub area: String,
+    // pub area_name: String,
     pub room: Arc<level::Room>,
     pub player: Player,
-    pub objects: Vec<Arc<dyn Obj>>,
+    // pub objects: Vec<Arc<dyn Obj>>,
     pub map_pixels: Vec<Vec<MapPixelType>>,
     pub full_hud: bool,
     pub hud_init_timer: f32,
@@ -81,6 +82,7 @@ pub struct LevelState {
     pub hud_hint_text: String,
     pub current_frame: usize,
     pub time_since_frame_change: f32,
+    pub area: Area,
 }
 
 impl LevelState {
@@ -88,22 +90,23 @@ impl LevelState {
         level: &str,
         player_info: PlayerInitialInfo,
     ) -> Result<LevelState, Box<dyn std::error::Error>> {
-        let (area, room_name) = level.split_once('_').unwrap();
+        let (area_name, room_name) = level.split_once('_').unwrap();
+        let area = Area::build(level);
         // println!("{}", room_name);
-        let map_pixels = get_map_pixels(area, room_name);
+        let map_pixels = get_map_pixels(area_name, room_name);
         let res = Resources::global();
         if let Some(room) = res.get_room(level) {
             let player = Player::new_from_info(player_info, room.clone());
-            let area_objects = res.get_room_object(area).unwrap();
-            let objects: Vec<Arc<dyn Obj>>;
-            if let Some(objects_from_res) = area_objects.objects.get(room_name) {
-                objects = objects_from_res.clone();
-            } else {
-                objects = vec![];
-            }
+            // let area_objects = res.get_room_object(area_name).unwrap();
+            // let objects: Vec<Arc<dyn Obj>>;
+            // if let Some(objects_from_res) = area_objects.objects.get(room_name) {
+            //     objects = objects_from_res.clone();
+            // } else {
+            //     objects = vec![];
+            // }
 
             Ok(LevelState {
-                area: area.to_string(),
+                // area_name: area.to_string(),
                 room: room,
                 player,
                 map_pixels,
@@ -113,7 +116,8 @@ impl LevelState {
                 hud_hint_text: String::from(""),
                 current_frame: 0,
                 time_since_frame_change: 0.,
-                objects,
+                area: area,
+                // objects,
             })
         } else {
             Err("Level not found in resources".into())
@@ -197,19 +201,24 @@ impl GameState for LevelState {
         if direction == DirectionToMove::None {
             let mut input = CONTROLS.lock().unwrap();
             let player = &self.player;
-            for obj in &self.objects {
-                let overlapping_x = player.position.x < obj.get_pos().x + obj.get_size().x
-                    && player.position.x + player.actual_size.x as f32 > obj.get_pos().x;
+            if let Some(objects) = self
+                .area
+                .get_obj_for_room(self.room.x_coord, self.room.y_coord)
+            {
+                for obj in objects {
+                    let overlapping_x = player.position.x < obj.get_pos().x + obj.get_size().x
+                        && player.position.x + player.actual_size.x as f32 > obj.get_pos().x;
 
-                let overlapping_y = player.position.y < obj.get_pos().y + obj.get_size().y
-                    && player.position.y + player.actual_size.y as f32 > obj.get_pos().y;
+                    let overlapping_y = player.position.y < obj.get_pos().y + obj.get_size().y
+                        && player.position.y + player.actual_size.y as f32 > obj.get_pos().y;
 
-                if overlapping_x && overlapping_y {
-                    let text = obj.get_hud_text();
-                    self.hud_hint_text = text.replace("KEY", input.key_string("z").as_str());
-                    obj.contact();
-                    if input.controls_tertirary_release() {
-                        return obj.interact();
+                    if overlapping_x && overlapping_y {
+                        let text = obj.get_hud_text();
+                        self.hud_hint_text = text.replace("KEY", input.key_string("z").as_str());
+                        obj.contact();
+                        if input.controls_tertirary_release() {
+                            return obj.interact();
+                        }
                     }
                 }
             }
@@ -249,7 +258,7 @@ impl GameState for LevelState {
 
         let new_room = format!(
             "{}_{}_{}",
-            self.area,
+            self.area.area_name,
             self.room.x_coord + offset.x,
             self.room.y_coord + offset.y
         );
@@ -293,7 +302,7 @@ impl GameState for LevelState {
                     tex,
                     x as f32 * t_size,
                     y as f32 * t_size,
-                    area_colour(&self.area),
+                    area_colour(&self.area.area_name),
                     DrawTextureParams {
                         dest_size: Some(vec2(t_size, t_size)),
                         source: Some(Rect::new(
@@ -317,8 +326,13 @@ impl GameState for LevelState {
         }
 
         let current_frame_f = self.current_frame as f32;
-        for obj in &self.objects {
-            obj.draw(current_frame_f);
+        if let Some(objects) = self
+            .area
+            .get_obj_for_room(self.room.x_coord, self.room.y_coord)
+        {
+            for obj in objects {
+                obj.draw(current_frame_f);
+            }
         }
 
         //draw player
