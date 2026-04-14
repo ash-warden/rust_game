@@ -1,7 +1,6 @@
 use gamepads::{Button, Gamepads};
 use macroquad::input::{KeyCode, get_keys_pressed, is_key_down};
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 
 pub struct Controls {
     pads: Gamepads,
@@ -141,4 +140,4 @@ impl Controls {
     }
 }
 
-pub static CONTROLS: Lazy<Mutex<Controls>> = Lazy::new(|| Mutex::new(Controls::new()));
+pub static CONTROLS: LazyLock<Mutex<Controls>> = LazyLock::new(|| Mutex::new(Controls::new()));

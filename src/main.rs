@@ -60,7 +60,7 @@ async fn main() {
     menu.add_item(start_game_new);
     let start_game_load = MenuItem::new(
         &load_game_text,
-        move || StateTransition::Push(Box::new(LoadSaveState::new().clone())),
+        move || StateTransition::Push(Box::new(LoadSaveState::new())),
         true,
     );
     menu.add_item(start_game_load);

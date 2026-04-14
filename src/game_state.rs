@@ -1,7 +1,7 @@
 use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::cutscene::CutsceneState;
 use crate::level_state::LevelState;
-use crate::menu::Menu;
+use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::player::PlayerMovementState;
 pub(crate) use crate::player::{Player, PlayerInitialInfo};
 use crate::resources::get_text;
@@ -47,11 +47,20 @@ impl GameState for MenuState {
     }
 }
 
-#[derive(Clone)]
-pub struct LoadSaveState {}
+pub struct LoadSaveState {
+    menu: MenuState,
+}
 
 impl LoadSaveState {
     pub fn new() -> Self {
+        let menu_pos = menu_centre_pos(20, 10);
+        let mut menu = Menu::new(menu_pos.x, menu_pos.y);
+        let title = MenuItem::new("Select a file to load", || StateTransition::None, false);
+        menu.add_item(title);
+
+        //get the saves
+        let mut saves = vec![];
+
         LoadSaveState {}
     }
 }

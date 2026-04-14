@@ -594,7 +594,6 @@ version = "0.1.0"
 dependencies = [
  "gamepads",
  "macroquad",
- "once_cell",
  "rfd",
  "serde",
  "serde_json",

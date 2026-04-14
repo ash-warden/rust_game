@@ -1,3 +1,11 @@
+Area
+ - use a struct for Area
+ - either store it as a singleton or pass it between levelstates
+ - purpose is basically for accessing room objects and keeping them consistent between rooms in the same area
+ - need to add a way to reset objects
+   - would kinda like to also only store current objects in the memory instead of ALL of them, which could be related.
+ - maybe handle loading objects in area, instead of resources???
+
 NEXT THING TO DO:
  - show cutscene when starting new game DONE
  - show the character speaking in the dialogue

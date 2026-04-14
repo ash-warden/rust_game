@@ -1,5 +1,7 @@
-use once_cell::sync::Lazy;
-use std::{collections::HashSet, sync::Mutex};
+use std::{
+    collections::HashSet,
+    sync::{LazyLock, Mutex},
+};
 
 pub const MAX_HEALTH: u32 = 10;
 
@@ -48,5 +50,5 @@ impl CurrentGame {
     }
 }
 
-pub static CURRENT_GAME_MANAGER: Lazy<Mutex<CurrentGame>> =
-    Lazy::new(|| Mutex::new(CurrentGame::new()));
+pub static CURRENT_GAME_MANAGER: LazyLock<Mutex<CurrentGame>> =
+    LazyLock::new(|| Mutex::new(CurrentGame::new()));

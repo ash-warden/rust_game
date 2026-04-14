@@ -3,10 +3,9 @@ use crate::level::Room;
 use crate::room_obj_from_file::RoomObjectsFromFile;
 use crate::traits_for_obj::Obj;
 use macroquad::prelude::Texture2D;
-use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::fs;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use walkdir::WalkDir;
 
 const ERROR_TEXT: &str = "ERROR, STRING NOT FOUND";
@@ -21,7 +20,7 @@ pub struct Resources {
     pub background_texture: Option<String>,
 }
 
-pub static RESOURCE_MANAGER: OnceCell<Resources> = OnceCell::new();
+pub static RESOURCE_MANAGER: OnceLock<Resources> = OnceLock::new();
 
 impl Resources {
     pub fn new() -> Self {
