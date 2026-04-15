@@ -5,6 +5,7 @@ use crate::{
     traits_for_obj::Obj,
 };
 
+#[derive(Clone)]
 pub struct Area {
     pub area_name: String,
     pub objects: Arc<RoomObjects>,

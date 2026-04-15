@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::env::current_exe;
 use std::fs;
+use walkdir::WalkDir;
 
 pub enum StateTransition {
     None,
@@ -47,26 +48,94 @@ impl GameState for MenuState {
     }
 }
 
+fn load_level_state(file: String) -> LevelState {
+    let area;
+    let checkpoint: i32;
+    let mut player_pos = vec2(100., 100.); // value isn't actually used since it is replaced when the file is loaded
+    let mut room = ivec2(0, 0);
+
+    println!("{:?}", format!("{}{}", "saves/", file));
+
+    let contents = fs::read_to_string(format!("{}{}{}", "saves/", file, ".save"));
+    let save: SaveData = serde_json::from_str(&contents.unwrap().as_str()).expect("Error 1");
+
+    area = save.area;
+    checkpoint = save.checkpoint;
+
+    let objects_path = format!("assets/maps/{}_objects.roomobj", area);
+    let objects_file = fs::read_to_string(objects_path);
+    let objects: RoomObjectsFromFile =
+        serde_json::from_str(&objects_file.unwrap().as_str()).expect("Error 2");
+
+    if let Some(checkpoints) = objects.checkpoints {
+        for i in checkpoints {
+            if i.id == checkpoint {
+                player_pos = vec2(i.pos_x as f32 * 32., i.pos_y as f32 * 32.);
+                room = ivec2(i.room_x, i.room_y);
+            }
+        }
+    }
+
+    let player_info = PlayerInitialInfo {
+        pos: player_pos,
+        velocity: vec2(0., 0.),
+        state: PlayerMovementState::Standing,
+    };
+
+    let level = format!("{}_{}_{}", area, room.x, room.y);
+
+    LevelState::build(&level, player_info).unwrap_or_else(|err| {
+        eprintln!("Failed to load level state: {err}");
+        std::process::exit(1);
+    })
+}
+
 pub struct LoadSaveState {
-    menu: MenuState,
+    save_file_names: Vec<String>,
 }
 
 impl LoadSaveState {
     pub fn new() -> Self {
+        LoadSaveState {
+            save_file_names: vec![],
+        }
+    }
+}
+
+impl GameState for LoadSaveState {
+    fn update(&mut self) -> StateTransition {
         let menu_pos = menu_centre_pos(20, 10);
         let mut menu = Menu::new(menu_pos.x, menu_pos.y);
         let title = MenuItem::new("Select a file to load", || StateTransition::None, false);
         menu.add_item(title);
 
         //get the saves
-        let mut saves = vec![];
+        for entry in WalkDir::new("saves") {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension().unwrap_or_default() == "save" {
+                self.save_file_names
+                    .push(path.file_stem().unwrap().to_str().unwrap().to_owned());
+            }
+        }
 
-        LoadSaveState {}
-    }
-}
+        for i in 0..self.save_file_names.len() {
+            let file_name = &self.save_file_names[i];
+            let loaded_level_state = load_level_state(file_name.to_owned());
+            let file_load = MenuItem::new(
+                file_name,
+                move || StateTransition::Replace(Box::new(loaded_level_state.clone())),
+                true,
+            );
+            menu.add_item(file_load);
+        }
+        let cancel = MenuItem::new("Cancel", || StateTransition::Pop(2), true);
+        menu.add_item(cancel);
 
-impl GameState for LoadSaveState {
-    fn update(&mut self) -> StateTransition {
+        let menu_state = MenuState::new(menu);
+
+        return StateTransition::Push(Box::new(menu_state));
+
         let dialog_text = get_text("load_dialog");
 
         use rfd::FileDialog;

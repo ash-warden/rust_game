@@ -70,6 +70,7 @@ impl GameState for SaveGameState {
     }
 }
 
+#[derive(Clone)]
 pub struct LevelState {
     // pub area_name: String,
     pub room: Arc<level::Room>,
