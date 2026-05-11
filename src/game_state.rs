@@ -86,6 +86,9 @@ fn load_level_state(file: String) -> LevelState {
     let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
     cur_game.save_name = file;
 
+    //set stars
+    cur_game.stars_collected = save.stars_collected;
+
     LevelState::build(&level, player_info).unwrap_or_else(|err| {
         eprintln!("Failed to load level state: {err}");
         std::process::exit(1);
