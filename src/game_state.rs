@@ -96,8 +96,17 @@ pub struct LoadSaveState {
 
 impl LoadSaveState {
     pub fn new() -> Self {
+        let mut saves: Vec<String> = vec![];
+        //get the saves
+        for entry in WalkDir::new("saves") {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.extension().unwrap_or_default() == "save" {
+                saves.push(path.file_stem().unwrap().to_str().unwrap().to_owned());
+            }
+        }
         LoadSaveState {
-            save_file_names: vec![],
+            save_file_names: saves,
         }
     }
 }
@@ -108,16 +117,6 @@ impl GameState for LoadSaveState {
         let mut menu = Menu::new(menu_pos.x, menu_pos.y);
         let title = MenuItem::new("Select a file to load", || StateTransition::None, false);
         menu.add_item(title);
-
-        //get the saves
-        for entry in WalkDir::new("saves") {
-            let entry = entry.unwrap();
-            let path = entry.path();
-            if path.extension().unwrap_or_default() == "save" {
-                self.save_file_names
-                    .push(path.file_stem().unwrap().to_str().unwrap().to_owned());
-            }
-        }
 
         for i in 0..self.save_file_names.len() {
             let file_name = &self.save_file_names[i];
