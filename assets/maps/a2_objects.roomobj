@@ -49,7 +49,7 @@
         "pos_y": 12
       },
       "destination": {
-        "area": "a2",
+        "area": "a1",
         "room_x": 2,
         "room_y": 0,
         "pos_x": 8,

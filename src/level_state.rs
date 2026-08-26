@@ -123,6 +123,7 @@ impl LevelState {
 pub fn area_colour(area: &str) -> Color {
     match area {
         "a1" => Color::from_hex(0x5398eb),
+        "a2" => Color::from_hex(0x9b72b8),
         _ => WHITE,
     }
 }

@@ -3,7 +3,7 @@ use crate::controls::CONTROLS;
 use crate::game_state::StateTransition;
 use crate::resources::Resources;
 use crate::text::write_text;
-use macroquad::color::{BLACK, BLUE, Color, WHITE, YELLOW};
+use macroquad::color::{BLACK, Color, WHITE};
 use macroquad::math::{Rect, Vec2, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex};
 
