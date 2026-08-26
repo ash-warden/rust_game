@@ -8,12 +8,10 @@ use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
-use crate::resources::{Resources, RoomObjects, get_text};
-use crate::traits_for_obj::Obj;
+use crate::resources::{Resources, get_text};
 use macroquad::color::{Color, WHITE};
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
-use rfd::FileDialog;
 use std::collections::HashSet;
 use std::env::current_exe;
 use std::fs;
@@ -40,28 +38,24 @@ impl GameState for SaveGameState {
 
         stars.extend(stars_file.iter().cloned());
 
-        let dialog_text = get_text("save_dialog");
-
         let mut exe_path = current_exe().unwrap();
         exe_path.pop(); //remove the executable filename
         let saves_path = exe_path.join("../../saves"); //temporary for when working on game? may need to change
 
-        let file = FileDialog::new()
-            .add_filter("game_25 save", &["save"])
-            .set_directory(saves_path)
-            .set_title(dialog_text)
-            .pick_file();
         let new_save = SaveData {
             area: self.checkpoint.area.clone(),
             checkpoint: self.checkpoint.id,
             stars_collected: stars,
         };
 
-        if let Some(path) = file {
-            let json_data = serde_json::to_string_pretty(&new_save).unwrap();
-            println!("{}", path.display());
-            let _ = fs::write(path, json_data);
-        }
+        let file = &cur_game.save_name;
+
+        let path = saves_path.join(format!("{}{}", file, ".save"));
+
+        let json_data = serde_json::to_string_pretty(&new_save).unwrap();
+        println!("{}", path.display());
+        let _ = fs::write(path, json_data);
+
         StateTransition::Pop(2)
     }
     fn draw(&self) {}

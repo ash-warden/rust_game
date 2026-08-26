@@ -11,6 +11,7 @@ pub enum GameStages {
     Normal1,
 }
 pub struct CurrentGame {
+    pub save_name: String,
     pub health: u32,
     pub stars_collected: HashSet<(String, i32)>,
 }
@@ -20,6 +21,7 @@ impl CurrentGame {
         Self {
             health: MAX_HEALTH,
             stars_collected: HashSet::new(),
+            save_name: "".to_string(),
         }
     }
 
