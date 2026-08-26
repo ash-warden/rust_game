@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 SESSIONNAME="game25"
-TARGET_DIR="/mnt/ext4-files/rust_projects/game_25/"
+TARGET_DIR="/home/ash/programming_projects/rust_game/"
 PROGRAM="hx"
 
 echo "\x1b]2;tmux game_25\x07"
