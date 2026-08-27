@@ -152,6 +152,13 @@ impl GameState for LevelState {
             }
         }
 
+        fn nonsense() -> StateTransition {
+            println!("nonsense");
+            let mut game = CURRENT_GAME_MANAGER.lock().unwrap();
+            game.edit_temp(9);
+            StateTransition::Pop(1)
+        }
+
         //pausing
         {
             let pause_text = get_text("pause");
@@ -166,6 +173,8 @@ impl GameState for LevelState {
             pause_menu.add_item(resume_game);
             let quit_game = MenuItem::new(&quit_text, move || StateTransition::Pop(2), true);
             pause_menu.add_item(quit_game);
+            let nonsense_option = MenuItem::new("NONSENSE", move || nonsense(), true);
+            pause_menu.add_item(nonsense_option);
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_enter_release() {

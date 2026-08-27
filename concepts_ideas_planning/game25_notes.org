@@ -9,6 +9,9 @@ What would be useful:
    - creates a new state, but then when it's done go back to where it was
      before with the result value
    - would like it to behave very similar to RFD thing
+ *Current attempt:*
+ - can put a function into the menu which alters a "global" variable, and then returns state transition pop
+   - this is not ideal, but if careful with always making sure that the value is SET before being READ, i guess it's ok???
 
 ** Area
  - use a struct for Area

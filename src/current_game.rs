@@ -14,6 +14,7 @@ pub struct CurrentGame {
     pub save_name: String,
     pub health: u32,
     pub stars_collected: HashSet<(String, i32)>,
+    pub temp_value: i32,
 }
 
 impl CurrentGame {
@@ -22,7 +23,13 @@ impl CurrentGame {
             health: MAX_HEALTH,
             stars_collected: HashSet::new(),
             save_name: "".to_string(),
+            temp_value: 0,
         }
+    }
+
+    pub fn edit_temp(&mut self, new_value: i32) {
+        self.temp_value = new_value;
+        println!("{}", self.temp_value);
     }
 
     pub fn reset(&mut self) {
