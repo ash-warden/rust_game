@@ -1,9 +1,11 @@
+#+STARTUP: overview
+
 ** MENUS
 Currently:
  - a state
  - has options which trigger a switch of state
 
-What would be useful:
+*** What would be useful:
  - keep this style
  - also allow a "temporary" menu
    - creates a new state, but then when it's done go back to where it was
@@ -22,15 +24,15 @@ What would be useful:
  - maybe handle loading objects in area, instead of resources???
 
 ** NEXT THING TO DO:
- - show cutscene when starting new game DONE
  - show the character speaking in the dialogue
  - more areas
+   - working on this. currently there is just a copy of a1
  - puzzle stuff
    - keys/doors. objects that can be moved.
    - reset when moving to a different area
  - events etc triggered by talking to npc - this is part of existing function thing
 
-** "PUZZLE" OBJECTS:
+** OLD!!!!!!!!!! "PUZZLE" OBJECTS:
  - each "levelstate" (one per room), has a vec of objects
  - want to keep the state the same for the whole area, so it doesn't reset when moving between rooms
  - need to store it somewhere else
@@ -44,20 +46,20 @@ What would be useful:
      - would be nice if it could be different for different objects...
      - would just an i32 be sufficient?
 
-** NPC:
+** NPC. MOSTLY DONE:
  - menu is too simple
  - needs to allow:
-   - multiple lines of dialogue
-   - any function to be called in the middle of conversation
+   - multiple lines of dialogue DONE
+   - any function to be called in the middle of conversation DONE
    - need a new state called dialogue state
      - one function to call is probably sufficient?
      - can have a list of lines to go through. inc a item saying to
-       do the function
-     - keep track of current line, and go forward when key pressed
-   - change the sprite for the npc as well!
-   - allow different sizes, load this from file
+       do the function DONE
+     - keep track of current line, and go forward when key pressed DONE
+   - change the sprite for the npc as well! *NEED TO DO*
+   - allow different sizes, load this from file *?*
 
-** OBJ/PLAYER ANIMATIONS:
+** OBJ/PLAYER ANIMATIONS. DONE. kinda basic though:
  - copy from level_state?
  - level state can give cur frame to the obj!!!
  - player/obj says what row to show
@@ -69,8 +71,8 @@ What would be useful:
       rarely at least make it possible
 
 ** PUZZLES/MOVING/CHANGING THINGS IN AREAS:
- - store in current game. reset each time travelling through
-   a door OUTDATED?
+ - store in current game (huh, probably should be the object itself in an Area). reset each time travelling through
+   a door
 
 ** AUDIO
 
