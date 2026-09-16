@@ -33,6 +33,33 @@ Currently:
    - reset when moving to a different area
  - events etc triggered by talking to npc - this is part of existing function thing
 
+** Inventory and objects ideas
+ - have an inventory
+   - also unlock larger inventories
+ - basically store this as an array of objects
+ - LIST OF POSSIBLE OBJECTS
+   - key
+   - objects to bring to other characters
+   - tools?
+   - temp platforms & ladders (this could really break the game, but it would be sorta fun too)
+ - could have a chest etc at "home" to store items
+   - then later unlock a chest that can be accessed from a distance
+ - some sort of "crafting" system?
+   - do not want this. it is annoying, and not very relevant. i want a game about exploring, not managing resources
+   - rather just have objects you can find
+ - some objects are "permanent" objects, that can only be collected once.
+ - other objects get made again each time the game cycle refreshes
+   - note, the game is not a rouge-like, rather it is a bit like stardew valley
+*** programming inventory/objects
+ - abilities the objects need:
+   - all objects:
+     - have an inventory sprite
+     - something that happens on "use"
+       - also have a secondary "use"?
+	 - program it just in case
+       - "use" must be able to know what object the player is near, and the object being interacted with should also receive some kind of signal
+	 - it is levelstate where the collision between player & objects is done
+       - show a hint (like checkpoints etc) when it can be used
 ** OLD!!!!!!!!!! "PUZZLE" OBJECTS:
  - each "levelstate" (one per room), has a vec of objects
  - want to keep the state the same for the whole area, so it doesn't reset when moving between rooms
