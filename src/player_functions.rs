@@ -2,7 +2,7 @@ use crate::controls::CONTROLS;
 use crate::player::{
     PLAYER_ACCEL, PLAYER_EPSILON, PLAYER_FRICTION, PLAYER_GRAVITY, PLAYER_JUMP_MIN,
     PLAYER_JUMP_VARY_LIMIT, PLAYER_MAX_FALL_SPEED, PLAYER_SNAP_THRESHOLD, PLAYER_SPEED_RUN,
-    PLAYER_SPEED_WALK, Player,
+    PLAYER_SPEED_WALK, PLAYER_LADDER_SPEED, Player
 };
 use macroquad::math::{IVec2, Vec2, ivec2, vec2};
 
@@ -283,13 +283,13 @@ impl Player {
             && !(input.controls_left() || input.controls_right())
     }
     //return true to get off ladder
-    pub fn handle_climb_and_check_done(&mut self, col: i32) -> bool {
+    pub fn handle_climb_and_check_done(&mut self, col: i32, delta_time: f32) -> bool {
         let ladder_pos_x = (col * self.level.tile_size + self.level.tile_size / 2) as f32;
         let player_centre = self.position.x + (self.actual_size.x / 2) as f32;
         if player_centre - ladder_pos_x > 5.1 {
-            self.position.x -= 5.;
+            self.position.x -= 500. * delta_time;
         } else if player_centre - ladder_pos_x < -5.1 {
-            self.position.x += 5.;
+            self.position.x += 500. * delta_time;
         } else {
             self.position.x = ladder_pos_x - (self.actual_size.x / 2) as f32;
         }
@@ -300,14 +300,14 @@ impl Player {
         {
             return true;
         } else if input.controls_up() {
-            self.position.y -= 2.;
+            self.position.y -= PLAYER_LADDER_SPEED * delta_time;
             if self.check_for_ladder() == None {
-                self.position.y += 2.;
+                self.position.y += PLAYER_LADDER_SPEED * delta_time;
             }
         } else if input.controls_down() {
-            self.position.y += 2.;
+            self.position.y += PLAYER_LADDER_SPEED * delta_time;
             if self.check_for_ladder() == None {
-                self.position.y -= 2.;
+                self.position.y -= PLAYER_LADDER_SPEED * delta_time;
             }
         }
         false

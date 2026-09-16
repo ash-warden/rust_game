@@ -34,6 +34,7 @@ pub const PLAYER_EPSILON: f32 = 0.001;
 pub const PLAYER_SNAP_THRESHOLD: f32 = 3.0;
 pub const PLAYER_JUMP_MIN: f32 = 600.;
 pub const PLAYER_JUMP_VARY_LIMIT: f32 = -200.;
+pub const PLAYER_LADDER_SPEED: f32 = 150.;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PlayerMovementState {
@@ -141,7 +142,7 @@ impl Player {
                 let ladder = self.check_for_ladder();
                 if ladder != None {
                     //true is player is trying to get off ladder
-                    if self.handle_climb_and_check_done(ladder.unwrap().x) {
+                    if self.handle_climb_and_check_done(ladder.unwrap().x, delta_time) {
                         self.state = PlayerMovementState::Standing;
                     }
                 }

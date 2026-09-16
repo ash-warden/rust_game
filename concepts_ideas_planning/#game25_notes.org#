@@ -14,7 +14,6 @@ Currently:
  *Current attempt:*
  - can put a function into the menu which alters a "global" variable, and then returns state transition pop
    - this is not ideal, but if careful with always making sure that the value is SET before being READ, i guess it's ok???
-   - DONE
 
 ** Area
  - use a struct for Area
@@ -25,7 +24,7 @@ Currently:
  - maybe handle loading objects in area, instead of resources???
 
 ** NEXT THING TO DO:
- - show the character speaking in the dialogue - not really necessary
+ - show the character speaking in the dialogue
  - more areas
    - working on this. currently there is just a copy of a1
  - puzzle stuff
@@ -139,3 +138,4 @@ Currently:
  - vehicles? one for digging
 
 #  LocalWords:  NPC
+
