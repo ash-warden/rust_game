@@ -6,7 +6,9 @@
 use std::sync::Arc;
 
 use crate::controls::CONTROLS;
+use crate::current_game::CURRENT_GAME_MANAGER;
 use crate::game_state::{GameState, MenuState, StateTransition};
+use crate::item::ItemInv;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::resources::{Resources, get_text};
 use crate::text::write_text;
@@ -69,6 +71,15 @@ fn npc_function(npc_name: &str) -> StateTransition {
         "Test1" => StateTransition::Push(Box::new(TalkState::new(
             "test1",
             Some(Box::new(|| println!("function!"))),
+        ))),
+         "Test2" => StateTransition::Push(Box::new(TalkState::new(
+            "test_items",
+             Some(Box::new(|| {
+                 let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+                 let item = ItemInv::new("test_item".to_owned(), "use item".to_owned(), "use item differently".to_owned(), false);
+                 cur_game.add_to_inv(item);
+                 cur_game.test_print_inv();
+             })),
         ))),
         _ => {
             println!("Error, no npc found");

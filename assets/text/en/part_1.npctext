@@ -4,5 +4,10 @@
     "line 2",
     "fn",
     "line 3"
+  ],
+  "test_items": [
+    "here is the test item",
+    "fn",
+    "it has been added to your inventory"
   ]
 }

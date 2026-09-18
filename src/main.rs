@@ -24,6 +24,7 @@ mod resources;
 mod room_obj_from_file;
 mod text;
 mod traits_for_obj;
+mod item;
 
 const SCREEN_SIZE: IVec2 = ivec2(640, 480);
 const SCREEN_SIZE_F: Vec2 = vec2(SCREEN_SIZE.x as f32, SCREEN_SIZE.y as f32);

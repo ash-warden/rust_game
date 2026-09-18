@@ -3,6 +3,8 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
+use crate::item::ItemInv;
+
 pub const MAX_HEALTH: u32 = 10;
 
 pub enum GameStages {
@@ -15,6 +17,7 @@ pub struct CurrentGame {
     pub health: u32,
     pub stars_collected: HashSet<(String, i32)>,
     pub temp_value: i32,
+    pub inventory: Vec<ItemInv>,
 }
 
 impl CurrentGame {
@@ -24,6 +27,7 @@ impl CurrentGame {
             stars_collected: HashSet::new(),
             save_name: "".to_string(),
             temp_value: 0,
+            inventory: vec![],
         }
     }
 
@@ -56,6 +60,16 @@ impl CurrentGame {
 
     pub fn get_stars(&self) -> &HashSet<(String, i32)> {
         &self.stars_collected
+    }
+
+    pub fn add_to_inv(&mut self, item: ItemInv) {
+        self.inventory.push(item);
+    }
+
+    pub fn test_print_inv(&self) {
+        for i in &self.inventory {
+            println!("{}", i.name);
+        }
     }
 }
 
