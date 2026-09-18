@@ -1,3 +1,4 @@
+use crate::controls::CONTROLS;
 use crate::cutscene::CutsceneState;
 use crate::game_state::{GameStateStack, LoadSaveState, MenuState, NewGameState, StateTransition};
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
@@ -11,6 +12,7 @@ mod current_game;
 mod cutscene;
 mod game_state;
 mod hud;
+mod item;
 mod level;
 mod level_state;
 mod menu;
@@ -24,7 +26,6 @@ mod resources;
 mod room_obj_from_file;
 mod text;
 mod traits_for_obj;
-mod item;
 
 const SCREEN_SIZE: IVec2 = ivec2(640, 480);
 const SCREEN_SIZE_F: Vec2 = vec2(SCREEN_SIZE.x as f32, SCREEN_SIZE.y as f32);
@@ -98,6 +99,11 @@ async fn main() {
         });
 
         clear_background(GRAY);
+
+        {
+            let mut controls = CONTROLS.lock().unwrap();
+            controls.update();
+        }
 
         game_state_stack.update();
         game_state_stack.draw();

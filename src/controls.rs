@@ -1,9 +1,10 @@
-use gamepads::{Button, Gamepads};
+use gilrs::{Button, GamepadId, Gilrs};
 use macroquad::input::{KeyCode, get_keys_pressed, is_key_down};
 use std::sync::{LazyLock, Mutex};
 
 pub struct Controls {
-    pads: Gamepads,
+    gilrs: Gilrs,
+    active_gamepad: Option<GamepadId>,
     enter_down: bool,
     z_down: bool,
     x_down: bool,
@@ -16,7 +17,8 @@ pub struct Controls {
 impl Controls {
     fn new() -> Self {
         Self {
-            pads: Gamepads::new(),
+            gilrs: Gilrs::new().unwrap(),
+            active_gamepad: None,
             enter_down: false,
             z_down: false,
             x_down: false,
@@ -27,46 +29,32 @@ impl Controls {
         }
     }
 
-    fn poll(&mut self) {
-        self.pads.poll();
-    }
-
-    fn check_pad_input(&mut self, button: Button) -> bool {
-        self.poll();
-        // check whether keyboard or contoller used last
-        if self.pads.all().count() > 0 {
-            if self
-                .pads
-                .all()
-                .next()
-                .unwrap()
-                .all_currently_pressed()
-                .count()
-                > 0
-            {
-                self.last_used_controller = true;
-            }
+    pub fn update(&mut self) {
+        while let Some(event) = self.gilrs.next_event() {
+            self.active_gamepad = Some(event.id);
+            self.last_used_controller = true;
         }
         if !get_keys_pressed().is_empty() {
             self.last_used_controller = false;
         }
-        self.pads
-            .all()
-            .next()
-            .map(|g| g.is_currently_pressed(button))
-            .unwrap_or(false)
     }
 
-    pub fn controls_left(&mut self) -> bool {
+    fn check_pad_input(&self, button: Button) -> bool {
+        self.active_gamepad.map(|id| {
+            self.gilrs.gamepad(id).is_pressed(button)
+        }).unwrap_or(false)
+    }
+
+    pub fn controls_left(&self) -> bool {
         self.check_pad_input(Button::DPadLeft) || is_key_down(KeyCode::Left)
     }
-    pub fn controls_right(&mut self) -> bool {
+    pub fn controls_right(&self) -> bool {
         self.check_pad_input(Button::DPadRight) || is_key_down(KeyCode::Right)
     }
-    pub fn controls_up(&mut self) -> bool {
+    pub fn controls_up(&self) -> bool {
         self.check_pad_input(Button::DPadUp) || is_key_down(KeyCode::Up)
     }
-    pub fn controls_down(&mut self) -> bool {
+    pub fn controls_down(&self) -> bool {
         self.check_pad_input(Button::DPadDown) || is_key_down(KeyCode::Down)
     }
     pub fn controls_up_release(&mut self) -> bool {
@@ -83,33 +71,33 @@ impl Controls {
     }
 
     pub fn controls_primary(&mut self) -> bool {
-        self.check_pad_input(Button::ActionDown) || is_key_down(KeyCode::Space)
+        self.check_pad_input(Button::South) || is_key_down(KeyCode::Space)
     }
     pub fn controls_secondary(&mut self) -> bool {
-        self.check_pad_input(Button::ActionLeft) || is_key_down(KeyCode::LeftShift)
+        self.check_pad_input(Button::West) || is_key_down(KeyCode::LeftShift)
     }
     pub fn controls_tertirary_release(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::ActionRight) || is_key_down(KeyCode::Z);
+        let pressed = self.check_pad_input(Button::East) || is_key_down(KeyCode::Z);
         let just_released = self.z_down && !pressed;
         self.z_down = pressed;
         just_released
     }
     pub fn controls_quaternary_release(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::ActionUp) || is_key_down(KeyCode::X);
+        let pressed = self.check_pad_input(Button::North) || is_key_down(KeyCode::X);
         let just_released = self.x_down && !pressed;
         self.x_down = pressed;
         just_released
     }
     pub fn controls_enter_release(&mut self) -> bool {
         let pressed =
-            self.check_pad_input(Button::RightCenterCluster) || is_key_down(KeyCode::Enter);
+            self.check_pad_input(Button::Start) || is_key_down(KeyCode::Enter);
         let just_released = self.enter_down && !pressed;
         self.enter_down = pressed;
         just_released
     }
     pub fn controls_esc_release(&mut self) -> bool {
         let pressed =
-            self.check_pad_input(Button::LeftCenterCluster) || is_key_down(KeyCode::Escape);
+            self.check_pad_input(Button::Select) || is_key_down(KeyCode::Escape);
         let just_released = self.esc_down && !pressed;
         self.esc_down = pressed;
         just_released
