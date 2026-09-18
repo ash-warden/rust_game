@@ -72,15 +72,22 @@ fn npc_function(npc_name: &str) -> StateTransition {
             "test1",
             Some(Box::new(|| println!("function!"))),
         ))),
-         "Test2" => StateTransition::Push(Box::new(TalkState::new(
-            "test_items",
-             Some(Box::new(|| {
-                 let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
-                 let item = ItemInv::new("test_item".to_owned(), "use item".to_owned(), "use item differently".to_owned(), false);
-                 cur_game.add_to_inv(item);
-                 cur_game.test_print_inv();
-             })),
-        ))),
+        "Test2" => {
+            let mut cur_game = CURRENT_GAME_MANAGER.lock().unwrap();
+            let item = ItemInv::new(
+                "test_item".to_owned(),
+                "use item".to_owned(),
+                "use item differently".to_owned(),
+                false,
+            );
+            if cur_game.item_in_inv(&item.name) > 0 {
+                return StateTransition::Push(Box::new(TalkState::new("test_items_taken", None)));
+            } else {
+                cur_game.add_to_inv(item);
+                cur_game.test_print_inv();
+                return StateTransition::Push(Box::new(TalkState::new("test_items_not_taken", None)));
+            }
+        }
         _ => {
             println!("Error, no npc found");
             StateTransition::None

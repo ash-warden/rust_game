@@ -66,6 +66,16 @@ impl CurrentGame {
         self.inventory.push(item);
     }
 
+    pub fn item_in_inv(&self, item_name: &str) -> i32 {
+        let mut count = 0;
+        for i in &self.inventory {
+            if i.name == item_name {
+                count += 1;
+            }
+        }
+        count
+    }
+
     pub fn test_print_inv(&self) {
         for i in &self.inventory {
             println!("{}", i.name);

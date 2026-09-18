@@ -5,9 +5,11 @@
     "fn",
     "line 3"
   ],
-  "test_items": [
+  "test_items_not_taken": [
     "here is the test item",
-    "fn",
     "it has been added to your inventory"
+  ],
+  "test_items_taken": [
+    "you already have the item"
   ]
 }
