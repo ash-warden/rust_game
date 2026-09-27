@@ -18,6 +18,9 @@ pub struct CurrentGame {
     pub stars_collected: HashSet<(String, i32)>,
     pub temp_value: i32,
     pub inventory: Vec<ItemInv>,
+    pub equip_a: i32,
+    pub equip_b: i32,
+    
 }
 
 impl CurrentGame {
@@ -28,6 +31,8 @@ impl CurrentGame {
             save_name: "".to_string(),
             temp_value: 0,
             inventory: vec![],
+            equip_a: 9999,
+            equip_b: 9999,
         }
     }
 

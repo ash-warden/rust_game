@@ -10,6 +10,7 @@ use crate::menu::{Menu, MenuItem, menu_centre_pos};
 use crate::obj_checkpoint::Checkpoint;
 use crate::resources::{Resources, get_text};
 use macroquad::color::{Color, WHITE};
+use macroquad::input;
 use macroquad::math::{IVec2, Rect, vec2};
 use macroquad::prelude::{DrawTextureParams, draw_texture_ex, get_frame_time};
 use std::collections::HashSet;
@@ -166,7 +167,7 @@ impl GameState for LevelState {
             let quit_text = get_text("quit");
 
             let pause_menu_pos = menu_centre_pos(6, 3);
-            let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y);
+            let mut pause_menu = Menu::new(pause_menu_pos.x, pause_menu_pos.y, true);
             let title = MenuItem::new(&pause_text, || StateTransition::None, false);
             pause_menu.add_item(title);
             let resume_game = MenuItem::new(&resume_text, move || StateTransition::Pop(1), true);
@@ -178,6 +179,31 @@ impl GameState for LevelState {
             let menu_state = MenuState::new(pause_menu);
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_enter_release() {
+                return StateTransition::Push(Box::new(menu_state));
+            }
+        }
+
+        //open inventory
+        {
+            let inv = &CURRENT_GAME_MANAGER.lock().unwrap().inventory;
+
+            let mut inv_menu = Menu::new(16., 16., true);
+
+            let title = MenuItem::new("Inventory", || StateTransition::None, false);
+            inv_menu.add_item(title);
+
+            for item in inv {
+                println!("{}", item.name);
+                let item_for_menu = MenuItem::new(&item.name, || StateTransition::None, true);
+                inv_menu.add_item(item_for_menu);
+            }
+
+            let back = MenuItem::new("Back", || StateTransition::Pop(1), true);
+            inv_menu.add_item(back);
+
+            let menu_state = MenuState::new(inv_menu);
+            let mut input = CONTROLS.lock().unwrap();
+            if input.controls_quaternary_release() {
                 return StateTransition::Push(Box::new(menu_state));
             }
         }

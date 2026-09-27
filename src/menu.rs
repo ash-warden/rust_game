@@ -11,15 +11,17 @@ pub struct Menu {
     menu_items: Vec<MenuItem>,
     current_index: u32,
     pos: Vec2,
+    can_close: bool,
 }
 
 impl Menu {
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: f32, y: f32, can_close: bool) -> Self {
         let menu_items = Vec::new();
         Menu {
             menu_items,
             current_index: 0,
             pos: vec2(x, y),
+            can_close,
         }
     }
 
@@ -57,8 +59,11 @@ impl Menu {
                 }
             }
         }
-        if input.controls_enter_release() {
+        if input.controls_enter_release() || input.controls_primary_release() {
             return self.menu_items[self.current_index as usize].activate();
+        }
+        if self.can_close && (input.controls_esc_release() || input.controls_tertirary_release()) {
+            return StateTransition::Pop(1);
         }
         StateTransition::None
     }

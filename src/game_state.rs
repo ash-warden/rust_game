@@ -120,7 +120,7 @@ impl LoadSaveState {
 impl GameState for LoadSaveState {
     fn update(&mut self) -> StateTransition {
         let menu_pos = menu_centre_pos(20, 10);
-        let mut menu = Menu::new(menu_pos.x, menu_pos.y);
+        let mut menu = Menu::new(menu_pos.x, menu_pos.y, false);
         let title = MenuItem::new("Select a file to load", || StateTransition::None, false);
         menu.add_item(title);
 

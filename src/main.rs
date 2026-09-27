@@ -51,7 +51,7 @@ async fn main() {
     let load_game_text = get_text("load_file");
 
     let menu_pos = menu_centre_pos(11, 3);
-    let mut menu = Menu::new(menu_pos.x, menu_pos.y);
+    let mut menu = Menu::new(menu_pos.x, menu_pos.y, false);
     let title = MenuItem::new("game_25", || StateTransition::None, false);
     menu.add_item(title);
     let start_game_new = MenuItem::new(

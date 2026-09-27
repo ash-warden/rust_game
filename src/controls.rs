@@ -8,6 +8,7 @@ pub struct Controls {
     enter_down: bool,
     z_down: bool,
     x_down: bool,
+    space_down: bool,
     up_down: bool,
     down_down: bool,
     esc_down: bool,
@@ -26,6 +27,7 @@ impl Controls {
             down_down: false,
             esc_down: false,
             last_used_controller: false,
+            space_down: false,
         }
     }
 
@@ -73,6 +75,14 @@ impl Controls {
     pub fn controls_primary(&mut self) -> bool {
         self.check_pad_input(Button::South) || is_key_down(KeyCode::Space)
     }
+    
+    pub fn controls_primary_release(&mut self) -> bool {
+        let pressed = self.check_pad_input(Button::South) || is_key_down(KeyCode::Space);
+        let just_released = self.space_down && !pressed;
+        self.space_down = pressed;
+        just_released
+    }
+    
     pub fn controls_secondary(&mut self) -> bool {
         self.check_pad_input(Button::West) || is_key_down(KeyCode::LeftShift)
     }

@@ -52,7 +52,7 @@ impl Obj for Checkpoint {
         println!("{}", "interacting with checkpoint");
         let save_game_state = SaveGameState::new(self);
         let menu_pos = menu_centre_pos(15, 3);
-        let mut menu = Menu::new(menu_pos.x, menu_pos.y);
+        let mut menu = Menu::new(menu_pos.x, menu_pos.y, false);
         let title = MenuItem::new(&save_game_text, || StateTransition::None, false);
         menu.add_item(title);
         let save_game = MenuItem::new(
