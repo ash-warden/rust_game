@@ -81,6 +81,14 @@ impl CurrentGame {
         count
     }
 
+    pub fn remove_used_items(&mut self) {
+        for i in 0..self.inventory.len() {
+            if self.inventory[i].is_destroyed {
+                self.inventory.remove(i);
+            }
+        }
+    }
+
     pub fn test_print_inv(&self) {
         for i in &self.inventory {
             println!("{}", i.name);

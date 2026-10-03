@@ -77,7 +77,7 @@ fn npc_function(npc_name: &str) -> StateTransition {
             let item = ItemInv::new(
                 "test_item".to_owned(),
                 "use item".to_owned(),
-                "use item differently".to_owned(),
+                false,
                 true,
             );
             if cur_game.item_in_inv(&item.name) > 0 {

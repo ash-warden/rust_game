@@ -186,7 +186,6 @@ impl GameState for LevelState {
 
         //open inventory
         {
-            //let inv = &CURRENT_GAME_MANAGER.lock().unwrap().inventory;
             let item_names: Vec<String> = {
                 let guard = CURRENT_GAME_MANAGER.lock().unwrap();
                 guard
@@ -213,8 +212,7 @@ impl GameState for LevelState {
                             move || {
                                 let mut guard = CURRENT_GAME_MANAGER.lock().unwrap();
                                 if let Some(item) = guard.inventory.get_mut(use_index) {
-                                    item.item_function();
-                                    return StateTransition::Push(Box::new(MsgState::new(&format!("Used the {}", &item.name), 3)))
+                                    return item.item_function();
                                 }
                                 StateTransition::Pop(2)
                             },
@@ -232,6 +230,10 @@ impl GameState for LevelState {
                                         let name = item.name.clone();
                                         guard.inventory.remove(use_index);
                                         return StateTransition::Push(Box::new(MsgState::new(&format!("Dropped the {}", &name), 3)))
+                                    }
+                                    else {
+                                        let name = item.name.clone();
+                                        return StateTransition::Push(Box::new(MsgState::new(&format!("The {} can't be dropped", &name), 3)))
                                     }
                                 }
                                 StateTransition::Pop(2)
@@ -252,6 +254,13 @@ impl GameState for LevelState {
             inv_menu.add_item(back);
 
             let menu_state = MenuState::new(inv_menu);
+
+            //check for "used" items
+            {
+                let mut game =  CURRENT_GAME_MANAGER.lock().unwrap();
+                game.remove_used_items();
+            }
+            
             let mut input = CONTROLS.lock().unwrap();
             if input.controls_quaternary_release() {
                 return StateTransition::Push(Box::new(menu_state));
