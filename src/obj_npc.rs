@@ -78,7 +78,7 @@ fn npc_function(npc_name: &str) -> StateTransition {
                 "test_item".to_owned(),
                 "use item".to_owned(),
                 "use item differently".to_owned(),
-                false,
+                true,
             );
             if cur_game.item_in_inv(&item.name) > 0 {
                 return StateTransition::Push(Box::new(TalkState::new("test_items_taken", None)));

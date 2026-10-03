@@ -185,16 +185,63 @@ impl GameState for LevelState {
 
         //open inventory
         {
-            let inv = &CURRENT_GAME_MANAGER.lock().unwrap().inventory;
+            //let inv = &CURRENT_GAME_MANAGER.lock().unwrap().inventory;
+            let item_names: Vec<String> = {
+                let guard = CURRENT_GAME_MANAGER.lock().unwrap();
+                guard
+                    .inventory
+                    .iter()
+                    .map(|item| item.name.clone())
+                    .collect()
+            };
 
             let mut inv_menu = Menu::new(16., 16., true);
 
             let title = MenuItem::new("Inventory", || StateTransition::None, false);
             inv_menu.add_item(title);
 
-            for item in inv {
-                println!("{}", item.name);
-                let item_for_menu = MenuItem::new(&item.name, || StateTransition::None, true);
+            for (index, item_name) in item_names.into_iter().enumerate() {
+                let item_for_menu = MenuItem::new(
+                    &item_name,
+                    move || {
+                        //submenu
+                        let mut inv_submenu = Menu::new(128., 64., true);
+                        let use_index = index;
+                        let use_item = MenuItem::new(
+                            "Use",
+                            move || {
+                                let mut guard = CURRENT_GAME_MANAGER.lock().unwrap();
+                                if let Some(item) = guard.inventory.get_mut(use_index) {
+                                    item.item_function();
+                                }
+                                StateTransition::Pop(2)
+                            },
+                            true,
+                        );
+                        inv_submenu.add_item(use_item);
+                        let equip = MenuItem::new("Equip", || StateTransition::None, true);
+                        inv_submenu.add_item(equip);
+                        let drop_item = MenuItem::new(
+                            "Drop",
+                            move || {
+                                let mut guard = CURRENT_GAME_MANAGER.lock().unwrap();
+                                if let Some(item) = guard.inventory.get_mut(use_index) {
+                                    if item.can_drop {
+                                        guard.inventory.remove(use_index);
+                                    }
+                                    
+                                }
+                                StateTransition::Pop(2)
+                            },
+                            true,
+                        );
+                        inv_submenu.add_item(drop_item);
+
+                        let inv_submenu_state = MenuState::new(inv_submenu);
+                        StateTransition::Push(Box::new(inv_submenu_state))
+                    },
+                    true,
+                );
                 inv_menu.add_item(item_for_menu);
             }
 
