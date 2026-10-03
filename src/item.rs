@@ -1,5 +1,5 @@
 //NOTE
-// check obj_npc, similar situation
+// check obj_npc, similar situation with there being multiple types of the thing
 
 use crate::game_state::StateTransition;
 

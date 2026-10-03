@@ -6,9 +6,9 @@ pub struct Controls {
     gilrs: Gilrs,
     active_gamepad: Option<GamepadId>,
     enter_down: bool,
-    z_down: bool,
-    x_down: bool,
-    space_down: bool,
+    tertirary_down: bool,
+    quaternary_down: bool,
+    primary_down: bool,
     up_down: bool,
     down_down: bool,
     esc_down: bool,
@@ -21,13 +21,13 @@ impl Controls {
             gilrs: Gilrs::new().unwrap(),
             active_gamepad: None,
             enter_down: false,
-            z_down: false,
-            x_down: false,
+            tertirary_down: false,
+            quaternary_down: false,
             up_down: false,
             down_down: false,
             esc_down: false,
             last_used_controller: false,
-            space_down: false,
+            primary_down: false,
         }
     }
 
@@ -73,13 +73,13 @@ impl Controls {
     }
 
     pub fn controls_primary(&mut self) -> bool {
-        self.check_pad_input(Button::South) || is_key_down(KeyCode::Space)
+        self.check_pad_input(Button::South) || is_key_down(KeyCode::Space) || is_key_down(KeyCode::Z)
     }
     
     pub fn controls_primary_release(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::South) || is_key_down(KeyCode::Space);
-        let just_released = self.space_down && !pressed;
-        self.space_down = pressed;
+        let pressed = self.check_pad_input(Button::South) || is_key_down(KeyCode::Space) || is_key_down(KeyCode::Z);
+        let just_released = self.primary_down && !pressed;
+        self.primary_down = pressed;
         just_released
     }
     
@@ -87,15 +87,15 @@ impl Controls {
         self.check_pad_input(Button::West) || is_key_down(KeyCode::LeftShift)
     }
     pub fn controls_tertirary_release(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::East) || is_key_down(KeyCode::Z);
-        let just_released = self.z_down && !pressed;
-        self.z_down = pressed;
+        let pressed = self.check_pad_input(Button::East) || is_key_down(KeyCode::X);
+        let just_released = self.tertirary_down && !pressed;
+        self.tertirary_down = pressed;
         just_released
     }
     pub fn controls_quaternary_release(&mut self) -> bool {
-        let pressed = self.check_pad_input(Button::North) || is_key_down(KeyCode::X);
-        let just_released = self.x_down && !pressed;
-        self.x_down = pressed;
+        let pressed = self.check_pad_input(Button::North) || is_key_down(KeyCode::C);
+        let just_released = self.quaternary_down && !pressed;
+        self.quaternary_down = pressed;
         just_released
     }
     pub fn controls_enter_release(&mut self) -> bool {
@@ -125,10 +125,10 @@ impl Controls {
                 _ => key_string = String::from("NO KEY"),
             },
             false => match key {
-                "space" => key_string = String::from("Space"),
+                "space" => key_string = String::from("Space/Z"),
                 "shift" => key_string = String::from("Shift"),
-                "z" => key_string = String::from("Z"),
-                "x" => key_string = String::from("X"),
+                "z" => key_string = String::from("X"),
+                "x" => key_string = String::from("C"),
                 "enter" => key_string = String::from("Enter"),
                 "esc" => key_string = String::from("Escape"),
                 _ => key_string = String::from("NO KEY"),

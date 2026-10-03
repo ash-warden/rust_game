@@ -37,7 +37,7 @@ impl TalkState {
 impl GameState for TalkState {
     fn update(&mut self) -> StateTransition {
         let mut controls = CONTROLS.lock().unwrap();
-        if controls.controls_tertirary_release() {
+        if controls.controls_primary_release() {
             if (self.current_line as usize) < (self.lines.len() - 1) {
                 self.current_line += 1;
                 if self.lines[self.current_line] == "fn" {

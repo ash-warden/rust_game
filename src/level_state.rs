@@ -7,6 +7,7 @@ use crate::game_state::{
 use crate::hud::{MapPixelType, draw_hud, get_map_pixels};
 use crate::level;
 use crate::menu::{Menu, MenuItem, menu_centre_pos};
+use crate::message_window::MsgState;
 use crate::obj_checkpoint::Checkpoint;
 use crate::resources::{Resources, get_text};
 use macroquad::color::{Color, WHITE};
@@ -213,6 +214,7 @@ impl GameState for LevelState {
                                 let mut guard = CURRENT_GAME_MANAGER.lock().unwrap();
                                 if let Some(item) = guard.inventory.get_mut(use_index) {
                                     item.item_function();
+                                    return StateTransition::Push(Box::new(MsgState::new(&format!("Used the {}", &item.name), 3)))
                                 }
                                 StateTransition::Pop(2)
                             },
@@ -227,9 +229,10 @@ impl GameState for LevelState {
                                 let mut guard = CURRENT_GAME_MANAGER.lock().unwrap();
                                 if let Some(item) = guard.inventory.get_mut(use_index) {
                                     if item.can_drop {
+                                        let name = item.name.clone();
                                         guard.inventory.remove(use_index);
+                                        return StateTransition::Push(Box::new(MsgState::new(&format!("Dropped the {}", &name), 3)))
                                     }
-                                    
                                 }
                                 StateTransition::Pop(2)
                             },

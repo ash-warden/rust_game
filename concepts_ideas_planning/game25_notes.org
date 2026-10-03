@@ -1,4 +1,9 @@
 #+STARTUP: overview
+KEYS:
+ - primary: south, space, Z
+ - secondary: west, Lshift
+ - tertirary: east, X
+ - quartenry: north, C
 
 ** MENUS
 Currently:
@@ -25,6 +30,7 @@ Currently:
  - maybe handle loading objects in area, instead of resources???
 
 ** NEXT THING TO DO:
+ - "Message" state, for just showing a message that then disappears
  - show the character speaking in the dialogue - not really necessary
  - more areas
    - working on this. currently there is just a copy of a1

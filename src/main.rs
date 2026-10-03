@@ -16,6 +16,7 @@ mod item;
 mod level;
 mod level_state;
 mod menu;
+mod message_window;
 mod obj_checkpoint;
 mod obj_door;
 mod obj_npc;
